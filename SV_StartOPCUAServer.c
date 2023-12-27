@@ -605,7 +605,7 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
   		// --to disable anonymous logins (2nd parameter (allowAnonymous) set to UA_FALSE)
 		// -- enable 2 user/password logins
 		config1.accessControl.clear(&config1.accessControl);
-		UA_CerticateVerification verifyX509;
+		UA_CertificateVerification verifyX509;
 		retval = UA_AccessControl_default(&config1, UA_FALSE, &vertifyX509, &config1.securityPolicies[config1.securityPoliciesSize-1].policyUri, 2, logins);
 		if (retval != UA_STATUSCODE_GOOD)
 			goto cleanup;
