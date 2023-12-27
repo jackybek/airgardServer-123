@@ -4,7 +4,7 @@ CFLAGS1=-g -std=c99 -v
 #CC=g++
 #CFLAGS1=-x c++ -std=c++98 -v -fpermissive -Wno-literal-suffix -Wno-write-strings -Wno-long-long -Wno-return-type
 CFLAGS2=-I$(HOME) -I$(HOME)include/ -I$(HOME)plugins/ -I$(HOME)src/ -I$(HOME)build/src_generated/ \
--I$(HOME)arch/ -I$(HOME)deps/ -I$(HOME)plugins/include/ -I/usr/local/include/ -I/usr/include/libxml2/
+-I$(HOME)arch/ -I$(HOME)deps/ -I$(HOME)plugins/include/ -I/usr/local/include/ -I/usr/include/libxml2
 CFLAGS3=-g -pass-exit-codes
 DEPS=
 LIBS=-lm -lrt -lwebsockets -ljson-c \
