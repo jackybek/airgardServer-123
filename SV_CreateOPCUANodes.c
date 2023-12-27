@@ -201,7 +201,7 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
     int numbytes;
     char buffer[MAX_BUFFER_SIZE];
     struct hostent* he;
-    struct sockaddr_in airgard_addr;        /* connector's address information */
+    //struct sockaddr_in airgard_addr;        /* connector's address information */
     int counter = 0;
     UA_StatusCode retval;
 
