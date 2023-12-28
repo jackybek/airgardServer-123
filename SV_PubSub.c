@@ -5,7 +5,7 @@
 #endif
 
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
 #include <open62541/plugin/pubsub_udp.h>
 #include <open62541/plugin/pubsub_ethernet.h>
 #include <open62541/plugin/securitypolicy_default.h>
