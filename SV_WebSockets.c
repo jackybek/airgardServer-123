@@ -1,11 +1,14 @@
 //#include "open62541.h"
 #include <libwebsockets.h>
+#include <open62541/plugin/log_stdout.h>
+#include <open62541/server.h>
+#include <open62541/server_config_default.h>
 #include <signal.h>
 #if defined(WIN32)
-#define HAVE_STRUCT_TIMESPEC
-#if defined(pid_t)
-#undef pid_t
-#endif
+	#define HAVE_STRUCT_TIMESPEC
+	#if defined(pid_t)
+	#undef pid_t
+	#endif
 #endif
 #include <pthread.h>
 
