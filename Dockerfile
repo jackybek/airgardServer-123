@@ -225,8 +225,8 @@ RUN export open62541_NODESET_DIR='/root/open62541/deps/ua-nodeset/Schema/'
 
 ##########################################
 # -- creates the volume in container
-# 1. ldscerts44.pem are kept in /usr/local/ssl/certs/ softlink to /etc/ssl/certs/
-# 2. ldsprivate-key.pem are kept in /usr/local/ssl/private/ softlink to /etc/ssl/private/
+# 1. svrcerts33.pem are kept in /usr/local/ssl/certs/ softlink to /etc/ssl/certs/
+# 2. svrprivate-key.pem are kept in /usr/local/ssl/private/ softlink to /etc/ssl/private/
 # 3. trustlist.crl is not used
 ##########################################
 VOLUME /usr/local/ssl/certs
