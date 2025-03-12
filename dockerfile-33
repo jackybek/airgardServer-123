@@ -1,5 +1,5 @@
 ###########################################################################################################
-#  Dockerfile : creates a docker image that runs a open62541 instance called Local Directory Server (LDS) #
+#  Dockerfile : creates a docker image that runs a open62541 instance called airgardServer-33 #
 ###########################################################################################################
 
 #########################
