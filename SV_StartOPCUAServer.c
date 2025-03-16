@@ -1,5 +1,5 @@
-//#include "open62541.h"
-//#include <open62541/network_tcp.h>
+#ifdef almagamation
+#include <open62541/network_tcp.h>
 #include <open62541/client_highlevel.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/client_config_default.h>
@@ -10,6 +10,9 @@
 #include <open62541/plugin/pki_default.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+   #include "open62541.h"
+#endif
 
 #include "SV_NewMonitor.h"
 #include <stdio.h>
@@ -606,10 +609,7 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
 		// -- enable 2 user/password logins
 		config1.accessControl.clear(&config1.accessControl);
 		UA_CertificateVerification verifyX509;
-		// only for v1.4
-		// retval = UA_AccessControl_default(&config1, UA_FALSE, &verifyX509, &config1.securityPolicies[config1.securityPoliciesSize-1].policyUri, 2, logins);
-		// only for v1.3.9
-		// retval = UA_AccessControl_default(&config1, UA_FALSE, &config1.securityPolicies[config1.securityPoliciesSize-1].policyUri, 2, logins);
+		retval = UA_AccessControl_default(&config1, UA_FALSE, &verifyX509, &config1.securityPolicies[config1.securityPoliciesSize-1].policyUri, 2, logins);
 		if (retval != UA_STATUSCODE_GOOD)
 			goto cleanup;
 

@@ -1,8 +1,11 @@
-//#include "open62541.h"
+#ifdef almagamation
 #include <open62541/client_subscriptions.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+  #include "open62541.h"
+#endif
 
 //#include <mariadb/mysql.h>
 //#include "myNewMonitor.h"
@@ -66,7 +69,6 @@ void dataChangeNotificationCallback(UA_Server *server, UA_UInt32 monitoredItemId
 
 void addMonitoredItemToSoftwareVersionVariable(UA_Server *server)
 {
-    UA_UInt16 namespaceIndex = 1;
         //UA_NodeId SoftwareVersionNodeId = UA_NODEID_NUMERIC(0, 10001);
         UA_MonitoredItemCreateRequest monRequest = UA_MonitoredItemCreateRequest_default(outSoftwareVersion_Id); //(SoftwareVersionNodeId);
         monRequest.requestedParameters.samplingInterval = 100.0; /* 100 ms interval */

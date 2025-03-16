@@ -1,8 +1,11 @@
-//#include "open62541.h"
+#ifdef almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #define UA_ENABLE_SUBSCRIPTIONS_EVENTS
+#else
+   #include "open62541.h"
+#endif
 
 /**
  * Generating events
@@ -46,8 +49,11 @@ static UA_NodeId eventType;
  * automatically by the server. In this example, we will be setting the fields 'Message' and 'Severity' in addition
  * to `Time` which is needed to make the example UaExpert compliant.
  */
+
+
+
 static UA_StatusCode
-setUpResetEvent(UA_Server *uaServer, UA_NodeId *outEventId)
+setUpEvent(UA_Server *uaServer, UA_NodeId *outEventId)
 {
     UA_StatusCode retval = UA_Server_createEvent(uaServer, eventType, outEventId);
     if (retval != UA_STATUSCODE_GOOD) {
@@ -59,8 +65,8 @@ setUpResetEvent(UA_Server *uaServer, UA_NodeId *outEventId)
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(uaServer, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
 
-    /* Set the Event Attributes */
-    /* Setting the Time is required or else the event will not show up in UAExpert! */
+    // Set the Event Attributes
+    // Setting the Time is required or else the event will not show up in UAExpert!
     UA_DateTime eventTime = UA_DateTime_now();
     UA_Server_writeObjectProperty_scalar(uaServer, *outEventId, UA_QUALIFIEDNAME(0, "Time"),
                                          &eventTime, &UA_TYPES[UA_TYPES_DATETIME]);
@@ -88,6 +94,7 @@ setUpResetEvent(UA_Server *uaServer, UA_NodeId *outEventId)
 
     return UA_STATUSCODE_GOOD;
 }
+
 
 static UA_StatusCode
 setUpShutdownEvent(UA_Server *uaServer, UA_NodeId *outEventId)
@@ -141,7 +148,7 @@ setUpShutdownEvent(UA_Server *uaServer, UA_NodeId *outEventId)
  * event onto said node. Passing ``NULL`` as the second-last argument means we will not receive the `EventId`.
  * The last boolean argument states whether the node should be deleted. */
 static UA_StatusCode
-generateEvent_ResetMethodCallback(UA_Server *uaServer,
+generateEventMethodCallback(UA_Server *uaServer,
                          const UA_NodeId *sessionId, void *sessionHandle,
                          const UA_NodeId *methodId, void *methodContext,
                          const UA_NodeId *objectId, void *objectContext,
@@ -153,7 +160,7 @@ generateEvent_ResetMethodCallback(UA_Server *uaServer,
 
     /* set up event */
     UA_NodeId eventNodeId;
-    UA_StatusCode retval = setUpResetEvent(uaServer, &eventNodeId);
+    UA_StatusCode retval = setUpEvent(uaServer, &eventNodeId);
     if(retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                        "Creating Reset event failed. StatusCode %s", UA_StatusCode_name(retval));
@@ -235,7 +242,7 @@ addGenerateEvent_ResetMethod(UA_Server *uaServer, UA_NodeId parent)
                             parent, 				//UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
                             UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
                             UA_QUALIFIEDNAME(0, "Reset Event"),
-                            generateAttr, &generateEvent_ResetMethodCallback,
+                            generateAttr, &generateEventMethodCallback,
                             0, NULL, 0, NULL, NULL, NULL);
 
 	if(retval != UA_STATUSCODE_GOOD)

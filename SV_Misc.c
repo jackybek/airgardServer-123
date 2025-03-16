@@ -1,7 +1,11 @@
-//#include "open62541.h"
+#ifdef almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+#include "open62541.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -25,13 +29,14 @@ xmlNodePtr srSeekChildNodeNamed(xmlNode* p, char* name, int len)
 		printf("In for loop : curr_node content : %s\n", (char*)xmlNodeGetContent(curr_node));
 
 		printf("In the loop : (Len=%d) Comparing <curr_node->name> with <name> | %s : %s \n", len, curr_node->name, name);
-		if (strncmp(curr_node->name, name, len) == 0)	// look for xmlNode with tag = <name>
+		if (strncmp((const char*)curr_node->name, name, len) == 0)	// look for xmlNode with tag = <name>
 		{
 			// found seatch string <name>
 			printf("----------------Found In srSeekChildNodeNamed() [line 195] : searching for %s, found %s; returning the xmlNodePtr\n", name, curr_node->name);
 			return curr_node;
 		}
 	}
+	return NULL;
 }
 
 /*

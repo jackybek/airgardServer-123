@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//#include "open62541.h"
+
+#ifdef almagamation
 #include <open62541/plugin/historydata/history_data_backend_memory.h>
 #include <open62541/plugin/historydata/history_data_gathering_default.h>
 #include <open62541/plugin/historydata/history_database_default.h>
@@ -10,6 +11,9 @@
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+   #include "open62541.h"
+#endif
 
 //#include <xml.h>
 #include <libxml2/libxml/parser.h>

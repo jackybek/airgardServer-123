@@ -1,7 +1,10 @@
+#ifdef almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
-//#include "open62541.h"
+#else
+   #include "open62541.h"
+#endif
 
 #define UA_ENABLE_SUBSCRIPTIONS_ALARMS_CONDITIONS
 
@@ -525,7 +528,7 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 	UA_NodeId variable_1, variable_2, variable_3;
 	UA_ValueCallback callback;
 	callback.onRead = NULL;
-	UA_TwoStateVariableChangeCallback userSpecificCallback;
+	//UA_TwoStateVariableChangeCallback userSpecificCallback;
 
    size_t namespaceIndex;
 
@@ -547,7 +550,7 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 		return retval;
 	}
 
-	userSpecificCallback = enteringEnabledStateCallback;
+	UA_TwoStateVariableChangeCallback userSpecificCallback = enteringEnabledStateCallback;
 	retval = UA_Server_setConditionTwoStateVariableCallback(uaServer, conditionInstance_1,
 						conditionSource, UA_FALSE,
 						userSpecificCallback,

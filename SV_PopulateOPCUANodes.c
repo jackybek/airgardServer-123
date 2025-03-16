@@ -75,18 +75,19 @@ void PopulateOPCUANodes(char* g_argv_ip)    // g_argv_ip refers to the sensor IP
    PopulateOPCUANodes_firstTime = 0;
    while (1)
    {
-        xmlTextReaderPtr xml_TextReaderPtr, xmlPostPtr;
+        xmlTextReaderPtr xml_TextReaderPtr;
+	//xmlTextReaderPtr xmlPostPtr;
         xmlDocPtr myxmlDocPtr;
-        xmlNodePtr myxmlNodePtr;
+        //xmlNodePtr myxmlNodePtr;
 
         xmlDoc* myxmlDoc = NULL;
         xmlNode* root_element = NULL;
         //int firstTime = 0;
 
         char ConvertToXmlBuffer[MAX_BUFFER_SIZE];
-        int NoOfAttributes;
+        //int NoOfAttributes;
 
-        xmlChar* MeasurementTime;
+        //xmlChar* MeasurementTime;
 
 	printf("NA_PopulateOPCUANodes.c : Before recv() function \n");
         if ((numbytes = recv(sockfd, buffer, MAX_BUFFER_SIZE, 0)) == -1)
@@ -125,8 +126,8 @@ void PopulateOPCUANodes(char* g_argv_ip)    // g_argv_ip refers to the sensor IP
         }
 	*/
         // create a parse context for an XML in-memory document
-        //printf("here : 33333333\n"); 
-	myxmlParserCtxtPtr = xmlCreateDocParserCtxt(ConvertToXmlBuffer);
+        //printf("here : 33333333\n");
+	myxmlParserCtxtPtr = xmlCreateDocParserCtxt((const xmlChar *)ConvertToXmlBuffer);
         if (myxmlParserCtxtPtr == NULL)
         {
             printf("Error : xmlCreateDocParseCtxt\n");

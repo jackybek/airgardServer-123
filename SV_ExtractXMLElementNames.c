@@ -1,7 +1,10 @@
-//#include "open62541.h"
+#ifdef almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+   #include "open62541.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,17 +104,17 @@ int ExtractXMLElementNames(xmlNode *a_node)
 	// extract elements from XML file; this is NOT the OPCStructure
 
 	xmlNode *curr_node = NULL;
-	xmlNode *ori_node = a_node;	// keeps the pointer at the start position for seek()
-	int NumOfChildNodes = 0;
+	//xmlNode *ori_node = a_node;	// keeps the pointer at the start position for seek()
+	//int NumOfChildNodes = 0;
 	//char currentNodeName[MAX_STRING_SIZE];
-	int retval;
+	//int retval;
 
 	xmlNode *alarm_node= a_node; // use to traverse alarm segment only
 	xmlNode *alarm_childnode = NULL;
 	xmlNode *nonalarm_node = a_node; // use to travese nonalarm segment only
 	xmlNode *nonalarm_childnode = NULL;
 
-	char mystring[MAX_STRING_SIZE];
+	//char mystring[MAX_STRING_SIZE];
 
     //printf("============================================================\n");
     //printf("Entering NA_ExtractXMLElementNames() \n");
@@ -121,216 +124,216 @@ int ExtractXMLElementNames(xmlNode *a_node)
 	{
 		if (curr_node->type == XML_ELEMENT_NODE)
 		{
-			if (strncmp(curr_node->name, "SoftwareVersion", 15) == 0)			// curr_node->name
+			if (strncmp((const char*)curr_node->name, "SoftwareVersion", 15) == 0)			// curr_node->name
 			{
 				strcpy(SoftwareVersion, (char*)xmlNodeGetContent(curr_node));
 				//printf("Software Version node found : %s\n", SoftwareVersion);
 			}
-			else if (strncmp(curr_node->name, "DataBlockVersion", 16) == 0)
+			else if (strncmp((const char*)curr_node->name, "DataBlockVersion", 16) == 0)
 			{
 				strcpy(DataBlockVersion, (char*)xmlNodeGetContent(curr_node));
 				//printf("Data Block Version node found : %s\n", DataBlockVersion);
 			}
 			// end <Airgard> section
-			else if (strncmp(curr_node->name, "InstrumentTime", 14) == 0)
+			else if (strncmp((const char*)curr_node->name, "InstrumentTime", 14) == 0)
 			{
 				strcpy(InstrumentTime, (char*)xmlNodeGetContent(curr_node));
 				//printf("Instrument Time node found : %s\n", InstrumentTime);
 			}
-			else if (strncmp(curr_node->name, "MeasurementTime", 15) == 0)
+			else if (strncmp((const char*)curr_node->name, "MeasurementTime", 15) == 0)
 			{
 				strcpy(MeasurementTime, (char*)xmlNodeGetContent(curr_node));
 				//printf("Measurement Time node found : %s\n", MeasurementTime);
 			}
 			// <Info> Section
-                        	       	else if (strncmp(curr_node->name, "BootStatus",10) == 0)
+                        	       	else if (strncmp((const char*)curr_node->name, "BootStatus",10) == 0)
                                		{
                                         	strcpy(BootStatus, (char*)xmlNodeGetContent(curr_node));
                                         	//printf("\tBootStatus node found : %s\n", BootStatus);
 					}
-                                        else if (strncmp(curr_node->name, "SnapshotStatus",14) == 0)
+                                        else if (strncmp((const char*)curr_node->name, "SnapshotStatus",14) == 0)
                                         {
                                                 strcpy(SnapshotStatus, (char*)xmlNodeGetContent(curr_node));
                                                 //printf("\tSnapshotStatus node found : %s\n", SnapshotStatus);
                                         }
-                                        else if (strncmp(curr_node->name, "SCPStatus",9) == 0)
+                                        else if (strncmp((const char*)curr_node->name, "SCPStatus",9) == 0)
                                         {
                                                 strcpy(SCPStatus, (char*)xmlNodeGetContent(curr_node));
                                                 //printf("\tSCPStatus node found : %s\n", SCPStatus);
                                         }
-                                        else if (strncmp(curr_node->name, "SFTPStatus",10) == 0)
+                                        else if (strncmp((const char*)curr_node->name, "SFTPStatus",10) == 0)
                                         {
                                                 strcpy(SFTPStatus, (char*)xmlNodeGetContent(curr_node));
                                                 //printf("\tSFTPStatus node found : %s\n", SFTPStatus);
                                         }
-                                        else if (strncmp(curr_node->name, "RunScriptStatus",15) == 0)
+                                        else if (strncmp((const char*)curr_node->name, "RunScriptStatus",15) == 0)
                                         {
                                                 strcpy(RunScriptStatus, (char*)xmlNodeGetContent(curr_node));
                                                 //printf("\tRunScriptStatus node found : %s\n", RunScriptStatus);
                                         }
-                                        else if (strncmp(curr_node->name, "ArchiveStatus",13) == 0)
+                                        else if (strncmp((const char*)curr_node->name, "ArchiveStatus",13) == 0)
                                         {
                                                 strcpy(ArchiveStatus, (char*)xmlNodeGetContent(curr_node));
                                                 //printf("\tArchiveStatus node found : %s\n", ArchiveStatus);
                                         }
-                                        else if (strncmp(curr_node->name, "AncillarySensorStatus",21) == 0)
+                                        else if (strncmp((const char*)curr_node->name, "AncillarySensorStatus",21) == 0)
                                         {
                                                 strcpy(AncillarySensorStatus, (char*)xmlNodeGetContent(curr_node));
                                                 //printf("\tAncillarySensorStatus node found : %s\n", AncillarySensorStatus);
                                         }
 					// end <Info> Section
-			else if (strncmp(curr_node->name, "Sensor", 6) == 0)
+			else if (strncmp((const char*)curr_node->name, "Sensor", 6) == 0)
 			{
 				strcpy(Sensor, (char*)xmlNodeGetContent(curr_node));
 				//printf("\tSensor node found : %s\n", Sensor);
 			}
-			else if (strncmp(curr_node->name, "OperatingTime", 13) == 0)
+			else if (strncmp((const char*)curr_node->name, "OperatingTime", 13) == 0)
 			{
-				OperatingTime = atoi(xmlNodeGetContent(curr_node));
+				OperatingTime = atoi((const char*)xmlNodeGetContent(curr_node));
 				//printf("\tOperatingTime node found : %d\n", OperatingTime);
 			}
-			else if (strncmp(curr_node->name, "WarningMessage", 14) == 0)
+			else if (strncmp((const char*)curr_node->name, "WarningMessage", 14) == 0)
 			{
 				strcpy(WarningMessage, (char*)xmlNodeGetContent(curr_node));
 				//printf("\tWarningMessage node found : %s\n", WarningMessage);
 			}
 			// end  <Status> Section
-			else if (strncmp(curr_node->name, "IgramPP",7) == 0)
+			else if (strncmp((const char*)curr_node->name, "IgramPP",7) == 0)
 			{
-				IgramPP = (UA_Float) atof(xmlNodeGetContent(curr_node));
+				IgramPP = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
 				//printf("IgramPP node found : %f\n", IgramPP);
 			}
-			else if (strncmp(curr_node->name, "IgramDC", 7) == 0)
+			else if (strncmp((const char*)curr_node->name, "IgramDC", 7) == 0)
 			{
-				IgramDC = (UA_Float) atof(xmlNodeGetContent(curr_node));
+				IgramDC = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
 				//printf("IgramDC node found : %f\n", IgramDC);
 			}
-			else if (strncmp(curr_node->name, "LaserPP",7) == 0)
+			else if (strncmp((const char*)curr_node->name, "LaserPP",7) == 0)
 			{
-				LaserPP = (UA_Float) atof(xmlNodeGetContent(curr_node));
+				LaserPP = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
 				//printf("LaserPP node found : %f\n", LaserPP);
 			}
-			else if (strncmp(curr_node->name, "LaserDC",7) == 0)
+			else if (strncmp((const char*)curr_node->name, "LaserDC",7) == 0)
 			{
-				LaserDC = (UA_Float) atof(xmlNodeGetContent(curr_node));
+				LaserDC = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
 				//printf("LaserDC node found : %f\n", LaserDC);
 			}
-			else if (strncmp(curr_node->name, "SingleBeamAt900",15) == 0)
+			else if (strncmp((const char*)curr_node->name, "SingleBeamAt900",15) == 0)
 			{
-				SingleBeamAt900 = (UA_Float) atof(xmlNodeGetContent(curr_node));
+				SingleBeamAt900 = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
 				//printf("SingleBeamAt900 node found : %f\n", SingleBeamAt900);
 			}
-                        else if (strncmp(curr_node->name, "SingleBeamAt2500",16) == 0)
+                        else if (strncmp((const char*)curr_node->name, "SingleBeamAt2500",16) == 0)
                         {
-                                SingleBeamAt2500 = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                SingleBeamAt2500 = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("SingleBeamAt2500 node found : %f\n", SingleBeamAt2500);
                         }
-                        else if (strncmp(curr_node->name, "SignalToNoiseAt2500",19) == 0)
+                        else if (strncmp((const char*)curr_node->name, "SignalToNoiseAt2500",19) == 0)
                         {
-                                SignalToNoiseAt2500 = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                SignalToNoiseAt2500 = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("SignalToNoiseAt2500 node found : %d\n", SignalToNoiseAt2500);
                         }
-                        else if (strncmp(curr_node->name, "CenterBurstLocation",19) == 0)
+                        else if (strncmp((const char*)curr_node->name, "CenterBurstLocation",19) == 0)
                         {
-                                CenterBurstLocation = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                CenterBurstLocation = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("CenterBurstLocation node found : %f\n", CenterBurstLocation);
                         }
-			else if (strncmp(curr_node->name, "DetectorTemp",12) == 0)
+			else if (strncmp((const char*)curr_node->name, "DetectorTemp",12) == 0)
 			{
-				DetectorTemp = (UA_Float) atof(xmlNodeGetContent(curr_node));
+				DetectorTemp = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
 				//printf("DetectorTemp node found : %f\n", DetectorTemp);
 			}
-                        else if (strncmp(curr_node->name, "LaserFrequency",14) == 0)
+                        else if (strncmp((const char*)curr_node->name, "LaserFrequency",14) == 0)
                         {
-                                LaserFrequency = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                LaserFrequency = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("LaserFrequency node found : %f\n", LaserFrequency);
                         }
-                        else if (strncmp(curr_node->name, "HardDriveSpace",14) == 0)
+                        else if (strncmp((const char*)curr_node->name, "HardDriveSpace",14) == 0)
                         {
-                                HardDriveSpace = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                HardDriveSpace = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("HardDriveSpace node found : %d\n", HardDriveSpace);
                         }
-                        else if (strncmp(curr_node->name, "Flow",4) == 0)
+                        else if (strncmp((const char*)curr_node->name, "Flow",4) == 0)
                         {
-                                Flow = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                Flow = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("Flow node found : %f\n", Flow);
                         }
-                        else if (strncmp(curr_node->name, "Temperature",11) == 0)
+                        else if (strncmp((const char*)curr_node->name, "Temperature",11) == 0)
                         {
-                                Temperature = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                Temperature = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("Temperature node found : %f\n", Temperature);
                         }
-                        else if (strncmp(curr_node->name, "Pressure",8) == 0)
+                        else if (strncmp((const char*)curr_node->name, "Pressure",8) == 0)
                         {
-                                Pressure = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                Pressure = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("Pressure node found : %f\n", Pressure);
                         }
-                        else if (strncmp(curr_node->name, "TempOptics",10) == 0)
+                        else if (strncmp((const char*)curr_node->name, "TempOptics",10) == 0)
                         {
-                                TempOptics = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                TempOptics = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("TempOptics node found : %f\n", TempOptics);
                         }
-                        else if (strncmp(curr_node->name, "BadScanCounter",14) == 0)
+                        else if (strncmp((const char*)curr_node->name, "BadScanCounter",14) == 0)
                         {
-                                BadScanCounter = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                BadScanCounter = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("BadScanCounter node found : %d\n", BadScanCounter);
                         }
-                        else if (strncmp(curr_node->name, "FreeMemorySpace",15) == 0)
+                        else if (strncmp((const char*)curr_node->name, "FreeMemorySpace",15) == 0)
                         {
-                                FreeMemorySpace = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+                                FreeMemorySpace = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
                                 //printf("FreeMemorySpace node found : %d\n", FreeMemorySpace);
                         }
-                        else if (strncmp(curr_node->name, "LABFilename",11) == 0)
+                        else if (strncmp((const char*)curr_node->name, "LABFilename",11) == 0)
                         {
-                                strcpy(LABFilename, xmlNodeGetContent(curr_node));
+                                strcpy(LABFilename, (const char*)xmlNodeGetContent(curr_node));
                                 //printf("LABFilename node found : %s\n", LABFilename);
                         }
-                        else if (strncmp(curr_node->name, "LOGFilename",11) == 0)
+                        else if (strncmp((const char*)curr_node->name, "LOGFilename",11) == 0)
                         {
-                                strcpy(LOGFilename, xmlNodeGetContent(curr_node));
+                                strcpy(LOGFilename, (const char*)xmlNodeGetContent(curr_node));
                                 //printf("LOGFilename node found : %s\n", LOGFilename);
                         }
-                        else if (strncmp(curr_node->name, "LgFilename",10) == 0)
+                        else if (strncmp((const char*)curr_node->name, "LgFilename",10) == 0)
                         {
-                                strcpy(LgFilename, xmlNodeGetContent(curr_node));
+                                strcpy(LgFilename, (const char*)xmlNodeGetContent(curr_node));
                                 //printf("LgFilename node found : %s\n", LgFilename);
                         }
-                        else if (strncmp(curr_node->name, "SecondLgFilename",16) == 0)
+                        else if (strncmp((const char*)curr_node->name, "SecondLgFilename",16) == 0)
                         {
-                                strcpy(SecondLgFilename, xmlNodeGetContent(curr_node));
+                                strcpy(SecondLgFilename, (const char*)xmlNodeGetContent(curr_node));
                                 //printf("SecondLgFilename node found : %s\n", SecondLgFilename);
                         }
-                        else if (strncmp(curr_node->name, "SystemCounter",13) == 0)
+                        else if (strncmp((const char*)curr_node->name, "SystemCounter",13) == 0)
                         {
-                                SystemCounter = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                SystemCounter = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("SystemCounter node found : %f\n", SystemCounter);
                         }
-                        else if (strncmp(curr_node->name, "DetectorCounter",15) == 0)
+                        else if (strncmp((const char*)curr_node->name, "DetectorCounter",15) == 0)
                         {
-                                DetectorCounter = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                DetectorCounter = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("DetectorCounter node found : %f\n", DetectorCounter);
                         }
-                        else if (strncmp(curr_node->name, "LaserCounter",12) == 0)
+                        else if (strncmp((const char*)curr_node->name, "LaserCounter",12) == 0)
                         {
-                                LaserCounter = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                LaserCounter = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("LaserCounter node found : %f\n", LaserCounter);
                         }
-                        else if (strncmp(curr_node->name, "FlowPumpCounter",15) == 0)
+                        else if (strncmp((const char*)curr_node->name, "FlowPumpCounter",15) == 0)
                         {
-                                FlowPumpCounter = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                FlowPumpCounter = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("FlowPumpCounter node found : %f\n", FlowPumpCounter);
                         }
-                        else if (strncmp(curr_node->name, "DesiccantCounter",16) == 0)
+                        else if (strncmp((const char*)curr_node->name, "DesiccantCounter",16) == 0)
                         {
-                                DesiccantCounter = (UA_Float) atof(xmlNodeGetContent(curr_node));
+                                DesiccantCounter = (UA_Float) atof((const char*)xmlNodeGetContent(curr_node));
                                 //printf("DesiccantCounter node found : %f\n", DesiccantCounter);
                         }
 			//end <Diagnostic> section
-			else if (strncmp(curr_node->name, "Alarms",6) == 0)
+			else if (strncmp((const char*)curr_node->name, "Alarms",6) == 0)
 			{
 				// here only check the node <Data>-><Alarms>
 				// xmlNodeGetContent() : from libxml2
-				NoOfAlarmsNode = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+				NoOfAlarmsNode = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
 				NoOfAlarms = NoOfAlarmsNode;		// update to global variable
 					//printf("line 487 : NoOfAlarmsNode = %d, NodeName = %s \n", NoOfAlarmsNode, curr_node->name);
 
@@ -364,27 +367,27 @@ int ExtractXMLElementNames(xmlNode *a_node)
 
 						alarm_childnode = alarm_childnode->next; // jump over text
 						//printf("TAG: <%s> %s \n", alarm_childnode->name, (char *)xmlNodeGetContent(alarm_childnode));	// TAG
-						strncpy(arrayOfAlarm[i].Tag, xmlNodeGetContent(alarm_childnode), 254); // extract the value from node : <Tag>
+						strncpy(arrayOfAlarm[i].Tag, (const char*)xmlNodeGetContent(alarm_childnode), 64); // extract the value from node : <Tag>
 						alarm_childnode = alarm_childnode->next;
 
 						alarm_childnode = alarm_childnode->next; // jump over text
                                                 //printf("NAME: <%s> %s \n", alarm_childnode->name, (char *)xmlNodeGetContent(alarm_childnode));   // NAME
-                                                strncpy(arrayOfAlarm[i].Name, xmlNodeGetContent(alarm_childnode), 254); // extract the value from node  <Name>
+                                                strncpy(arrayOfAlarm[i].Name, (const char*)xmlNodeGetContent(alarm_childnode), 64); // extract the value from node  <Name>
                                                 alarm_childnode = alarm_childnode->next;
 
 						alarm_childnode = alarm_childnode->next; // jump over text
                                                 //printf("PROBABILITY: <%s> %f \n", alarm_childnode->name, (UA_Float)atof(xmlNodeGetContent(alarm_childnode)));
-                                                arrayOfAlarm[i].Probability, (float)atof(xmlNodeGetContent(alarm_childnode)); // extract the value from node : <Probability>
+                                                arrayOfAlarm[i].Probability = (float)atof((const char*)xmlNodeGetContent(alarm_childnode)); // extract the value from node : <Probability>
                                                 alarm_childnode = alarm_childnode->next;
 
 						alarm_childnode = alarm_childnode->next; // jump over text
                                                 //printf("CASnumber: <%s> %s \n", alarm_childnode->name, (char *)xmlNodeGetContent(alarm_childnode));   // CASnumber
-                                                strncpy(arrayOfAlarm[i].CASnumber, (char *)xmlNodeGetContent(alarm_childnode), 254); // extract the value from node : <CASnumber>
+                                                strncpy(arrayOfAlarm[i].CASnumber, (const char *)xmlNodeGetContent(alarm_childnode), 64); // extract the value from node : <CASnumber>
                                                 alarm_childnode = alarm_childnode->next;
 
 						alarm_childnode = alarm_childnode->next; // jump over text
                                                 //printf("CONCENTRATION: <%s> %d \n", alarm_childnode->name, (int)atoi(xmlNodeGetContent(alarm_childnode)));   // Concentration
-                                                arrayOfAlarm[i].Concentration =(int)atoi( xmlNodeGetContent(alarm_childnode)); // extract the value from node : <AlarmConcentration>
+                                                arrayOfAlarm[i].Concentration =(int)atoi((const char*) xmlNodeGetContent(alarm_childnode)); // extract the value from node : <AlarmConcentration>
 						//printf("===================================\n");
 
 						if ((i+1) < NoOfAlarmsNode)
@@ -407,11 +410,11 @@ int ExtractXMLElementNames(xmlNode *a_node)
 				}
 				else printf("Did not enter IF loop (Alarms)\n");
 			}
-			else if (strncmp(curr_node->name, "NonAlarms",9) == 0)
+			else if (strncmp((const char*)curr_node->name, "NonAlarms",9) == 0)
 			{
 				// here only check the node <Data>-><NonAlarms>
 				// xmlNodeGetContent() : from libxml2
-				NoOfNonAlarmsNode = (UA_Int16) atoi(xmlNodeGetContent(curr_node));
+				NoOfNonAlarmsNode = (UA_Int16) atoi((const char*)xmlNodeGetContent(curr_node));
 				NoOfNonAlarms = NoOfNonAlarmsNode;            // update to global variable
 					//printf("line 578 : NoOfNonAlarmsNode = %d, NodeName = %s \n", NoOfNonAlarmsNode, curr_node->name);
 
@@ -445,27 +448,27 @@ int ExtractXMLElementNames(xmlNode *a_node)
 
 						nonalarm_childnode = nonalarm_childnode->next; // jump over text
 						//printf("TAG: <%s> %s \n", nonalarm_childnode->name, (char *)xmlNodeGetContent(nonalarm_childnode));           // TAG
-						strncpy(arrayOfNonAlarm[i].Tag, xmlNodeGetContent(nonalarm_childnode), 254);  // extract the value from node : <Tag>
+						strncpy(arrayOfNonAlarm[i].Tag, (const char*)xmlNodeGetContent(nonalarm_childnode), 64);  // extract the value from node : <Tag>
 						nonalarm_childnode = nonalarm_childnode->next;
 
 						nonalarm_childnode = nonalarm_childnode->next; // jump over text
 						//printf("NAME: <%s> %s \n", nonalarm_childnode->name, (char *)xmlNodeGetContent(nonalarm_childnode));          // NAME
-						strncpy(arrayOfNonAlarm[i].Name, (char*) xmlNodeGetContent(nonalarm_childnode), 254); // extract the value from node : <Name>
+						strncpy(arrayOfNonAlarm[i].Name, (const char*) xmlNodeGetContent(nonalarm_childnode), 64); // extract the value from node : <Name>
 						nonalarm_childnode = nonalarm_childnode->next;
 
 						nonalarm_childnode = nonalarm_childnode->next; // jump over text
 						//printf("PROBABILITY: <%s> %f \n", nonalarm_childnode->name, (UA_Float)atof(xmlNodeGetContent(nonalarm_childnode))); 
-						arrayOfNonAlarm[i].Probability =(float) atof(xmlNodeGetContent(nonalarm_childnode)); 
+						arrayOfNonAlarm[i].Probability =(float) atof((const char*)xmlNodeGetContent(nonalarm_childnode)); 
 						nonalarm_childnode = nonalarm_childnode->next;
 
 						nonalarm_childnode = nonalarm_childnode->next; // jump over text
 						//printf("CASnumber: <%s> %s \n", nonalarm_childnode->name, (char *)xmlNodeGetContent(nonalarm_childnode));             // CASnumber
-						strncpy(arrayOfNonAlarm[i].CASnumber, (char*) xmlNodeGetContent(nonalarm_childnode), 254);            // extract the value from node : <CASnumber>
+						strncpy(arrayOfNonAlarm[i].CASnumber, (const char*) xmlNodeGetContent(nonalarm_childnode), 64);            // extract the value from node : <CASnumber>
 						nonalarm_childnode = nonalarm_childnode->next;
 
 						nonalarm_childnode = nonalarm_childnode->next; // jump over text
 						//printf("CONCENTRATION: <%s> %d \n", nonalarm_childnode->name, (int)atoi(xmlNodeGetContent(nonalarm_childnode)));              // Concentration
-						arrayOfNonAlarm[i].Concentration = (int)atoi(xmlNodeGetContent(nonalarm_childnode));
+						arrayOfNonAlarm[i].Concentration = (int)atoi((const char*)xmlNodeGetContent(nonalarm_childnode));
 						//printf("=======================================\n");
 
 						if ((i+1) < NoOfNonAlarmsNode)
@@ -491,6 +494,7 @@ int ExtractXMLElementNames(xmlNode *a_node)
 		}
 	}
 
+	return 0;
     //printf("============================================================\n");
     //printf("Leaving ExtractXMLElementNames() \n");
     //printf("============================================================\n");

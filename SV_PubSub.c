@@ -4,8 +4,9 @@
 #include "json5.h"
 #endif
 
+#ifdef almagamation
 #include <open62541/types_generated.h>
-//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
 #include <open62541/plugin/pubsub_udp.h>
 #include <open62541/plugin/pubsub_ethernet.h>
 #include <open62541/plugin/securitypolicy_default.h>
@@ -18,6 +19,10 @@
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
+#else
+   #include "open62541.h"
+#endif
+
 
 #include "json_checker.h"
 #include <json-c/json.h>	// https://json-c.github.io/json-c; install in /usr/local/include/

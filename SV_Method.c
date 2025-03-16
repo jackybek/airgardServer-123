@@ -1,4 +1,4 @@
-//#include "open62541.h"
+#ifdef almagamation
 //#include <xml.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
@@ -6,6 +6,9 @@
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
 #include <libxml2/libxml/xmlreader.h>
+#else
+  #include "open62541.h"
+#endif
 
 //#include "myNewServer.h"
 //#include "myNewMethod.h"
@@ -140,14 +143,13 @@ UA_StatusCode GetInstrumentTimeMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10101), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(InstrumentTime);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
 
-    //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetInstrumentTimeMethodCallback was called");
+    //UA_String tmp = UA_STRING_ALLOC(InstrumentTime);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
+
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetInstrumentTimeMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
 }
 
 UA_StatusCode GetMeasurementTimeMethodCallback(UA_Server *server,
@@ -160,14 +162,14 @@ UA_StatusCode GetMeasurementTimeMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10102), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(MeasurementTime);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(MeasurementTime);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetMeasurementTimeMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetBootStatusMethodCallback(UA_Server *server,
@@ -180,14 +182,14 @@ UA_StatusCode GetBootStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10211), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(BootStatus);
-    UA_Variant_setScalarCopy(output, &BootStatus, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(BootStatus);
+    //UA_Variant_setScalarCopy(output, &BootStatus, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetBootStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSnapshotStatusMethodCallback(UA_Server *server,
@@ -200,14 +202,14 @@ UA_StatusCode GetSnapshotStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10212), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(SnapshotStatus);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(SnapshotStatus);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetSnapshotStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSCPStatusMethodCallback(UA_Server *server,
@@ -220,14 +222,14 @@ UA_StatusCode GetSCPStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10213), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(SCPStatus);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(SCPStatus);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetSCPStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSFTPStatusMethodCallback(UA_Server *server,
@@ -240,14 +242,14 @@ UA_StatusCode GetSFTPStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10214), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(SFTPStatus);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(SFTPStatus);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetSFTStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetRunScriptStatusMethodCallback(UA_Server *server,
@@ -260,14 +262,14 @@ UA_StatusCode GetRunScriptStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10215), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(RunScriptStatus);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(RunScriptStatus);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetRunScriptStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetArchiveStatusMethodCallback(UA_Server *server,
@@ -280,14 +282,14 @@ UA_StatusCode GetArchiveStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10216), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(ArchiveStatus);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(ArchiveStatus);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetArchiveStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -301,14 +303,14 @@ UA_StatusCode GetAncillarySensorStatusMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10217), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(AncillarySensorStatus);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(AncillarySensorStatus);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetAncillaryStatusMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -322,14 +324,14 @@ UA_StatusCode GetSensorMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10201), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(Sensor);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(Sensor);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetSensorMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -344,12 +346,12 @@ UA_StatusCode GetOperatingTimeMethodCallback(UA_Server *server,
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10202), output);
 
-/*
-    UA_Variant_setScalarCopy(output, &OperatingTime, &UA_TYPES[UA_TYPES_INT16]);      // global var$
+
+    //UA_Variant_setScalarCopy(output, &OperatingTime, &UA_TYPES[UA_TYPES_INT16]);      // global var$
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetOperatingTimeMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -363,14 +365,14 @@ UA_StatusCode GetWarningMessageMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10203), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(WarningMessage);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
-    UA_String_clear(&tmp);
 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetWarningMessageMethodCallback was called");
+    //UA_String tmp = UA_STRING_ALLOC(WarningMessage);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global var$
+    //UA_String_clear(&tmp);
+
+    //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetWarningMessageMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -384,12 +386,12 @@ UA_StatusCode GetIgramPPMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10301), output);
-/*
-    UA_Variant_setScalarCopy(output, &IgramPP, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &IgramPP, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetIgramPPMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetIgramDCMethodCallback(UA_Server *server,
@@ -402,12 +404,12 @@ UA_StatusCode GetIgramDCMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10302), output);
-/*
-    UA_Variant_setScalarCopy(output, &IgramDC, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &IgramDC, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetIgramPPMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetLaserPPMethodCallback(UA_Server *server,
@@ -420,12 +422,12 @@ UA_StatusCode GetLaserPPMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10303), output);
-/*
-    UA_Variant_setScalarCopy(output, &LaserPP, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &LaserPP, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetIgramPPMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetLaserDCMethodCallback(UA_Server *server,
@@ -438,12 +440,12 @@ UA_StatusCode GetLaserDCMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10304), output);
-/*
-    UA_Variant_setScalarCopy(output, &LaserDC, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &LaserDC, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
 
     //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "GetIgramPPMethodCallback was called");
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSingleBeamAt900MethodCallback(UA_Server *server,
@@ -456,10 +458,10 @@ UA_StatusCode GetSingleBeamAt900MethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10305), output);
-/*
-    UA_Variant_setScalarCopy(output, &SingleBeamAt900, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &SingleBeamAt900, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSingleBeamAt2500MethodCallback(UA_Server *server,
@@ -472,10 +474,10 @@ UA_StatusCode GetSingleBeamAt2500MethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10306), output);
-/*
-    UA_Variant_setScalarCopy(output, &SingleBeamAt2500, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &SingleBeamAt2500, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSignalToNoiseAt2500MethodCallback(UA_Server *server,
@@ -488,10 +490,10 @@ UA_StatusCode GetSignalToNoiseAt2500MethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10307), output);
-/*
-    UA_Variant_setScalarCopy(output, &SignalToNoiseAt2500, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &SignalToNoiseAt2500, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetCenterBurstLocationMethodCallback(UA_Server *server,
@@ -504,10 +506,10 @@ UA_StatusCode GetCenterBurstLocationMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10308), output);
-/*
-    UA_Variant_setScalarCopy(output, &CenterBurstLocation, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &CenterBurstLocation, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetDetectorTempMethodCallback(UA_Server *server,
@@ -521,10 +523,10 @@ UA_StatusCode GetDetectorTempMethodCallback(UA_Server *server,
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
 
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10309), output);
-/*
-    UA_Variant_setScalarCopy(output, &DetectorTemp, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &DetectorTemp, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetLaserFrequencyMethodCallback(UA_Server *server,
@@ -537,10 +539,10 @@ UA_StatusCode GetLaserFrequencyMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10310), output);
-/*
-    UA_Variant_setScalarCopy(output, &LaserFrequency, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &LaserFrequency, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetHardDriveSpaceMethodCallback(UA_Server *server,
@@ -553,10 +555,10 @@ UA_StatusCode GetHardDriveSpaceMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10311), output);
-/*
-    UA_Variant_setScalarCopy(output, &HardDriveSpace, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &HardDriveSpace, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetFlowMethodCallback(UA_Server *server,
@@ -569,10 +571,10 @@ UA_StatusCode GetFlowMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10312), output);
-/*
-    UA_Variant_setScalarCopy(output, &Flow, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &Flow, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetTemperatureMethodCallback(UA_Server *server,
@@ -585,10 +587,10 @@ UA_StatusCode GetTemperatureMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10313), output);
-/*
-    UA_Variant_setScalarCopy(output, &Temperature, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &Temperature, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetPressureMethodCallback(UA_Server *server,
@@ -601,10 +603,10 @@ UA_StatusCode GetPressureMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10314), output);
-/*
-    UA_Variant_setScalarCopy(output, &Pressure, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &Pressure, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetTempOpticsMethodCallback(UA_Server *server,
@@ -617,10 +619,10 @@ UA_StatusCode GetTempOpticsMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10315), output);
-/*
-    UA_Variant_setScalarCopy(output, &TempOptics, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &TempOptics, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetBadScanCounterMethodCallback(UA_Server *server,
@@ -633,10 +635,10 @@ UA_StatusCode GetBadScanCounterMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10316), output);
-/*
-    UA_Variant_setScalarCopy(output, &BadScanCounter, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &BadScanCounter, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetFreeMemorySpaceMethodCallback(UA_Server *server,
@@ -649,10 +651,10 @@ UA_StatusCode GetFreeMemorySpaceMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10317), output);
-/*
-    UA_Variant_setScalarCopy(output, &FreeMemorySpace, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &FreeMemorySpace, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -666,12 +668,12 @@ UA_StatusCode GetLABFilenameMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10318), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(LABFilename);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(LABFilename);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
+    //UA_String_clear(&tmp);
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetLOGFilenameMethodCallback(UA_Server *server,
@@ -684,12 +686,12 @@ UA_StatusCode GetLOGFilenameMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10319), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(LOGFilename);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(LOGFilename);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
+    //UA_String_clear(&tmp);
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetLgFilenameMethodCallback(UA_Server *server,
@@ -702,12 +704,12 @@ UA_StatusCode GetLgFilenameMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10320), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(LgFilename);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(LgFilename);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
+    //UA_String_clear(&tmp);
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSecondLgFilenameMethodCallback(UA_Server *server,
@@ -720,12 +722,12 @@ UA_StatusCode GetSecondLgFilenameMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10321), output);
-/*
-    UA_String tmp = UA_STRING_ALLOC(SecondLgFilename);
-    UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
-    UA_String_clear(&tmp);
+
+    //UA_String tmp = UA_STRING_ALLOC(SecondLgFilename);
+    //UA_Variant_setScalarCopy(output, &tmp, &UA_TYPES[UA_TYPES_STRING]);      // global variable
+    //UA_String_clear(&tmp);
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetSystemCounterMethodCallback(UA_Server *server,
@@ -738,10 +740,10 @@ UA_StatusCode GetSystemCounterMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10322), output);
-/*
-    UA_Variant_setScalarCopy(output, &SystemCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &SystemCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetDetectorCounterMethodCallback(UA_Server *server,
@@ -754,10 +756,10 @@ UA_StatusCode GetDetectorCounterMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10323), output);
-/*
-    UA_Variant_setScalarCopy(output, &DetectorCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &DetectorCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetLaserCounterMethodCallback(UA_Server *server,
@@ -770,10 +772,10 @@ UA_StatusCode GetLaserCounterMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10324), output);
-/*
-    UA_Variant_setScalarCopy(output, &LaserCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &LaserCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetFlowPumpCounterMethodCallback(UA_Server *server,
@@ -786,10 +788,10 @@ UA_StatusCode GetFlowPumpCounterMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10325), output);
-/*
-    UA_Variant_setScalarCopy(output, &FlowPumpCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &FlowPumpCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetDesiccantCounterMethodCallback(UA_Server *server,
@@ -802,10 +804,10 @@ UA_StatusCode GetDesiccantCounterMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10326), output);
-/*
-    UA_Variant_setScalarCopy(output, &DesiccantCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &DesiccantCounter, &UA_TYPES[UA_TYPES_FLOAT]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 
@@ -819,10 +821,10 @@ UA_StatusCode GetNoOfAlarmsMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10401), output);
-/*
-    UA_Variant_setScalarCopy(output, &NoOfAlarms, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &NoOfAlarms, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetArrayOfAlarmMethodCallback(UA_Server *server,
@@ -832,9 +834,7 @@ UA_StatusCode GetArrayOfAlarmMethodCallback(UA_Server *server,
                          size_t inputSize, const UA_Variant *input,
                          size_t outputSize, UA_Variant *output)
 {
-    int retval = 0;
-
-    retval = UA_Variant_setScalarCopy(output, &arrayOfAlarm, &UA_TYPES[UA_TYPES_VARIANT]);      // global variable
+    UA_Variant_setScalarCopy(output, &arrayOfAlarm, &UA_TYPES[UA_TYPES_VARIANT]);      // global variable
     //printf("retval from setScalarCopy : %d \n", retval);
     //sleep(3);
 
@@ -852,10 +852,10 @@ UA_StatusCode GetNoOfNonAlarmsMethodCallback(UA_Server *server,
     size_t namespaceIndex;
     UA_Server_getNamespaceByName(server, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
     UA_Server_readValue(server, UA_NODEID_NUMERIC(namespaceIndex, 10402), output);
-/*
-    UA_Variant_setScalarCopy(output, &NoOfNonAlarms, &UA_TYPES[UA_TYPES_INT16]);      // global variable
+
+    //UA_Variant_setScalarCopy(output, &NoOfNonAlarms, &UA_TYPES[UA_TYPES_INT16]);      // global variable
     return UA_STATUSCODE_GOOD;
-*/
+
 }
 
 UA_StatusCode GetArrayOfNonAlarmMethodCallback(UA_Server *server,
@@ -866,9 +866,7 @@ UA_StatusCode GetArrayOfNonAlarmMethodCallback(UA_Server *server,
                          size_t outputSize, UA_Variant *output)
 
 {
-    int retval = 0;
-
-    retval = UA_Variant_setScalarCopy(output, &arrayOfNonAlarm, &UA_TYPES[UA_TYPES_VARIANT]);      // global variable
+    UA_Variant_setScalarCopy(output, &arrayOfNonAlarm, &UA_TYPES[UA_TYPES_VARIANT]);      // global variable
     //printf("retval from setScalarCopy : %d \n", retval);
 
     return UA_STATUSCODE_GOOD;
@@ -883,11 +881,12 @@ UA_StatusCode ClearAlarmLEDMethodCallback(UA_Server *server,
                          size_t outputSize, UA_Variant *output)
 {
 	// uses command_sockfd : port 10004
-	char cmdbuffer[255],respbuffer[255];
-	char header[255];
-	char response[255];
-	char footer[255];
-	int numbytes;
+	char cmdbuffer[255];
+	//char respbuffer[255];
+	//char header[255];
+	//char response[255];
+	//char footer[255];
+	//int numbytes;
 	int retval;
 
 	//sprintf(cmdbuffer, "<Command name='ClearAlarmLED' originator='OPCUA'></Command>"); // no effect : <Command name='ClearAlarmLED' originator='OPCUA'></Command>
@@ -2213,7 +2212,7 @@ void addGetArrayOfAlarmMethod(UA_Server *server, UA_NodeId parent)
     getArrayOfAlarmAttr.displayName = UA_LOCALIZEDTEXT("en-US","GetArrayOfAlarm");
     getArrayOfAlarmAttr.executable = UA_TRUE;
     getArrayOfAlarmAttr.userExecutable = UA_TRUE;
-    int retval = UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(namespaceIndex,62569),
+    UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(namespaceIndex,62569),
                             parent,                     //UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
                             UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
                             UA_QUALIFIEDNAME(namespaceIndex, "GetArrayOfAlarm"),
@@ -2273,7 +2272,7 @@ void addGetArrayOfNonAlarmMethod(UA_Server *server, UA_NodeId parent)
     getArrayOfAlarmAttr.displayName = UA_LOCALIZEDTEXT("en-US","GetArrayOfNonAlarm");
     getArrayOfAlarmAttr.executable = UA_TRUE;
     getArrayOfAlarmAttr.userExecutable = UA_TRUE;
-    int retval = UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(namespaceIndex,62571),
+    UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(namespaceIndex,62571),
                             parent,                     //UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
                             UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
                             UA_QUALIFIEDNAME(namespaceIndex, "GetArrayOfNonAlarm"),

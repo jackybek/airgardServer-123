@@ -34,10 +34,14 @@ json_checker.c SV_PubSub.c SV_mainOPCUAServer.c -o myAndroidServer >& error-msg
 
 #endif
 
-//#include "open62541.h"
+#ifdef almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+   #include "open62541.h"
+#endif
+
 #include <stdio.h>
 #include <mariadb/mysql.h>
 #include <sys/types.h>

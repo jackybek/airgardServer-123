@@ -1,16 +1,16 @@
-//#include "open62541.h"
+#ifdef almagamation
 #include <libwebsockets.h>
-#include <open62541/plugin/log_stdout.h>
-#include <open62541/server.h>
-#include <open62541/server_config_default.h>
 #include <signal.h>
 #if defined(WIN32)
- #define HAVE_STRUCT_TIMESPEC
- #if defined(pid_t)
-  #undef pid_t
- #endif
+#define HAVE_STRUCT_TIMESPEC
+#if defined(pid_t)
+#undef pid_t
+#endif
 #endif
 #include <pthread.h>
+#else
+  #include "open62541.h"
+#endif
 
 #ifdef UA_ENABLE_WEBSOCKET_SERVER
  #define TRANSPORT_PROFILE_URI_WSSBIN   "http://opcfoundation.org/UA_Profile/Transport/wss-uasc-uabinary"
