@@ -1,13 +1,18 @@
-//#include "open62541.h"
+#ifdef almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#else
+  #include "open62541.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include "SV_NewMethod.h"
 #include "SV_NewMonitor.h"
 #include <mariadb/mysql.h>
 //#include "AG_NewPubSub.h"
+
 #define MAX_BUFFER_SIZE 20000
 #define MAX_STRING_SIZE 64
 //#define DEBUG
@@ -140,6 +145,9 @@ static void WriteIgramDC(UA_Server *uaServer,
 //UA_NodeId CreateOPCUANodes(void* x_void_ptr);
 
 //void* CreateAndPopulateNodes(void* x_void_ptr)
+
+UA_NodeId *NodeId;
+
 UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
 {
 /*
@@ -198,11 +206,11 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
     int XMLAlarms = 0;
     int XMLNonAlarms = 0;
 */
-    int numbytes;
-    char buffer[MAX_BUFFER_SIZE];
-    struct hostent* he;
+    //int numbytes;
+    //char buffer[MAX_BUFFER_SIZE];
+    //struct hostent* he;
     //struct sockaddr_in airgard_addr;        /* connector's address information */
-    int counter = 0;
+    //int counter = 0;
     UA_StatusCode retval;
 
     /*
@@ -303,7 +311,7 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
     //----------------------------------------------------- Subtree: Airgard->Software Version (1,10000)
 
         // variable
-	UA_NodeId SoftwareVersionVariableType = UA_NODEID_NULL;
+	//UA_NodeId SoftwareVersionVariableType = UA_NODEID_NULL;
         UA_VariableAttributes vSoftwareVersionAttr = UA_VariableAttributes_default;
         vSoftwareVersionAttr.description = UA_LOCALIZEDTEXT("en-US", "Software Version Info");
         vSoftwareVersionAttr.displayName = UA_LOCALIZEDTEXT("en-US", "1. Software Version");
@@ -349,7 +357,7 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
 	//=======================================================
 
         // variable
-	UA_NodeId DataBlockVersionVariableType = UA_NODEID_NULL;
+	//UA_NodeId DataBlockVersionVariableType = UA_NODEID_NULL;
         UA_VariableAttributes vDataBlockVersionAttr = UA_VariableAttributes_default;
         vDataBlockVersionAttr.description = UA_LOCALIZEDTEXT("en-US", "Data Block Version Info");
         vDataBlockVersionAttr.displayName = UA_LOCALIZEDTEXT("en-US", "2. Data Block Version");
@@ -444,7 +452,7 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
        	    vMeasurementTimeAttr, NULL, &outMeasurementTime_Id);
        	if (retval != UA_STATUSCODE_GOOD)
        	    UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-              	"Error creating node : Measurement Time 10102: %S", UA_StatusCode_name(retval));
+              	"Error creating node : Measurement Time 10102: %s", UA_StatusCode_name(retval));
 	#ifdef DEBUG
        	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
@@ -1624,7 +1632,6 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
                 "Object Node created : Airgard->Events Node");
 	#endif
 
-	UA_NodeId *NodeId;
 	NodeId = calloc (2, sizeof(UA_NodeId));
 	NodeId[0] = r2_airgard_method_Id;
 	NodeId[1] = r2_airgard_event_Id;
@@ -1633,6 +1640,7 @@ UA_NodeId* CreateOPCUANodes(void* x_void_ptr)
     	//return (r2_airgard_method_Id);
 
     } // end if
-
+    else
+        return NodeId;
 
 } // End CreateOPCUANodes()
