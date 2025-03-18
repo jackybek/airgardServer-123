@@ -282,6 +282,8 @@ UA_NodeId* createNodes(void* x_void_ptr)
          * |   + (V) NonAlarms (30000)
         */
 
+	UA_LOG_INFO(UA_Log_Stdout,UA_LOGCATEGORY_USERLAND,
+	("=========================================================="));
         UA_LOG_INFO(UA_Log_Stdout,UA_LOGCATEGORY_USERLAND,
 	("--------SV_CreateNodes.c : Begin the process of instantiation OPC UA Tree structure"));
 

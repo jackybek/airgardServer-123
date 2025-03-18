@@ -17,25 +17,31 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 {
         UA_StatusCode status;
 
-        UA_ServerConfig_setMinimal(config, 4840, NULL);
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Entering encryptServer() function"); 
         //UA_ServerConfig *config = UA_Server_getConfig(uaSvrServer);
-
         const char *env_sslcertificateloc = getenv("SVR_SSLCERTIFICATELOC");	// export SVR_SSLCERTIFICATELOC /usr/local/ssl/certs
         UA_ByteString certificate = loadFile(env_sslcertificateloc);
         const char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");		// export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
         UA_ByteString privateKey = loadFile(env_privatekeyloc);
+	const char *env_SVRport = getenv("SVR_PORT");
+
+        UA_ServerConfig_setMinimal(config, atoi(env_SVRport), NULL);
 
         if (certificate.length == 0)
                 UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot find SSL certificate %s", env_sslcertificateloc);
+	else
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded SSL certificate %s", env_sslcertificateloc);
         if (privateKey.length == 0)
                  UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot find SSL private key %s", env_privatekeyloc);
+	else
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded SSL private key %s", env_privatekeyloc);
 
        // Load trustlist
         //UA_ByteString *trustList = (UA_ByteString *)UA_Array_new(1, &UA_TYPES[UA_TYPES_BYTESTRING]);
         //UA_ByteString_copy(&certificate, &trustList[0]);
         UA_ByteString *trustList = NULL;
         size_t trustListSize = 0;
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded LDS trustlist");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded trustlist");
         // Loading of a issuer list, not used in this application
         UA_ByteString *issuerList = NULL;
         size_t issuerListSize = 0;

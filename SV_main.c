@@ -224,21 +224,24 @@ int main(int argc, char *argv[])
 
 	if (strncmp(argv[6],"pub", 3) == 0)
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_main.c : pub section");
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "=========================================================="); 
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_main.c : pub sections");
 		//createPublishUADP(server);
 		//createPublishMQTT(server);
 		//createPublishAMQP(server);
 	}
 	else if (strncmp(argv[6],"sub", 3) == 0)
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_main.c : sub section");
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "==========================================================");
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_main.c : sub sections");
 		//createSubscribeUADP(server);
 		//createSubscribeMQTT(server);
 		//createSubscribeAMQP(server);
 	}
-	else if (strncmp(argv[6], "pubsub", 6) == 0)
+	else if (strncmp(argv[6], "both", 4) == 0)
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_main.c : pubsub section"); 
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "==========================================================");
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_main.c : pub and sub sections"); 
 		//createPublishUADP(server);
                 //createPublishMQTT(server);
                 //createPublishAMQP(server);

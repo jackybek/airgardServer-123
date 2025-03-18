@@ -170,6 +170,8 @@ void GetHistoryDBConnection()
 	const char *env_sqldatabase = getenv("SVR_SQL_DATABASE");
 	const char *env_sqlport = getenv("SVR_SQL_PORT");
 
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"==========================================================");
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Establishing connection to Historian database .........");
                 conn = mysql_init(NULL);
 		//char errmessage[255];
                 if (conn == NULL)
@@ -1105,7 +1107,7 @@ void createHistorizingItems(UA_Server *server)
 		//#endif
 		}
 
-
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : Completed Historizing routine");
 }
 
 

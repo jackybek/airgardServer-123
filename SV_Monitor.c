@@ -443,6 +443,10 @@ void addMonitoredItemToEvent(UA_Server *server, UA_NodeId outEvent_Id)
 
 void createMonitoredItems(UA_Server *server)
 {
+        UA_LOG_INFO(UA_Log_Stdout,UA_LOGCATEGORY_USERLAND,
+        ("=========================================================="));
+	        UA_LOG_INFO(UA_Log_Stdout,UA_LOGCATEGORY_USERLAND,
+        ("--------SV_Monitor.c : Add monitoring items in progress ..."));
         addMonitoredItemToSoftwareVersionVariable(server);	// 1
         addMonitoredItemToDataBlockVersionVariable(server);	// 2
         addMonitoredItemToInstrumentTimeVariable(server);	// 3

@@ -85,7 +85,7 @@ UA_DURATIONRANGE(UA_Duration min, UA_Duration max) {
 }
 
 
-void registerToLDS(UA_Server *uaServer1, char* lds_endpoint)
+void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
 {
         UA_StatusCode retval;
 
@@ -131,10 +131,23 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint)
                 size_t LDSrevocationListSize = 0;
 
                 UA_Client *LDSclient = UA_Client_new();
+		const char *env_LDSport = getenv("LDS_PORT");
+		char lds_endpoint[100];
+		//printf("1 : %s, %d \n", lds_endpoint_A, strlen(lds_endpoint_A));
+		int index = strlen(lds_endpoint_A);
+		strncpy(lds_endpoint, lds_endpoint_A, strlen(lds_endpoint_A));
+		lds_endpoint[index]= ':';
+		strcpy(&lds_endpoint[index+1], env_LDSport);
+		//printf("2 : %s, %d \n", lds_endpoint, strlen(lds_endpoint));
+
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : successfully assembled lds endpoint url : %s", lds_endpoint);
+
                 UA_ClientConfig *LDSClient_config1 = UA_Client_getConfig(LDSclient);
                 //UA_ClientConfig_setDefault(UA_Client_getConfig(LDSclient));
                 //UA_ClientConfig_setDefault(LDSClient_config1);
                 LDSClient_config1->localConnectionConfig = UA_ConnectionConfig_default;
+
+		LDSClient_config1->endpointUrl = UA_STRING_ALLOC(lds_endpoint);
 
                 UA_ApplicationDescription_clear(&LDSClient_config1->clientDescription);
                 LDSClient_config1->clientDescription.applicationUri = UA_STRING_ALLOC(DISCOVERY_SERVER_APPLICATION_URI);
@@ -178,9 +191,10 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint)
                 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Successfully encrypted Svr with LDS certificates as LDS Client");
 		}
 
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Just about to call UA_Client_connectUsername() at line 564");
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : credentials are %s %s %s",lds_endpoint, DISCOVERY_USERNAME, DISCOVERY_PASSWORD);
+		const char* env_lds_username = getenv("SVR_LDS_USERNAME");
+		const char* env_lds_password = getenv("SVR_LDS_PASSWORD");
 
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Trying to connect to LDS server %s using %s %s", lds_endpoint, env_lds_username, env_lds_password);
                 retval = UA_Client_connectUsername(LDSclient, lds_endpoint, DISCOVERY_USERNAME, DISCOVERY_PASSWORD);
 
 
@@ -192,7 +206,7 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint)
                         //goto cleanup;
                         return;
                 }
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : UA_LDS_connectUsername() : success");
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : Successfully connected to LDS %s", lds_endpoint);
 
 		// register the server to LDS
 		UA_StatusCode LDS_retval =  UA_Server_registerDiscovery(uaServer1, LDSClient_config1,
