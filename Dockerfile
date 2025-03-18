@@ -244,4 +244,5 @@ RUN export SVR_APPLICATION_URI_SERVER="svr.virtualskies.com.sg"
 RUN export SVR_APPLICATION_NAME="OPC UA Server based on open62541"
 RUN export SVR_PRIVATEKEYLOC="/usr/local/ssl/private/Svrprivate-key.pem"
 RUN export SVR_SSLCERTIFICATELOC="/usr/local/ssl/certs/Svrcert.pem"
+RUN export SVR_SQLCONNECTION_IP="192.168.1.127"
 
