@@ -232,3 +232,16 @@ RUN export open62541_NODESET_DIR='/root/open62541/deps/ua-nodeset/Schema/'
 VOLUME /usr/local/ssl/certs
 VOLUME /usr/local/ssl/private
 # VOLUME /usr/local/ssl/trustlist/trustlist.crl
+
+
+##########################################
+# -- build the user-defined application
+##########################################
+RUN export SVR_PRODUCT_URI="http://svr.virtualskies.com.sg"
+RUN export SVR_MANUFACTURER_NAME="Virtual Skies"
+RUN export SVR_PRODUCT_NAME="Virtual Skies OPC UA Server"
+RUN export SVR_APPLICATION_URI_SERVER="svr.virtualskies.com.sg"
+RUN export SVR_APPLICATION_NAME="OPC UA Server based on open62541"
+RUN export SVR_PRIVATEKEYLOC="/usr/local/ssl/private/Svrprivate-key.pem"
+RUN export SVR_SSLCERTIFICATELOC="/usr/local/ssl/certs/Svrcert.pem"
+
