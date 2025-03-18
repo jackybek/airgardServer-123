@@ -21,8 +21,11 @@
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
+   #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_ENCRYPTION
+   #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
 #endif
-
+#include "SV_PubSub.h"
 
 #include "json_checker.h"
 #include <json-c/json.h>	// https://json-c.github.io/json-c; install in /usr/local/include/
@@ -33,8 +36,7 @@
 #include <string.h>
 #include <signal.h>
 #include <time.h>
-
-char* itoa(int num, char* str, int base);
+#include "SV_PubSub.h"
 
 #define MAX_STRING_SIZE 64
 #define APPLICATION_URI "urn:virtualskies.com.sg"
@@ -195,13 +197,14 @@ static UA_NodeId publishedDataSetIdentifier;
 static UA_NodeId writerGroupIdentifier;
 
 //void CreateServerPubSub(UA_Server *, char *, UA_Int16);
+/*
 void CreateServerPubSub(UA_Server *, char *, int, char *);
 static void addPubSubConnection(UA_Server *, UA_String *, UA_NetworkAddressUrlDataType *);
 static void addPublishedDataSet(UA_Server *);
 static void addDataSetField(UA_Server *);
 static void addWriterGroup(UA_Server *);
 static void addDataSetWriter(UA_Server *);
-
+*/
 
 // Subscriber section variables & functions
 UA_DataSetReaderConfig dataSetReaderConfig;
@@ -209,11 +212,15 @@ UA_NodeId readerGroupIdentifier;
 UA_NodeId readerIdentifier;
 UA_NodeId reader2Id;
 
+/*
 static UA_StatusCode addReaderGroup(UA_Server *uaServer);
 static UA_StatusCode addDataSetReader(UA_Server *uaServer);
 static UA_StatusCode addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId);
 static void fillDataSetMetaData(UA_DataSetMetaDataType *pMetaData);
 static void pubSubStateChangeCallback(UA_NodeId *pubsubComponentId, UA_PubSubState state, UA_StatusCode code);
+*/
+
+/*
 static UA_StatusCode
 pubSubComponent_createMonitoring(UA_Server *uaServer, UA_NodeId Id, UA_PubSubComponentEnumType eComponentType,
                                 UA_PubSubMonitoringType eMonitoringType, void *data, UA_ServerCallback callback);
@@ -229,7 +236,7 @@ pubSubComponent_updateMonitoringInterval(UA_Server *uaServer, UA_NodeId Id, UA_P
 static UA_StatusCode
 pubSubComponent_deleteMonitoring(UA_Server *uaServer, UA_NodeId Id, UA_PubSubComponentEnumType eComponentType,
                                 UA_PubSubMonitoringType eMonitoringType, void *data);
-
+*/
 //void addValueCallbackToVariableNode( UA_Server *);
 
 // somehow the compiler is not able to local this header definition in open62541.c
@@ -273,14 +280,14 @@ struct UA_PubSubConnectionConfig {
 
     /*1*/connectionConfig.name = UA_STRING(CONNECTION_CONFIGNAME);	// UA_STRING("Publisher Connection")
     /*2*/connectionConfig.enabled = UA_TRUE;
-    /*3*/connectionConfig.publisherIdType = UA_PUBSUB_PUBLISHERID_NUMERIC;
-    /*4*/connectionConfig.publisherId.numeric = PUBLISHERID;	// Changed to static publisherId from random generation to identify the publisher on subscriber side
+    /*3*/connectionConfig.publisherIdType = UA_PUBLISHERIDTYPE_UINT16;
+    /*4*/connectionConfig.publisherId.uint16 = PUBLISHERID;	// Changed to static publisherId from random generation to identify the publisher on subscriber side
     /*5*/connectionConfig.transportProfileUri = *transportProfile;
     /*6*/UA_Variant_setScalar(&connectionConfig.address, networkAddressUrl, &UA_TYPES[UA_TYPES_NETWORKADDRESSURLDATATYPE]);
 
 
     //UA_ServerConfig *config = UA_Server_getConfig(uaServer);
-    /*7*///UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
+    /*7*/ //UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
 	//	config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]); // UA_TYPES_DATAGRAMCONNECTIONTRANSPORTDATATYPE
     // UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE == 31
     // UA_TYPES_DATAGRAMCONNECTIONTRANSPORTDATATYPE == 85
@@ -300,9 +307,9 @@ typedef struct {
     {
 	/*
 	UA_ServerConfig *config = UA_Server_getConfig(uaServer);
-    	/*7*/
-	/*UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
-              config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]);
+    	//7
+	//UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
+        //      config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]);
 	*/
 	#ifdef DEBUG_MODE
 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addPubSubConnection(): MQTT segment \n");
@@ -448,8 +455,8 @@ typedef struct {
                 UA_Variant_setScalar(&connectionOptions[connectionOptionsIndex].value, &mqttClientKeyPath, &UA_TYPES[UA_TYPES_STRING]);
 	    //}// MQTT_Port = 8884
 	}
-   	connectionConfig.connectionProperties = connectionOptions;
-    	connectionConfig.connectionPropertiesSize = connectionOptionsIndex+1;	// add 1 because the index start at 0;
+   	connectionConfig.connectionProperties.map = connectionOptions;
+    	connectionConfig.connectionProperties.mapSize = connectionOptionsIndex+1;	// add 1 because the index start at 0;
 
         // to extract value from a VARIANT
         //UA_Int16 raw_data = *(UA_Int16 *)varStrNonAlarms->data;
@@ -459,33 +466,33 @@ typedef struct {
         printf("connectionConfig.name                                           : %s \n", connectionConfig.name.data);
         printf("connectionConfig.enabled                                        : %d \n", connectionConfig.enabled);
         printf("connectionConfig.PublisherIdType                                : %d \n", connectionConfig.publisherIdType);
-        printf("connectionConfig.PublisherId                                    : %d \n", connectionConfig.publisherId.numeric);
+        printf("connectionConfig.PublisherId                                    : %d \n", connectionConfig.publisherId.uint16);
         printf("connectionConfig.transportProfileUri                            : %s \n", connectionConfig.transportProfileUri.data);
-        printf("connectionConfig.address                                        : %s \n", connectionConfig.address.data);
+        printf("connectionConfig.address                                        : %s \n", (char*)connectionConfig.address.data);
         //printf("connectionConfig.connectionTransportSettings                  : %d \n", *(UA_Int16 *)connectionConfig.connectionTransportSettings.data); // variant
-        printf("connectionConfig.connectionPropertiesSize                       : %d \n", connectionConfig.connectionPropertiesSize);
+        //printf("connectionConfig.connectionPropertiesSize                       : %d \n", connectionConfig.connectionPropertiesSize);
         printf("---------------------------------------------------------------------\n");
-        printf("connectionConfig.connectionProperties[0].key : mqttClientId(string)   : %s \n", connectionConfig.connectionProperties[0].key.name.data); // [0].key.name is of t$
+        printf("connectionConfig.connectionProperties.map[0].key : mqttClientId(string)   : %s \n", connectionConfig.connectionProperties.map[0].key.name.data); // [0].key.name is of t$
         //printf("connectionConfig.connectionProperties[0].value (int16)                : %d \n", *(UA_Int16 *)connectionConfig.connectionProperties[0].value.data);  // [$
-        printf("connectionConfig.connectionProperties[1].key : mqttUsername(string)   : %s \n", connectionConfig.connectionProperties[1].key.name.data);
+        printf("connectionConfig.connectionProperties.map[1].key : mqttUsername(string)   : %s \n", connectionConfig.connectionProperties.map[1].key.name.data);
         //printf("connectionConfig.connectionProperties[1].value (boolean)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[1].value.data);
-        printf("connectionConfig.connectionProperties[2].key : mqttPassword(string)   : %s \n", connectionConfig.connectionProperties[2].key.name.data);
+        printf("connectionConfig.connectionProperties.map[2].key : mqttPassword(string)   : %s \n", connectionConfig.connectionProperties.map[2].key.name.data);
         //printf("connectionConfig.connectionProperties[2].value (boolean)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[2].value.data);
-        printf("connectionConfig.connectionProperties[3].key : sendBufferSize(string) : %s \n", connectionConfig.connectionProperties[3].key.name.data);
+        printf("connectionConfig.connectionProperties.map[3].key : sendBufferSize(string) : %s \n", connectionConfig.connectionProperties.map[3].key.name.data);
         //printf("connectionConfig.connectionProperties[3].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[3].value.data);
-        printf("connectionConfig.connectionProperties[4].key : recvBufferSize(string) : %s \n", connectionConfig.connectionProperties[4].key.name.data);
+        printf("connectionConfig.connectionProperties.map[4].key : recvBufferSize(string) : %s \n", connectionConfig.connectionProperties.map[4].key.name.data);
         //printf("connectionConfig.connectionProperties[4].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[4].value.data);
 	if (MQTT_TLS_Enable == UA_TRUE)
 	{
-        	printf("connectionConfig.connectionProperties[5].key : mqttUseTLS(string)         : %s \n", connectionConfig.connectionProperties[5].key.name.data);
+        	printf("connectionConfig.connectionProperties.map[5].key : mqttUseTLS(string)         : %s \n", connectionConfig.connectionProperties.map[5].key.name.data);
         	//printf("connectionConfig.connectionProperties[5].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[5].value.data);
-		printf("connectionConfig.connectionProperties[6].key : mqttCaPath(string)         : %s \n", connectionConfig.connectionProperties[6].key.name.data);
+		printf("connectionConfig.connectionProperties.map[6].key : mqttCaPath(string)         : %s \n", connectionConfig.connectionProperties.map[6].key.name.data);
         	//printf("connectionConfig.connectionProperties[6].value (boolean)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[6].value.data);
-         	printf("connectionConfig.connectionProperties[7].key : mqttCaFilePath(string)     : %s \n", connectionConfig.connectionProperties[7].key.name.data);
+         	printf("connectionConfig.connectionProperties.map[7].key : mqttCaFilePath(string)     : %s \n", connectionConfig.connectionProperties.map[7].key.name.data);
         	//printf("connectionConfig.connectionProperties[7].value (string)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[7].value.data);
-        	printf("connectionConfig.connectionProperties[8].key : mqttClientCertPath(string) : %s \n", connectionConfig.connectionProperties[8].key.name.data);
+        	printf("connectionConfig.connectionProperties.map[8].key : mqttClientCertPath(string) : %s \n", connectionConfig.connectionProperties.map[8].key.name.data);
         	//printf("connectionConfig.connectionProperties[8].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[8].value.data);
-        	printf("connectionConfig.connectionProperties[9].key : mqttClientKeyPath(string)  : %s \n", connectionConfig.connectionProperties[9].key.name.data);
+        	printf("connectionConfig.connectionProperties.map[9].key : mqttClientKeyPath(string)  : %s \n", connectionConfig.connectionProperties.map[9].key.name.data);
         	//printf("connectionConfig.connectionProperties[9].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[9].value.data);
 	}
         printf("---------------------------------------------------------------------\n");
@@ -558,7 +565,7 @@ sleep(4);
      * defined UA_NetworkAddressUrlDataType. */
     UA_NetworkAddressUrlDataType networkAddressUrl = {UA_STRING_NULL , UA_STRING("opc.udp://224.0.0.22:4840/")};
     UA_Variant_setScalar(&connectionConfig.address, &networkAddressUrl, &UA_TYPES[UA_TYPES_NETWORKADDRESSURLDATATYPE]);
-    connectionConfig.publisherId.numeric = PUBLISHERID;
+    connectionConfig.publisherId.uint16 = PUBLISHERID;
 
     	/*7*/
 	/*UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
@@ -587,8 +594,8 @@ sleep(4);
     	UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &reuse, &UA_TYPES[UA_TYPES_BOOLEAN]);
         connectionOptionsIndex++;
 
-    	connectionConfig.connectionProperties = connectionProperties;
-	connectionConfig.connectionPropertiesSize = connectionOptionsIndex;
+    	connectionConfig.connectionProperties.map = connectionProperties;
+	connectionConfig.connectionProperties.mapSize = connectionOptionsIndex;
 
 	/*
     	for (int index=0; index < connectionConfig.connectionPropertiesSize; index++)
@@ -598,7 +605,7 @@ sleep(4);
     		UA_KeyValuePair_copy(&connectionProperties[index], &connectionConfig.connectionProperties[index]);
     	}
 	*/
-    	UA_NodeId connectionIdentifier = UA_NODEID_STRING_ALLOC(namespaceIndex, "ConnectionIdentifier");
+    	//UA_NodeId connectionIdentifier = UA_NODEID_STRING_ALLOC(namespaceIndex, "ConnectionIdentifier");
 
 	// to extract value from a VARIANT
 	//UA_Int16 raw_data = *(UA_Int16 *)varStrNonAlarms->data;
@@ -608,17 +615,17 @@ sleep(4);
         printf("connectionConfig.name                           		: %s \n", connectionConfig.name.data);
 	printf("connectionConfig.enabled					: %d \n", connectionConfig.enabled);
 	printf("connectionConfig.PublisherIdType				: %d \n", connectionConfig.publisherIdType);
-	printf("connectionConfig.PublisherId					: %d \n", connectionConfig.publisherId.numeric);
+	printf("connectionConfig.PublisherId					: %d \n", connectionConfig.publisherId.uint16);
         printf("connectionConfig.transportProfileUri            		: %s \n", connectionConfig.transportProfileUri.data);
-        printf("connectionConfig.address                        		: %s \n", connectionConfig.address.data);
+        printf("connectionConfig.address                        		: %s \n", (char *)connectionConfig.address.data);
 	//printf("connectionConfig.connectionTransportSettings			: %d \n", *(UA_Int16 *)connectionConfig.connectionTransportSettings.data); // variant
-	printf("connectionConfig.connectionPropertiesSize			: %d \n", connectionConfig.connectionPropertiesSize);
+	//printf("connectionConfig.connectionPropertiesSize			: %d \n", connectionConfig.connectionPropertiesSize);
         printf("---------------------------------------------------------------------\n");
-	printf("connectionConfig.connectionProperties[0].key   (string)		: %s \n", connectionConfig.connectionProperties[0].key.name.data); // [0].key.name is of type UA_STRING
+	printf("connectionConfig.connectionProperties.map[0].key   (string)	: %s \n", connectionConfig.connectionProperties.map[0].key.name.data); // [0].key.name is of type UA_STRING
 	//printf("connectionConfig.connectionProperties[0].value (int16)		: %d \n", *(UA_Int16 *)connectionConfig.connectionProperties[0].value.data);  // [0].value is a variant;
-        printf("connectionConfig.connectionProperties[1].key   (string) 	: %s \n", connectionConfig.connectionProperties[1].key.name.data);
+        printf("connectionConfig.connectionProperties.map[1].key   (string) 	: %s \n", connectionConfig.connectionProperties.map[1].key.name.data);
         //printf("connectionConfig.connectionProperties[1].value (boolean) 	: %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[1].value.data);
-        printf("connectionConfig.connectionProperties[2].key   (string) 	: %s \n", connectionConfig.connectionProperties[2].key.name.data);
+        printf("connectionConfig.connectionProperties.map[2].key   (string) 	: %s \n", connectionConfig.connectionProperties.map[2].key.name.data);
         //printf("connectionConfig.connectionProperties[2].value (boolean)	: %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[2].value.data);
         printf("---------------------------------------------------------------------\n");
         printf("networkAddressUrl.networkInterface              		: %s \n", networkAddressUrl.networkInterface.data);
@@ -1078,10 +1085,9 @@ addDataSetField(UA_Server *uaServer)
     // the corresponding change has to take place in open62541.c : UA_Server_addDataSetField() - however this change cause publisher to have error
         //UA_open62541/src/pubsub/ua_pubsub_writer.c
         //At line 691
-    UA_PublishedDataSet *currentDataSet = UA_PublishedDataSet_findPDSbyId(uaServer, publishedDataSetIdentifier);
-    currentDataSet->dataSetMetaData.configurationVersion.majorVersion = MAJOR_SOFTWARE_VERSION;
-    currentDataSet->dataSetMetaData.configurationVersion.minorVersion = MINOR_SOFTWARE_VERSION;
-
+    //UA_PublishedDataSet *currentDataSet = UA_PublishedDataSet_findPDSbyId(uaServer, publishedDataSetIdentifier);
+    //currentDataSet->dataSetMetaData.configurationVersion.majorVersion = MAJOR_SOFTWARE_VERSION;
+    //currentDataSet->dataSetMetaData.configurationVersion.minorVersion = MINOR_SOFTWARE_VERSION;
 
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgSoftwareVersion, NULL); // &f_SoftwareVersion_Id);
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgDataBlockVersion, NULL); //&f_DataBlockVersion_Id);
@@ -1295,7 +1301,7 @@ addWriterGroup(UA_Server *uaServer)
 	   {
 		ua_config->pubSubConfig.securityPolicies = (UA_PubSubSecurityPolicy *) UA_malloc(sizeof(UA_PubSubSecurityPolicy));
 		ua_config->pubSubConfig.securityPoliciesSize = 1;
-		UA_PubSubSecurityPolicy_Aes128Ctr(ua_config->pubSubConfig.securityPolicies, &ua_config->logger);
+		UA_PubSubSecurityPolicy_Aes128Ctr(ua_config->pubSubConfig.securityPolicies, ua_config->logging);
 	   }
 	   assert(ua_config->pubSubConfig.securityPolicies);
 
@@ -2049,22 +2055,27 @@ addDataSetReader(UA_Server *uaServer)
         /* The following parameters are used to show that the data published by
          * tutorial_pubsub_publish.c is being subscribed and is being updated in
          * the information model */
+//	dataSetReaderConfig.publisherId.type = &UA_TYPES[UA_TYPES_UINT16];
+//	dataSetReaderConfig.publisherId.data = &publisherIdentifier;
 	UA_UInt16 publisherIdentifier = PUBLISHERID;
-	dataSetReaderConfig.publisherId.type = &UA_TYPES[UA_TYPES_UINT16];
-	dataSetReaderConfig.publisherId.data = &publisherIdentifier;
 	UA_Variant_setScalar(&dataSetReaderConfig.publisherId, &publisherIdentifier, &UA_TYPES[UA_TYPES_INT16]); // filter away messages based on this parameter : UA_Variant
 	dataSetReaderConfig.writerGroupId = WRITERGROUPID;		// filter away messages based on this parameter
 	dataSetReaderConfig.dataSetWriterId = DATASETWRITERID;		// filter away messages based on this parameter
+//      dataSetReaderConfig.dataSetMetaData = ???		// UA_DataSetFieldContentMask
+//      dataSetReaderConfig.dataSetFieldContentMask = ???	// UA_DataSetFieldContentMask
 	dataSetReaderConfig.messageReceiveTimeout = (UA_Double) MESSAGE_TIMEOUT_MQTT;	// * Timeout must be greater than publishing interval of corresponding WriterGroup */
+//      dataSetReaderConfig.messageSettings = ??		// UA_ExtensionObject
+//	dataSetReaderConfig.transportSettings = ??		// UA_ExtensionObject
+	dataSetReaderConfig.subscribedDataSetType = UA_PUBSUB_SDS_TARGET;	// UA_SubscribedDataSetEnumType
+//	dataSetReaderConfig.linkedStandaloneSubscribedDataSetName = ??		//UA_String
+//	dataSetReaderConfig.expectedEncoding = ??		// UA_PubSubRtEncoding
+
 
 // the following is not in the sample (section X)
-	dataSetReaderConfig.dataSetFieldContentMask = UA_DATASETFIELDCONTENTMASK_RAWDATA;	// UA_DataSetFieldContentMask
-	dataSetReaderConfig.securityParameters.securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT; 	// UA_PubSubSecurityParameters
-	dataSetReaderConfig.securityParameters.securityGroupId = UA_STRING("AirgardSecurityGroupId-1");
+//	dataSetReaderConfig.dataSetFieldContentMask = UA_DATASETFIELDCONTENTMASK_RAWDATA;	// UA_DataSetFieldContentMask
+//	dataSetReaderConfig.securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT; 	// UA_PubSubSecurityParameters
+//	dataSetReaderConfig.securityParameters.securityGroupId = UA_STRING("AirgardSecurityGroupId-1");
 	//dataSetReaderConfig.securityParameters.keyServersSize = (size_t)1;	// size_t;
-	//dataSetReaderConfig.messageSettings = ??		// UA_ExtensionObject
-	//dataSetReaderConfig.transportSettings = ??		// UA_ExtensionObject
-	dataSetReaderConfig.subscribedDataSetType = UA_PUBSUB_SDS_TARGET;	// UA_SubscribedDataSetEnumType
 //	dataSetReaderConfig.subscribedDataSet.subscribedDataSetTarget.targetVariablesSize = 2;	// UA_TargetVariables
 //	dataSetReaderConfig.subscribedDataSet.subscribedDataSetTarget.targetVariables.externalDataValue = *MQTT data* 	// UA_FieldTargetVariable .. UA_DataValue**
 // the above is not in the sample
@@ -2276,7 +2287,6 @@ addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 	static UA_NodeId timestampfolderId;
 	UA_NodeId newNodeId;
 	UA_StatusCode retval = UA_STATUSCODE_GOOD;
-	UA_FieldTargetVariable *targetVars ;
 
 	if (uaServer == NULL)
 		return UA_STATUSCODE_BADINTERNALERROR;
@@ -2293,15 +2303,17 @@ addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addSubscribeVariables() - firstime = %d", firsttime_addSubscribedVariableFlag);
 	#endif
 
+
 	if (firsttime_addSubscribedVariableFlag == UA_TRUE)	// only need to add nodes 1 time
 	{
                 UA_String folderName = UA_STRING("Airgard Subscribed"); //dataSetReaderConfig.dataSetMetaData.name;
                 UA_ObjectAttributes oAttrObj = UA_ObjectAttributes_default;
-		UA_VariableAttributes oAttVar = UA_VariableAttributes_default;
-                UA_QualifiedName airgardfolderBrowseName, diagnosticfolderBrowseName;
+		//UA_VariableAttributes oAttVar = UA_VariableAttributes_default;
+                UA_QualifiedName airgardfolderBrowseName;
+		//UA_QualifiedName diagnosticfolderBrowseName;
 
 	        //Add a new namespace to the server => Returns the index of the new namespace i.e. namespaceIndex
-        	UA_Int16 nsIdx_MKS = UA_Server_addNamespace(uaServer, "virtualskies.com.sg/MKS/");
+        	//UA_Int16 nsIdx_MKS = UA_Server_addNamespace(uaServer, "virtualskies.com.sg/MKS/");
 		size_t namespaceIndex;
 		UA_Server_getNamespaceByName(uaServer, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
 
@@ -2438,11 +2450,14 @@ addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
 		// Create target variables with respect to DataSetMetaDeta fields
 		//UA_DataSetReaderConfig dataSetReaderConfig -- global variable
-                targetVars = (UA_FieldTargetVariable *) \
+		/*
+                UA_FieldTargetVariable *targetVars = (UA_FieldTargetVariable *) \
 						UA_calloc(dataSetReaderConfig.dataSetMetaData.fieldsSize, \
 						sizeof(UA_FieldTargetVariable));
+		*/
 
-		UA_Variant variant_float, variant_int;
+		//UA_Variant variant_float;
+		//UA_Variant variant_int;
 		UA_Float data_float = -99.99;
                 UA_Int32 data_int = -99;
                 UA_String data_string = UA_STRING("Default string");
@@ -2481,7 +2496,7 @@ addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 /* UA_Boolean */                vAttr.historizing = UA_FALSE;
 			}
 
- 			UA_NodeId newNode;
+ 			//UA_NodeId newNode;
                         // changed on 2 Jan 2022
                         if (dataSetReaderConfig.dataSetMetaData.fields[i].builtInType == UA_NS0ID_FLOAT)
                                 UA_Variant_setScalar(&vAttr.value, &data_float, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -2568,7 +2583,7 @@ addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 			// variant_value = dataSetReaderConfig.dataSetMetaData.fields[i].properties->value;
 			UA_Variant variant_float, variant_string, variant_int;
 			//UA_String outputStr;
-			int test;
+			//int test;
 
 			//UA_NodeId_toString(&newSubscribedNodeId[i], &outputStr); // deprecated
 
@@ -2999,15 +3014,16 @@ addSubscribedVariables(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
 
 /* Periodically refreshes the MQTT stack (sending/receiving) */
+/*
 //https://github.com/open62541/open62541/blob/master/examples/pubsub/server_pubsub_subscriber_rt_level.c
 static void
 mqttYieldPollingCallback(UA_Server *uaServer, UA_PubSubConnection *connection)
 {
-//    connection->channel->yield(connection->channel, (UA_UInt16) 30);	// timeout : 30 seconds
+    connection->channel->yield(connection->channel, (UA_UInt16) 30);	// timeout : 30 seconds
     addSubscribedVariables(uaServer, readerIdentifier);	// repeated update the UA AddressSpace
 
 }
-
+*/
 
 static void
 callback(UA_ByteString *encodedBuffer, UA_ByteString *topic)
@@ -3227,7 +3243,7 @@ while (!json_object_iter_equal(&it, &itEnd)) {
      // get the string from the value of the key "Message"
      struct array_list *myArrayList;
      myArrayList = json_object_get_array(valueMessages); //struct json_object *
-//     printf("Length of Array list returned :  array_list_length(length) : %d \n", array_list_length(myArrayList));//json_object_array_length(valueMessages)); //json_object_to_json_string(value));
+     printf("Length of Array list returned :  array_list_length(length) : %d \n", array_list_length(myArrayList));//json_object_array_length(valueMessages)); //json_object_to_json_string(value));
 //     printf("Length of Array list returned :  myArrayList->length : %d \n", myArrayList->length);//json_object_array_length(valueMessages)); //json_object_to_json_string(value));
 //     printf("Size of Array list returned : myArrayList->size : %d \n", myArrayList->size);
 //     printf("Contents of Key-Messages (Array) returned : %s \n", json_object_to_json_string_ext(valueMessages, JSON_C_TO_STRING_PRETTY));	// returns an arraylist of json-objects
@@ -3758,6 +3774,7 @@ FreeMemory:
 
 /* Adds a subscription */
 //https://github.com/open62541/open62541/blob/master/examples/pubsub/server_pubsub_subscriber_rt_level.c
+/*
 static void addSubscription(UA_Server *server, UA_PubSubConnection *connection)
 {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addSubscription() function");	// UA_PubSubConnection defined in open6541.c : 7013
@@ -3778,7 +3795,7 @@ static void addSubscription(UA_Server *server, UA_PubSubConnection *connection)
     brokerTransportSettings.resourceUri = UA_STRING_NULL;
     brokerTransportSettings.authenticationProfileUri = UA_STRING_NULL;
 
-    /* QOS */
+    // QOS
     brokerTransportSettings.requestedDeliveryGuarantee = UA_BROKERTRANSPORTQUALITYOFSERVICE_EXACTLYONCE; //UA_BROKERTRANSPORTQUALITYOFSERVICE_BESTEFFORT;
 
     // UA_ExtensionObject defined in open62541.h : 13640
@@ -3799,7 +3816,7 @@ static void addSubscription(UA_Server *server, UA_PubSubConnection *connection)
 
     // inspect the contents of UA_PubSubConnection structure (defined in open62541.c:7013)
 
-/*
+
 typedef struct UA_PubSubConnection{
     UA_PubSubComponentEnumType componentType;
     UA_PubSubConnectionConfig *config;
@@ -3849,7 +3866,7 @@ struct UA_PubSubChannel {
 };
 
 
-*/
+
 	#ifdef DEBUG_MODE
     	printf("SV_PubSub.c (addSubscription) \n");
 	printf("at line 1400 \n");
@@ -3865,22 +3882,22 @@ struct UA_PubSubChannel {
 	//sleep(5);
 
 	#endif
-/*
-struct UA_PubSubConnectionConfig {
-    UA_String name;
-    UA_Boolean enabled;
-    UA_PublisherIdType publisherIdType;
-    union { // std: valid types UInt or String
-        UA_UInt32 numeric;
-        UA_String string;
-    } publisherId;
-    UA_String transportProfileUri;
-    UA_Variant address;
-    size_t connectionPropertiesSize;
-    UA_KeyValuePair *connectionProperties;
-    UA_Variant connectionTransportSettings;
-};
-*/
+//
+//struct UA_PubSubConnectionConfig {
+//    UA_String name;
+//    UA_Boolean enabled;
+//    UA_PublisherIdType publisherIdType;
+//    union { // std: valid types UInt or String
+//        UA_UInt32 numeric;
+//        UA_String string;
+//    } publisherId;
+//    UA_String transportProfileUri;
+//    UA_Variant address;
+//    size_t connectionPropertiesSize;
+//    UA_KeyValuePair *connectionProperties;
+//    UA_Variant connectionTransportSettings;
+//};
+//
 	// the following crash
 	//UA_String output;
 	//UA_NodeId_parse(&connection->identifier, output);
@@ -3892,28 +3909,27 @@ struct UA_PubSubConnectionConfig {
 	printf("connection->configurationFreezeCounter = %d\n", connection->configurationFreezeCounter);
 	#endif
 
-/* runtime values are
-connection->channel->publisherId = 0 <should be 2234>
-connection->channel->state = 0
-connection->channel->connectionConfig->name = <Publisher Connection>
-connection->channel->connectionConfig->enabled = 1
-connection->channel->connectionConfig->transportProfileUri= http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt
-connection->channel->connectionConfig->address = empty <should be opc.mqtt://192.168.1.11>
-connection->channel->connectionConfig->connectionPropertiesSize = 3
-connection->identifier = empty <???>
-connection->writerGroupsSize = 2 <how does the system compute this value>
-connection->readerGroupsSize = 0 <dont understand what to set or is this zero>
-connection->configurationFreezeCounter = 0
-[2021-02-07 17:48:50.160 (UTC+0800)] warn/server        SV_PubSub.c : addSubscription() : register channel failed: BadArgumentsMissing!!!!
+// runtime values are
+//connection->channel->publisherId = 0 <should be 2234>
+//connection->channel->state = 0
+//connection->channel->connectionConfig->name = <Publisher Connection>
+//connection->channel->connectionConfig->enabled = 1
+//connection->channel->connectionConfig->transportProfileUri= http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt
+//connection->channel->connectionConfig->address = empty <should be opc.mqtt://192.168.1.11>
+//connection->channel->connectionConfig->connectionPropertiesSize = 3
+//connection->identifier = empty <???>
+//connection->writerGroupsSize = 2 <how does the system compute this value>
+//connection->readerGroupsSize = 0 <dont understand what to set or is this zero>
+//connection->configurationFreezeCounter = 0
+//[2021-02-07 17:48:50.160 (UTC+0800)] warn/server        SV_PubSub.c : addSubscription() : register channel failed: BadArgumentsMissing!!!!
 
-*/
+
 
 	// connection->channel->state = UA_PUBSUB_CHANNEL_ERROR;	// for testing the following
 	// confirmed the error mesage came from open62541.c : 89301 : UA_PubSubChannelMQTT_regist()
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addSubscription() : just about to invoke callback at line 3356");
     UA_StatusCode rv = connection->channel->regist(connection->channel, &transportSettings, &callback);	// line 3356
 
-//******************************//
     // error message received at this juncture :: register channel failed: BadArgumentsMissing!
     if (rv == UA_STATUSCODE_GOOD)
     {
@@ -3928,36 +3944,16 @@ connection->configurationFreezeCounter = 0
 	//sleep(5);
     }
 }
-
+*/
 
 void CreateServerPubSub(UA_Server *uaServer, char* brokeraddress, int port, char* mode)
 {
 	UA_ServerConfig *config = UA_Server_getConfig(uaServer);
-/*
-struct UA_ServerConfig {
-....
-....
-    size_t pubsubTransportLayersSize;
-    UA_PubSubTransportLayer *pubsubTransportLayers;
-    UA_PubSubConfiguration *pubsubConfiguration;
-....
-}
-*/
 
-/*
- struct UA_PubSubConfiguration {
-
-    // Callback for PubSub component state changes:
-    //If provided this callback informs the application about PubSub component state changes.
-    //E.g. state change from operational to error in case of a DataSetReader MessageReceiveTimeout.
-    //The status code provides additional information.
-    void (*pubsubStateChangeCallback)(UA_NodeId *Id,
-                                      UA_PubSubState state,
-                                      UA_StatusCode status);// TODO: maybe status code provides not enough information $
 #ifdef UA_ENABLE_PUBSUB_MONITORING
     UA_PubSubMonitoringInterface monitoringInterface;
-#endif /* UA_ENABLE_PUBSUB_MONITORING
-*/
+#endif // UA_ENABLE_PUBSUB_MONITORING
+
 
 	UA_StatusCode retval = UA_STATUSCODE_GOOD;
 	UA_String transportProfile = UA_STRING("");
@@ -4061,7 +4057,7 @@ struct UA_ServerConfig {
 	// initiate the PubSub SecurityPolicy - kiv until missing fields are fixed
 	config->pubSubConfig.securityPolicies = (UA_PubSubSecurityPolicy *) UA_malloc(sizeof(UA_PubSubSecurityPolicy));
 	config->pubSubConfig.securityPoliciesSize = 1;
-	UA_PubSubSecurityPolicy_Aes128Ctr(config->pubSubConfig.securityPolicies, &config->logger);
+	UA_PubSubSecurityPolicy_Aes128Ctr(config->pubSubConfig.securityPolicies, config->logging);
 
 	/* defunct: v1.2.1 */ //config->pubsubTransportLayers[0] = UA_PubSubTransportLayerUDPMP();	// options: UA_PubSubTransportLayerEthernet(), UA_PubSubTransportLayerMQTT(), 
     	/* defunct: v1.2.1 */ //config->pubsubTransportLayersSize++;
@@ -4166,8 +4162,8 @@ struct UA_ServerConfig {
 			addReaderGroup(uaServer);
 			addDataSetReader(uaServer);
 			addSubscribedVariables(uaServer, readerIdentifier);   // line 2395
-			UA_PubSubConnection *connection = UA_PubSubConnection_findConnectionbyId(uaServer, PubSubconnectionIdentifier);
-			addSubscription(uaServer, connection);
+			//UA_PubSubConnection *connection = UA_PubSubConnection_findConnectionbyId(uaServer, PubSubconnectionIdentifier);
+			//addSubscription(uaServer, connection);
 		}
 
         	else if ( (strncmp(mode, "pub", 3)==0) && (strlen(mode)==3) && (brokeraddress != NULL) )

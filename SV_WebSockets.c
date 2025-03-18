@@ -1,13 +1,16 @@
-#ifdef almagamation
+#include <pthread.h>
 #include <libwebsockets.h>
 #include <signal.h>
 #if defined(WIN32)
-#define HAVE_STRUCT_TIMESPEC
-#if defined(pid_t)
-#undef pid_t
+   #define HAVE_STRUCT_TIMESPEC
+   #if defined(pid_t)
+      #undef pid_t
+   #endif
 #endif
-#endif
-#include <pthread.h>
+
+
+#ifdef almagamation
+  #include <open62541/websockets.h>
 #else
   #include "open62541.h"
 #endif

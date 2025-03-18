@@ -2,10 +2,12 @@
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
-#define UA_ENABLE_SUBSCRIPTIONS_EVENTS
 #else
    #include "open62541.h"
+   #define UA_ENABLE_SUBSCRIPTIONS_EVENTS
 #endif
+
+#include "SV_Event.h"
 
 /**
  * Generating events
@@ -58,7 +60,7 @@ setUpEvent(UA_Server *uaServer, UA_NodeId *outEventId)
     UA_StatusCode retval = UA_Server_createEvent(uaServer, eventType, outEventId);
     if (retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
-                       "createResetEvent failed. StatusCode %s", UA_StatusCode_name(retval));
+                       "--------SV_Event.c : setUpResetEvent failed. StatusCode %s", UA_StatusCode_name(retval));
         return retval;
     }
 
@@ -102,7 +104,7 @@ setUpShutdownEvent(UA_Server *uaServer, UA_NodeId *outEventId)
     UA_StatusCode retval = UA_Server_createEvent(uaServer, eventType, outEventId);
     if (retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
-                       "createShutdownEvent failed. StatusCode %s", UA_StatusCode_name(retval));
+                       "--------SV_Event.c : setUpShutdownEvent failed. StatusCode %s", UA_StatusCode_name(retval));
         return retval;
     }
 
@@ -156,14 +158,14 @@ generateEventMethodCallback(UA_Server *uaServer,
                          size_t outputSize, UA_Variant *output)
 {
 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "About to trigger Reset event");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : About to trigger Reset event");
 
     /* set up event */
     UA_NodeId eventNodeId;
     UA_StatusCode retval = setUpEvent(uaServer, &eventNodeId);
     if(retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                       "Creating Reset event failed. StatusCode %s", UA_StatusCode_name(retval));
+                       "--------SV_Event.c : Creating Reset event failed. StatusCode %s", UA_StatusCode_name(retval));
         return retval;
     }
 
@@ -173,9 +175,9 @@ generateEventMethodCallback(UA_Server *uaServer,
                                     NULL, UA_TRUE);		// jacky changed NULL to &eventId
     if(retval != UA_STATUSCODE_GOOD)
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                       "Triggering Reset event failed. StatusCode %s", UA_StatusCode_name(retval));
+                       "--------SV_Event.c : Triggering Reset event failed. StatusCode %s", UA_StatusCode_name(retval));
     else
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Reset event is triggered");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event : Reset event is triggered");
 
     // need to action on the EventId i.e. outEventId so as to publish to the MQTT broker
 	// TODO:
@@ -200,7 +202,7 @@ generateEvent_ShutdownMethodCallback(UA_Server *uaServer,
     UA_StatusCode retval = setUpShutdownEvent(uaServer, &eventNodeId);
     if(retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                       "Creating Shutdown event failed. StatusCode %s", UA_StatusCode_name(retval));
+                       "--------SV_Event.c : Creating Shutdown event failed. StatusCode %s", UA_StatusCode_name(retval));
         return retval;
     }
 
@@ -210,9 +212,9 @@ generateEvent_ShutdownMethodCallback(UA_Server *uaServer,
                                     NULL, UA_TRUE);
     if(retval != UA_STATUSCODE_GOOD)
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                       "Triggering Shutdown event failed. StatusCode %s", UA_StatusCode_name(retval));
+                       "--------SV_Event.c : Triggering Shutdown event failed. StatusCode %s", UA_StatusCode_name(retval));
     else
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Shutdown event is triggered");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : Shutdown event is triggered");
 
     return retval;
 }
@@ -247,13 +249,13 @@ addGenerateEvent_ResetMethod(UA_Server *uaServer, UA_NodeId parent)
 
 	if(retval != UA_STATUSCODE_GOOD)
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event:addGenerateEventResetMethod() failure : %s", UA_StatusCode_name(retval) );
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addGenerateEventResetMethod() failure : %s", UA_StatusCode_name(retval) );
 		//printf("SV_Event: addGenerateEventResetMethod() failure : %d \n", retval);
 		//sleep(5);
 	}
 	else
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event:addGenerateEventResetMethod() success : %s", UA_StatusCode_name(retval) );
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addGenerateEventResetMethod() success : %s", UA_StatusCode_name(retval) );
 		//printf("SV_Event: addGenerateEventResetMethod() success : %d \n", retval);
 	}
 }
@@ -281,13 +283,13 @@ addGenerateEvent_ShutdownMethod(UA_Server *uaServer, UA_NodeId parent)
                             0, NULL, 0, NULL, NULL, NULL);
 	if(retval != UA_STATUSCODE_GOOD)
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event: addGenerateEventShutdownMethod() failure : %s", UA_StatusCode_name(retval) );
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addGenerateEventShutdownMethod() failure : %s", UA_StatusCode_name(retval) );
         	//printf("SV_Event: addGenerateEventShutdownMethod() failure : %d \n", retval);
 		//sleep(5);
 	}
 	else
 	{
-		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event: addGenerateEventShutdownMethod() success : %s", UA_StatusCode_name(retval) );
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addGenerateEventShutdownMethod() success : %s", UA_StatusCode_name(retval) );
 		//printf("SV_Event: addGenerateEventShutdownMethod() success : %d \n", retval);
 	}
 }
@@ -299,12 +301,21 @@ addNewEventType(UA_Server *uaServer)
     attr.displayName = UA_LOCALIZEDTEXT("en-US", "SimpleEventType");
     attr.description = UA_LOCALIZEDTEXT("en-US", "The simple event type we created");
 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event.c : addNewEventType() ...");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addNewEventType() ...");
 
     size_t namespaceIndex;
-    UA_Server_getNamespaceByName(uaServer, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
+    UA_StatusCode status;
+    status = UA_Server_getNamespaceByName(uaServer, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
 
-    UA_StatusCode status = UA_Server_addObjectTypeNode(uaServer,UA_NODEID_NULL,
+    if(status != UA_STATUSCODE_GOOD)
+        {
+                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addNewEventType : getNameSpaceByName() failure : %s", UA_StatusCode_name(status) );
+                //printf("SV_Event: addGenerateEventShutdownMethod() failure : %d \n", retval);
+                //sleep(5);
+        }
+
+
+    status = UA_Server_addObjectTypeNode(uaServer,UA_NODEID_NULL,
                                        UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE),
                                        UA_NODEID_NUMERIC(0, UA_NS0ID_HASSUBTYPE),
                                        UA_QUALIFIEDNAME(0, "SimpleEventType"),
@@ -314,13 +325,13 @@ addNewEventType(UA_Server *uaServer)
     return status;
 }
 
-void CreateServerEvents(UA_Server *uaServer, UA_NodeId parent)
+void createEvents(UA_Server *uaServer, UA_NodeId parent)
 {
 	UA_StatusCode retVal;
 
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event.c : CreateServerEvents()");
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : CreateEvents()");
 	retVal = addNewEventType(uaServer);
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Event.c : addNewEventType() returns %s", UA_StatusCode_name(retVal));
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Event.c : addNewEventType() returns %s", UA_StatusCode_name(retVal));
 
 	// these functions should be called by Methods
 	addGenerateEvent_ResetMethod(uaServer, parent);	//==> this event will be mapped to the Reset Method in OPCUA Server

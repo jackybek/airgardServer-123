@@ -331,8 +331,8 @@ void afterWriteCallbackVariable_3(UA_Server *uaServer,
 							&data->serverTimestamp,
 							&UA_TYPES[UA_TYPES_DATETIME]);
 
-	//
 	UA_Variant_setScalar(&value, &idValue, &UA_TYPES[UA_TYPES_BOOLEAN]);
+	retval = UA_FALSE;
 	retval |= UA_Server_setConditionVariableFieldProperty(uaServer, conditionInstance_1,
 							&value, activeStateField,
 							idField);
@@ -550,6 +550,8 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 		return retval;
 	}
 
+
+	#ifdef CANNOT_COMPILE
 	UA_TwoStateVariableChangeCallback userSpecificCallback = enteringEnabledStateCallback;
 	retval = UA_Server_setConditionTwoStateVariableCallback(uaServer, conditionInstance_1,
 						conditionSource, UA_FALSE,
@@ -563,7 +565,9 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 		sleep(5);
 		return retval;
 	}
+	#endif
 
+	#ifdef CANNOT_COMPILE
 	userSpecificCallback = enteringAckedStateCallback;
 	retval = UA_Server_setConditionTwoStateVariableCallback(uaServer, conditionInstance_1,
                                                 conditionSource, UA_FALSE,
@@ -577,7 +581,9 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 		sleep(5);
                 return retval;
         }
+	#endif
 
+        #ifdef CANNOT_COMPILE
         userSpecificCallback = enteringConfirmedStateCallback;
         retval = UA_Server_setConditionTwoStateVariableCallback(uaServer, conditionInstance_1,
                                                 conditionSource, UA_FALSE,
@@ -591,6 +597,8 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 		sleep(5);
                 return retval;
         }
+	#endif
+
 	// Exposed condition 1 end
 	//========================
 
@@ -682,8 +690,14 @@ UA_StatusCode setUpEnvironment(UA_Server *uaServer)
 	return retval;
 }
 
-void CreateServerAlarmsAndConditions(UA_Server *uaServer)
+void createAlarmsAndConditions(UA_Server *uaServer)
 {
 	UA_StatusCode retval = setUpEnvironment(uaServer);
+	if (retval != UA_STATUSCODE_GOOD)
+	{
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                                "--------SV_Alarm.c: Set up environment failed.  StatusCode %s",
+                                UA_StatusCode_name(retval));
+	}
 
 }

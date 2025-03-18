@@ -1,11 +1,12 @@
 #ifdef almagamation
-#include <open62541/client_subscriptions.h>
-#include <open62541/plugin/log_stdout.h>
-#include <open62541/server.h>
-#include <open62541/server_config_default.h>
+  #include <open62541/client_subscriptions.h>
+  #include <open62541/plugin/log_stdout.h>
+  #include <open62541/server.h>
+  #include <open62541/server_config_default.h>
 #else
   #include "open62541.h"
 #endif
+#include "SV_Monitor.h"
 
 //#include <mariadb/mysql.h>
 //#include "myNewMonitor.h"
@@ -64,7 +65,9 @@ void dataChangeNotificationCallback(UA_Server *server, UA_UInt32 monitoredItemId
                                const UA_DataValue *value)
 {
 //    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_Monitor.c : dataChangeNotificationCallback : Receiving Notification .. data (MonitoredItem) has changed");
-	writeHistoryData(nodeId, value);
+
+// ----------KIV first... after 18 Mar 2025
+//	writeHistoryData(nodeId, value);
 }
 
 void addMonitoredItemToSoftwareVersionVariable(UA_Server *server)
@@ -438,7 +441,7 @@ void addMonitoredItemToEvent(UA_Server *server, UA_NodeId outEvent_Id)
                                             monRequest, NULL, dataChangeNotificationCallback);
 }
 
-void CreateServerMonitoredItems(UA_Server *server)
+void createMonitoredItems(UA_Server *server)
 {
         addMonitoredItemToSoftwareVersionVariable(server);	// 1
         addMonitoredItemToDataBlockVersionVariable(server);	// 2
@@ -485,7 +488,7 @@ void CreateServerMonitoredItems(UA_Server *server)
         addMonitoredItemToDesiccantCounterVariable(server);	// 40
 
       UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-        "Completed creation of monitoring nodes");
+        "--------SV_Monitor.c : Completed creation of monitoring nodes");
 
 }
 

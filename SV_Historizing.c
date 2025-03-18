@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+//#define optionValueSet
+//#define optionPoll
 
 #ifdef almagamation
 #include <open62541/plugin/historydata/history_data_backend_memory.h>
@@ -15,28 +13,23 @@
    #include "open62541.h"
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
 //#include <xml.h>
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
 #include <libxml2/libxml/xmlreader.h>
 #include <mariadb/mysql.h>
+#include "SV_Historizing.h"
 
 //#include "myNewServer.h"
 //#include "myNewMethod.h"
 #define MAX_STRING_SIZE 64
 //#define DEBUG_MODE
-#define UA_ENABLE_HISTORIZING
-#define optionPoll
-
-void
-setValue(UA_Server *server, void *hdgContext, const UA_NodeId *sessionId,
-	void *sessionContext, const UA_NodeId *nodeId, UA_Boolean historizing,
-	const UA_DataValue *value);
-void GetHistoryDBConnection(void);
-void CloseHistoryDBConnection(void);
-void writeHistoryData(const UA_NodeId *nodeId, const UA_DataValue *value);
-void CreateServerHistorizingItems(UA_Server *);
-void readHistoryData(MYSQL *conn, const UA_NodeId *nodeId);
+//#define UA_ENABLE_HISTORIZING
 
 // to remove after test using MonitoredItems
 /*
@@ -170,10 +163,18 @@ setValue(UA_Server *server, void *hdgContext, const UA_NodeId *sessionId,
 void GetHistoryDBConnection()
 {
                 // establish connection to mySQL server
+
+	const char *env_sqlconn = getenv("SVR_SQLCONNECTION_IP");
+	const char *env_sqlusername = getenv("SVR_SQL_USERNAME");
+	const char *env_sqlpassword = getenv("SVR_SQL_PASSWORD");
+	const char *env_sqldatabase = getenv("SVR_SQL_DATABASE");
+	const char *env_sqlport = getenv("SVR_SQL_PORT");
+
                 conn = mysql_init(NULL);
+		//char errmessage[255];
                 if (conn == NULL)
                 {
-                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Error initialising mySQL connection");
+                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error initialising mySQL connection");
                         exit(-1);
                 }
                 else
@@ -187,26 +188,50 @@ void GetHistoryDBConnection()
                                            const char *unix_socket,
                                            unsigned long clientflag);
                         */
-                        if (mysql_real_connect(conn, "mysql1",
-                                                "debian",
-                                                "molekhaven24",
-                                                "HistoryAirgard",
-                                                3306,
+			/*
+			if (mysql_real_connect(conn,
+						env_sqlconn,
+						env_sqlusername,
+						env_sqlpassword,
+						env_sqldatabase,
+						atoi(env_sqlport),
+						NULL, 0) == NULL)       // port 3306 defined in c:\Program Files\MySQL\MySQL Server 8.0\my.ini
+			*/
+                        if (mysql_real_connect(conn,
+					 	"192.168.1.127",
+						"debian",
+						"molekhaven24",
+						"HistoryAirgard",
+						3306,
                                                 NULL, 0) == NULL)       // port 3306 defined in c:\Program Files\MySQL\MySQL Server 8.0\my.ini
 
-                        {
-                                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Error connecting to mySQL server : %d %s", mysql_errno(conn), mysql_error(conn) );
-                                exit (-1);
+
+                        {/*
+				switch (mysql_errno(conn))
+				{
+					CR_CONN_HOST_ERROR : strcpy(errmessage, "Failed to connect to the SQL server"); break;
+					CR_CONNECTION_ERROR : strcpy(errmessage, "Failed to connect to the local SQL server"); break;
+					CR_IPSOCK_ERROR : strcpy(errmessage, "Failed to create an IP socket"); break;
+					CR_OUT_OF_MEMORY: strcpy(errmessage, "Out of memory"); break;
+					CR_SOCKET_CREATE_ERROR : strcpy(errmessage, "Failed to created a Unix socket"); break;
+					CR_UNKNOWN_HOST : strcpy(errmessage, "Failed to find the IP address for the host name"); break;
+					CR_VERSION_ERROR : strcpy(errmessage, "A protocol mismatch resulted from attempting to connect to a server with a client library that uses a different protocol version"); break;
+					CR_NAMEDPIPEOPEN_ERROR : strcpy(errmessage, "Failed to create a named pipe on Windows"); break;
+					CR_NAMEDPIPEWAIT_ERROR : strcpy(errmessage, "Failed to wait for a named pipe on Windows"); break;
+					CR_NAMEDPIPESETSTATE_ERROR : strcpy(errmessage, "Failed to get a pipe handler on Windows"); break;
+					CR_SERVER_LOST : strcpy(errmessage, "Connection to the SQL Server is lost"); break;
+					CR_ALREADY_CONNECTED : strcpy(errmessage, "The MYSQL connection handler is already connected"); break;
+					default : break;
+				}
+			*/
+				UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : %s %s %s %s %s", env_sqlconn, env_sqlusername, env_sqlpassword, env_sqldatabase, env_sqlport); 
+				UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : sql error (%d) %s", mysql_errno(conn), mysql_error(conn) );
+				mysql_close(conn);
+
                                 return;
                         }
-                        else
-                        {
-                                //writeHistoryData(conn, &outIgramPP_Id);
-                                //writeHistoryData(conn, &outIgramDC_Id);
-				//writeHistoryData(conn, &outLaserPP_Id);
-				//writeHistoryData(conn, &outLaserDC_Id);
-
-                        }
+			else
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Successfully connected to Historian database"); 
                 }
 
 }
@@ -227,7 +252,7 @@ void writeHistoryData(const UA_NodeId *nodeId, const UA_DataValue *DataValue)//,
 
 
 	//printf("node Id->identifier.numeric : %d\n", nodeId->identifier.numeric);
-	sprintf(currenttime, "%4d-%d-%d %02d:%02d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+	sprintf(currenttime, "%4hd-%02hd-%02hd %02hd:%02hd", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min);
 	//printf("SV_Historizing:writeHistoryData : currenttime is %s \n", currenttime);
 
 	switch (nodeId->identifier.numeric)
@@ -375,13 +400,13 @@ void writeHistoryData(const UA_NodeId *nodeId, const UA_DataValue *DataValue)//,
         if (mysql_query(conn, sqlbuffer))
 	{
 		#ifdef DEBUG_MODE
-		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : writeHistoryData() sqlbuffer = <%s> sqlerror = <%s>", sqlbuffer, mysql_error(conn));
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : writeHistoryData() sqlbuffer = <%s> sqlerror = <%s>", sqlbuffer, mysql_error(conn));
 		#endif
 	}
 	else
 	{
 		#ifdef DEBUG_MODE
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : writeHistoryData() sqlbuffer = <%s> sqlerror = <%s>", sqlbuffer, mysql_error(conn));
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : writeHistoryData() sqlbuffer = <%s> sqlerror = <%s>", sqlbuffer, mysql_error(conn));
                 #endif
 	}
 }
@@ -410,7 +435,7 @@ static void addValueCallbackToIgramDCVariable(UA_Server *uaServer)
 //--start block
 UA_Boolean boundHistory()
 {
-
+return UA_TRUE;
 }
 
 UA_Boolean boundSupported(UA_Server *server,
@@ -420,17 +445,18 @@ UA_Boolean boundSupported(UA_Server *server,
                       const UA_NodeId *nodeId)
 {
 	boundHistory();
+	return UA_TRUE;
 }
 //-- end block
 
 UA_Boolean updateHistoryData(MYSQL *conn, UA_NodeId *nodeId)
 {
-
+return UA_TRUE;
 }
 
 UA_Boolean removeHistoryData(MYSQL *conn, UA_NodeId *nodeId)
 {
-
+return UA_TRUE;
 }
 
 UA_DateTime firstTimeStamp(MYSQL *conn, const UA_NodeId *nodeId)
@@ -536,6 +562,7 @@ size_t firstIndex(UA_Server *server,
                   const UA_NodeId *nodeId)
 {
 	firstTimeStamp(conn, nodeId);
+	return 0;
 }
 //-- start block
 UA_DateTime lastTimeStamp(MYSQL *conn, const UA_NodeId *nodeId)
@@ -634,18 +661,21 @@ size_t lastIndex(UA_Server *server,
                  const UA_NodeId *nodeId)
 {
 	lastTimeStamp(conn, nodeId);
+	return 0;
 }
 //--end block
 
 UA_Boolean hasTimeStamp(MYSQL *conn, UA_NodeId *node)
 {
-
+return UA_TRUE;
 }
 
+/*
 UA_DateTime findTimeStamp(MYSQL *conn, UA_NodeId *nodeId)
 {
-
+return (UA_DateTime)NULL;
 }
+*/
 
 //--start block
 void numDataPointsInRange(MYSQL *conn, const UA_NodeId *nodeId)
@@ -659,68 +689,68 @@ void numDataPointsInRange(MYSQL *conn, const UA_NodeId *nodeId)
                                         nodeId->identifier.numeric);
                         printf("numDataPointsInRange SQL :%s \n", sqlbuffer);break;
                 case 10302:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardIgramDC where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardIgramDC where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10303:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserPP where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserPP where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10304:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserDC where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserDC where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10305:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSingleBeamAt900 where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSingleBeamAt900 where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10306:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSingleBeamAt2500 where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSingleBeamAt2500 where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10307:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSignalToNoiseAt2500 where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSignalToNoiseAt2500 where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10308:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardCenterBurstLocation where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardCenterBurstLocation where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10309:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardDetectorTemp where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardDetectorTemp where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10310:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserFrequency where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserFrequency where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10311:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardHardDriveSpace where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardHardDriveSpace where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10312:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardFlow where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardFlow where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10313:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardTemperature where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardTemperature where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10314:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardPressure where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardPressure where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10315:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardTempOptics where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardTempOptics where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10316:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardBadScanCounter where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardBadScanCounter where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc ",
                                         nodeId->identifier.numeric); break;
                 case 10317:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardFreeMmemorySpace where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardFreeMmemorySpace where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc",
                                         nodeId->identifier.numeric); break;
                 // 10318 - 10321 - string type, no need to historize
                 case 10322:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSystemCounter where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardSystemCounter where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc",
                                         nodeId->identifier.numeric); break;
                 case 10323:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardDetectorCounter where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardDetectorCounter where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc",
                                         nodeId->identifier.numeric); break;
                 case 10324:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserCounter where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardLaserCounter where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc",
                                         nodeId->identifier.numeric); break;
                 case 10325:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardFlowPumpCounter where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardFlowPumpCounter where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc",
                                         nodeId->identifier.numeric); break;
                 case 10326:
-                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardDesiccantCounter where t1 >= '??' AND t1 <= '??' and nodeid = %d order by t1 asc",
+                        sprintf(sqlbuffer, "select count(*) from HistoryAirgardDesiccantCounter where t1 >= '\?\?' AND t1 <= '\?\?' and nodeid = %d order by t1 asc",
                                         nodeId->identifier.numeric); break;
         }
 
@@ -734,6 +764,7 @@ void numDataPointsInRange(MYSQL *conn, const UA_NodeId *nodeId)
 
 }
 
+/*
 size_t
 resultSize(UA_Server *server,
                   void *hdbContext,
@@ -745,11 +776,12 @@ resultSize(UA_Server *server,
 {
 	numDataPointsInRange(conn, nodeId);
 }
+*/
 //--end block
 
 UA_Boolean IsReturnTimeStampSupported(MYSQL *conn, const UA_NodeId *nodeId)
 {
-
+return UA_TRUE;
 }
 
 UA_Boolean
@@ -849,9 +881,10 @@ void readHistoryData(MYSQL *conn, const UA_NodeId *nodeId)
         if (mysql_query(conn, sqlbuffer))
                 fprintf(stderr, "%s\n", mysql_error(conn));
 
+	return;
 }
 
-UA_StatusCode getHistoryData(UA_Server *server,
+void getHistoryData(UA_Server *server,
                       const UA_NodeId *sessionId,
                       void *sessionContext,
                       const UA_HistoryDataBackend *backend,
@@ -868,11 +901,14 @@ UA_StatusCode getHistoryData(UA_Server *server,
                       UA_ByteString *outContinuationPoint,
                       UA_HistoryData *result)
 {
-        readHistoryData(conn, sessionId);
+// return value was UA_StatusCode, chaned to void;
+
+         readHistoryData(conn, sessionId);
+
 
 }
 
-void CreateServerHistorizingItems(UA_Server *server)
+void createHistorizingItems(UA_Server *server)
 {
 /*
     UA_HISTORIZINGUPDATESTRATEGY_USER     = 0x00, // The user of the api stores the values to the database himself.
@@ -886,30 +922,69 @@ void CreateServerHistorizingItems(UA_Server *server)
                                                      equal to the old value.
 */
 
-	#ifdef optionPoll       // polling mode
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : optionPoll");
                        	size_t initialNodeIdStoreSize = 22;
-			UA_StatusCode retval;
-
-                        UA_HistoryDataGathering HistoryDataGathering = UA_HistoryDataGathering_Default(initialNodeIdStoreSize); // initial NodeStore Size = 1
-
-                        UA_ServerConfig *config = UA_Server_getConfig(server);
-                        config->historyDatabase = UA_HistoryDatabase_default(HistoryDataGathering);
+			UA_HistoryDataGathering HistoryDataGathering = UA_HistoryDataGathering_Default(initialNodeIdStoreSize);
+			UA_ServerConfig *config = UA_Server_getConfig(server);
+			config->historyDatabase = UA_HistoryDatabase_default(HistoryDataGathering);
 
                         UA_HistorizingNodeIdSettings HistorizingSetting;
                         HistorizingSetting.historizingBackend = UA_HistoryDataBackend_Memory(22, 200); // 22 nodes, 200 values each
                         HistorizingSetting.maxHistoryDataResponseSize = 100;
 
+
+			const char *env_sqlHistoryOption = getenv("SVR_SQL_HISTORY_OPTION");
+			int HistoryOption = 0;
+
+			if (strncmp(env_sqlHistoryOption, "Poll", 4) == 0)
+			{
+ 			//#ifdef optionPoll       // polling mode
+				HistoryOption = 0;
+        			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : Polling storage method");
+				HistorizingSetting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_POLL;
+				HistorizingSetting.pollingInterval = 100;
+  			//#endif
+			}
+			else if (strncmp(env_sqlHistoryOption, "ValueSet", 8) == 0)
+			{
+			//#ifdef optionValueSet
+				HistoryOption = 1;
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet storage method");
+				HistorizingSetting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_VALUESET;
+			//#endif
+			}
+			else if (strncmp(env_sqlHistoryOption, "UserDefine", 10) == 0)
+			{
+			//#ifdef optionUserDefine
+				HistoryOption = 2;
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : User Define storage method");
+				HistorizingSetting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_USER;
+			//#endif
+			}
+			else
+			{
+				HistoryOption = 0;
+				UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : Cannot determine the Historizing storage, defaulting to polling"); 
+				HistorizingSetting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_POLL;
+				HistorizingSetting.pollingInterval = 100;
+			}
+
+		/*
+                        UA_HistoryDataGathering HistoryDataGathering = UA_HistoryDataGathering_Default(initialNodeIdStoreSize); // initial NodeStore Size = 1
+
+                        UA_ServerConfig *config = UA_Server_getConfig(server);
+                        config->historyDatabase = UA_HistoryDatabase_default(HistoryDataGathering);
+
+
 			// callback for HistoryDataBackend functions
 			UA_HistoryDataBackend HistoryDataBackend;
 			//HistoryDataBackend.serverSetHistoryData = ???
 			HistoryDataBackend.getHistoryData = getHistoryData;
-			HistoryDataBackend.firstIndex = firstTimeStamp;
+			HistoryDataBackend.firstIndex = (size_t)firstTimeStamp;
 			HistoryDataBackend.lastIndex = lastTimeStamp;
 			HistoryDataBackend.resultSize = numDataPointsInRange;
 			HistoryDataBackend.boundSupported = boundHistory;
 			HistoryDataBackend.timestampsToReturnSupported = IsReturnTimeStampSupported;
-
+		*/
 			//==============================================================================================================================================
 
     			//UA_HISTORIZINGUPDATESTRATEGY_POLL     = 0x02  // The value of the node will be read periodically.
@@ -918,171 +993,117 @@ void CreateServerHistorizingItems(UA_Server *server)
                         //                             Values will not be stored if the value is
                         //                             equal to the old value.
 
-			HistorizingSetting.pollingInterval = 100;	// in millisec
-                        HistorizingSetting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_POLL;
-
-	       retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outIgramPP_Id, HistorizingSetting);
-			#ifdef DEBUG
-			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outIgramPP_Id : %s", UA_StatusCode_name(retval));
-			#endif
-
-			HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outIgramDC_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserPP_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserDC_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSingleBeamAt900_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSingleBeamAt2500_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSignalToNoiseAt2500_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outCenterBurstLocation_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDetectorTemp_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserFrequency_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outHardDriveSpace_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFlow_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outTemperature_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outPressure_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outTempOptics_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outBadScanCounter_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFreeMemorySpace_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSystemCounter_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDetectorCounter_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserCounter_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFlowPumpCounter_Id, HistorizingSetting);
-                        HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDesiccantCounter_Id, HistorizingSetting);
+		if (HistoryOption == 1)
+		{
+		//#ifdef ValueSet
+			int retval;
+	       		retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outIgramPP_Id, HistorizingSetting);
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : registerNodeId outIgramPP_Id : %s", UA_StatusCode_name(retval));
+			retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outIgramDC_Id, HistorizingSetting);
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outIgramPP_Id : %s", UA_StatusCode_name(retval));
+                	retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserPP_Id, HistorizingSetting);
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outLaserPP_Id : %s", UA_StatusCode_name(retval));
+                	retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserDC_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outLaserDC_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSingleBeamAt900_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outSingleBeamAt900_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSingleBeamAt2500_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outLaserSingleBeamAt2500_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSignalToNoiseAt2500_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outSignalToNoiseAt2500_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outCenterBurstLocation_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outCenterBurstLocation_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDetectorTemp_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outDetectorTemp_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserFrequency_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outLaserFrequency_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outHardDriveSpace_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outHardDriveSpace_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFlow_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outFlow_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outTemperature_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outTemperature_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outPressure_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outPressure_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outTempOptics_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outTempOptics_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outBadScanCounter_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outBadScanCounter_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFreeMemorySpace_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outFreeMemorySpace_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSystemCounter_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outSystemCounter_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDetectorCounter_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outDetectorCounter_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserCounter_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outLaserCounter_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFlowPumpCounter_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outFlowPumpCounter_Id : %s", UA_StatusCode_name(retval));
+                        retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDesiccantCounter_Id, HistorizingSetting);
+                                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : ValueSet outDesiccantCounter_Id : %s", UA_StatusCode_name(retval));
 
 			// the following creates an entry in UA_Expert History tab!
                         //HistoryDataGathering.setValue(server, HistoryDataGathering.context, config->sessionId,
                         //                                        config->sessionContext, &outIgramPP_Id, UA_TRUE, &outIgramPP_Id.value);
-
-		//IgramPP = rand(); for testing purposes
-
+		//#endif
+		}
+		else if (HistoryOption == 0)
+		{
+		//#ifdef optionPoll
+		// start the polling process
+		int retval;
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outIgramPP_Id);
-		//	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outIgramPP_Id : %s", UA_StatusCode_name(retval));
+			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outIgramPP_Id : %s", UA_StatusCode_name(retval));
 		retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outIgramDC_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outIgramDC_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outIgramDC_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outLaserPP_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outLaserPP_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outLaserPP_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outLaserDC_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outLaserPP_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outLaserPP_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outSingleBeamAt900_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outSingleBeamAt900PP_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outSingleBeamAt900PP_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outSingleBeamAt2500_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outSingleBeamAt2500_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outSingleBeamAt2500_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outSignalToNoiseAt2500_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outSignalToNoiseAt2500_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outSignalToNoiseAt2500_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outCenterBurstLocation_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outCenterBurstLocation_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outCenterBurstLocation_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outDetectorTemp_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outDetectorTemp_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outDetectorTemp_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outLaserFrequency_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outLaserFrequency_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outLaserFrequency_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outHardDriveSpace_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outHardDriveSpace_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outHardDriveSpace_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outFlow_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outFlow_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outFlow_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outTemperature_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outTemperature_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outTemperature_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outPressure_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outPressure_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outPressure_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outTempOptics_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outTempOptics_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outTempOptics_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outBadScanCounter_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outBadScanCounter_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outBadScanCounter_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outFreeMemorySpace_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outFreeMemorySpace_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outFreeMemorySpace_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outSystemCounter_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outSystemCounter_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outSystemCounter_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outDetectorCounter_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outDetectorCounter_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outDetectorCounter_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outLaserCounter_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outLaserCounter_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outLaserCounter_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outFlowPumpCounter_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outFlowPumpCounter_Id : %s", UA_StatusCode_name(retval));
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outFlowPumpCounter_Id : %s", UA_StatusCode_name(retval));
                 retval = HistoryDataGathering.startPoll(server, HistoryDataGathering.context, &outDesiccantCounter_Id);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : startpoll outDesiccantCounter_Id : %s", UA_StatusCode_name(retval));
-
-
-	#else // optionValueset
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : optionValueset");
-       		size_t initialNodeIdStoreSize = 1;
-                UA_StatusCode retval;
-
-                UA_HistoryDataGathering HistoryDataGathering = UA_HistoryDataGathering_Default(initialNodeIdStoreSize); // initial NodeStore Size = 1
-
-                UA_ServerConfig *config = UA_Server_getConfig(server);
-                config->historyDatabase = UA_HistoryDatabase_default(HistoryDataGathering);
-
-                UA_HistorizingNodeIdSettings HistorizingSetting;
-                HistorizingSetting.historizingBackend = UA_HistoryDataBackend_Memory(3, 100); // 22 nodes, 200 values each
-                HistorizingSetting.maxHistoryDataResponseSize = 100;
-
-                HistorizingSetting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_VALUESET;
-
-
-			/* the following creates an entry in UA_Expert History tab
-                        //HistoryDataGathering.setValue(server, HistoryDataGathering.context, sessionId,
-                        //                                        sessionContext, &outIgramPP_Id, UA_TRUE, &outIgramPP_Id.value);
-			UA_Variant h_data;
-			UA_DataValue *myDataValue = UA_DataValue_new();
-			//UA_Float raw_data;
-			UA_Server_readValue(server, outIgramPP_Id, &h_data);
-			//raw_data = *(UA_Float *)h_data->data;
-			myDataValue->value = h_data;
-			HistoryDataGathering.setValue(server, HistoryDataGathering.context, config->sessionId,
-								server->sessionContext, &outIgramPP_Id, UA_TRUE, &myDataValue);
-
-			//UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "outIgramPP node value is %f", raw_data);
-			//UA_Variant_delete(h_data);
-			UA_DataValue_delete(myDataValue);
-			*/
-
-		retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outIgramPP_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outIgramPP_Id : %s", UA_StatusCode_name(retval));
-		retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outIgramDC_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outIgramDC_Id : %s", UA_StatusCode_name(retval));
-               	retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserPP_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outLaserPP_Id : %s", UA_StatusCode_name(retval));
-               	retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserDC_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outLaserDC_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSingleBeamAt900_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outSingleBeamAt900_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSingleBeamAt2500_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outSingleBeamAt2500_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSignalToNoiseAt2500_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outSignalToNoiseAt2500_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outCenterBurstLocation_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outCenterBurstLocation_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDetectorTemp_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outDetectorTemp_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserFrequency_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outLaserFrequency_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outHardDriveSpace_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outHardDriveSpace_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFlow_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outFlow_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outTemperature_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outTemperature_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outPressure_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outPressure_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outTempOptics_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outTempOptics_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outBadScanCounter_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outBadScanCounter_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFreeMemorySpace_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outMemorySpace_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outSystemCounter_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outSystemCounter_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDetectorCounter_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outDetectorCounter_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outLaserCounter_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outLaserCounter_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outFlowPumpCounter_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outFlowPump_Id : %s", UA_StatusCode_name(retval));
-                retval = HistoryDataGathering.registerNodeId(server, HistoryDataGathering.context, &outDesiccantCounter_Id, HistorizingSetting);
-                //        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "SV_Historizing.c : registerNodeId outDesiccantCounter_Id : %s", UA_StatusCode_name(retval));
-
-	#endif
-
-
-
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : startpoll outDesiccantCounter_Id : %s", UA_StatusCode_name(retval));
+		//#endif
+		}
+		else if (HistoryOption == 2)
+		{
+		//#ifdef optionUserDefine
+			// for future
+		//#endif
+		}
 
 
 }

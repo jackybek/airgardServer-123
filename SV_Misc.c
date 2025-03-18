@@ -10,14 +10,45 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include <libxml2/libxml/parser.h>
-#include <libxml2/libxml/tree.h>
-#include <libxml2/libxml/xmlreader.h>
+//#include <libxml2/libxml/parser.h>
+//#include <libxml2/libxml/tree.h>
+//#include <libxml2/libxml/xmlreader.h>
+#include "SV_Misc.h"
 
-xmlNodePtr srSeekChildNodeNamed(xmlNode* p, char* name, int len);
-UA_ByteString loadFile(char* filename);
-char* itoa(int num, char* str, int base);
+//UA_ByteString loadFile(const char *const);
 
+// sample found in /open62541/examples/common.h
+// parses the certificate file - used in StartOPCUAServer.c
+
+UA_ByteString loadFile(const char *const path)
+{
+    UA_ByteString fileContents = UA_STRING_NULL;
+
+    // Open the file
+    FILE *fp = fopen(path, "rb");
+    if(!fp) {
+        errno = 0; // We read errno also from the tcp layer...
+        return fileContents;
+    }
+
+    // Get the file length, allocate the data and read
+    fseek(fp, 0, SEEK_END);
+    fileContents.length = (size_t)ftell(fp);
+    fileContents.data = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
+    if(fileContents.data) {
+        fseek(fp, 0, SEEK_SET);
+        size_t read = fread(fileContents.data, sizeof(UA_Byte), fileContents.length, fp);
+        if(read != fileContents.length)
+            UA_ByteString_clear(&fileContents);
+    } else {
+        fileContents.length = 0;
+    }
+    fclose(fp);
+
+    return fileContents;
+}
+
+#ifdef WAIT
 xmlNodePtr srSeekChildNodeNamed(xmlNode* p, char* name, int len)
 {
 	xmlNodePtr curr_node;
@@ -38,6 +69,7 @@ xmlNodePtr srSeekChildNodeNamed(xmlNode* p, char* name, int len)
 	}
 	return NULL;
 }
+#endif
 
 /*
 UA_ByteString loadFile(char* filename)
@@ -63,6 +95,7 @@ UA_ByteString loadFile(char* filename)
 }
 */
 
+#ifdef HOLD
 // Implementation of itoa()
 
 char* itoa(int num, char* buffer, int base) {
@@ -110,4 +143,4 @@ char* itoa(int num, char* buffer, int base) {
     buffer[curr] = '\0';
     return buffer;
 }
-
+#endif

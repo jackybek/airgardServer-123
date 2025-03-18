@@ -11,10 +11,11 @@
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #else
+   #define UA_ENABLE_DISCOVERY_MULTICAST
    #include "open62541.h"
 #endif
 
-#include "SV_NewMonitor.h"
+#include "SV_Monitor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -127,18 +128,19 @@ extern int g_argc;
 
 // sample found in /open62541/examples/common.h
 // parses the certificate file - used in StartOPCUAServer.c
+
 UA_ByteString loadFile(const char *const path)
 {
     UA_ByteString fileContents = UA_STRING_NULL;
 
-    /* Open the file */
+    // Open the file 
     FILE *fp = fopen(path, "rb");
     if(!fp) {
-        errno = 0; /* We read errno also from the tcp layer... */
+        errno = 0; // We read errno also from the tcp layer... 
         return fileContents;
     }
 
-    /* Get the file length, allocate the data and read */
+    // Get the file length, allocate the data and read 
     fseek(fp, 0, SEEK_END);
     fileContents.length = (size_t)ftell(fp);
     fileContents.data = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
@@ -282,8 +284,8 @@ void RegisterOPCServerToLDS(UA_Server *uaServer1)
 			//goto cleanup;
 			return;
 		}
-		LDSClient_config1->initConnectionFunc = UA_ClientConnectionTCP_init; /* for async client */
-		LDSClient_config1->pollConnectionFunc = UA_ClientConnectionTCP_poll; /* for async connection */
+	//	LDSClient_config1->initConnectionFunc = UA_ClientConnectionTCP_init; /* for async client */
+	//	LDSClient_config1->pollConnectionFunc = UA_ClientConnectionTCP_poll; /* for async connection */
 		LDSClient_config1->customDataTypes = NULL;
 		LDSClient_config1->connectivityCheckInterval = 0;
                 LDSClient_config1->requestedSessionTimeout = 1200000; /* requestedSessionTimeout */
@@ -344,6 +346,7 @@ void RegisterOPCServerToLDS(UA_Server *uaServer1)
 
 
 //================================================================
+/*
 static UA_StatusCode
 createEndpoint(UA_ServerConfig *conf, UA_EndpointDescription *endpoint,
                const UA_SecurityPolicy *securityPolicy,
@@ -356,16 +359,16 @@ createEndpoint(UA_ServerConfig *conf, UA_EndpointDescription *endpoint,
     endpoint->transportProfileUri =
         UA_STRING_ALLOC("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary");
 
-    /* Add security level value for the corresponding message security mode */
+    // Add security level value for the corresponding message security mode 
     endpoint->securityLevel = (UA_Byte) securityMode;
     UA_String_copy(&securityPolicy->policyUri, &endpoint->securityPolicyUri);
     endpoint->transportProfileUri =
         UA_STRING_ALLOC("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary");
 
-    /* Add security level value for the corresponding message security mode */
+    // Add security level value for the corresponding message security mode 
     endpoint->securityLevel = (UA_Byte) securityMode;
 
-    /* Enable all login mechanisms from the access control plugin  */
+    // Enable all login mechanisms from the access control plugin 
     UA_StatusCode retval = UA_Array_copy(conf->accessControl.userTokenPolicies,
                                          conf->accessControl.userTokenPoliciesSize,
                                          (void **)&endpoint->userIdentityTokens,
@@ -384,6 +387,7 @@ createEndpoint(UA_ServerConfig *conf, UA_EndpointDescription *endpoint,
 
     	return UA_STATUSCODE_GOOD;
 }
+*/
 
 /*
 void CreateServerWebSockets(UA_Server* uaServer1, char* nginxProxy, UA_Int16 nsIdx_MKS)
@@ -404,7 +408,7 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
 	// 2. UA client
 	// --------------------------------------------------------------------------------
 
-	int sockfd;
+	int sockfd=0;
 	char* OPCipaddress = argv[1];
 	char* brokeripaddress = argv[3];
 
@@ -420,7 +424,7 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
 
 	UA_ServerConfig config1;
 	memset(&config1, 0, sizeof(UA_ServerConfig));
-	UA_ConnectionConfig connConfig;
+	//UA_ConnectionConfig connConfig;
 
 	if (g_argc==3 || g_argc==5 || g_argc==6)	// myNewServer 192.168.1.33 192.168.1.88 [192.168.1.11] [1883] pub
 	{
@@ -535,12 +539,12 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
                                                        revocationList, revocationListSize);
 
                 // refer to open62541.org->Server->Server Configuration & plugins/ua_config_default for the list of members in the UA_ServerConfig structure
-		if (!&config1)
-		{
+		//if (!&config1)
+		//{
 			//return UA_STATUSCODE_BADINVALIDARGUMENT;
-			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"StartOPCUAServer.c : error loading Server Configuration");
-			goto cleanup;
-		}
+		//	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"StartOPCUAServer.c : error loading Server Configuration");
+		//	goto cleanup;
+		//}
 		if (config1.nodestore.context == NULL)
 			UA_Nodestore_HashMap(&config1.nodestore);
 
@@ -575,8 +579,7 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
 		config1.applicationDescription.productUri = UA_STRING_ALLOC(PRODUCT_URI);
 		config1.applicationDescription.applicationName = UA_LOCALIZEDTEXT_ALLOC("en", APPLICATION_NAME);
 
-
- 		config1.serverCertificate = certificate;
+ 		//config1.serverCertificate = certificate;
                 config1.shutdownDelay = 0; //5000.0; // millisecond
 
 		// Rule Handling
@@ -608,8 +611,8 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
   		// --to disable anonymous logins (2nd parameter (allowAnonymous) set to UA_FALSE)
 		// -- enable 2 user/password logins
 		config1.accessControl.clear(&config1.accessControl);
-		UA_CertificateVerification verifyX509;
-		retval = UA_AccessControl_default(&config1, UA_FALSE, &verifyX509, &config1.securityPolicies[config1.securityPoliciesSize-1].policyUri, 2, logins);
+		//UA_CertificateVerification verifyX509;
+		retval = UA_AccessControl_default(&config1, UA_FALSE, &config1.securityPolicies[config1.securityPoliciesSize-1].policyUri, usernamePasswordsSize, logins);
 		if (retval != UA_STATUSCODE_GOOD)
 			goto cleanup;
 
@@ -628,7 +631,7 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
 
 		// Certificate Verification
 		// that accepts every certificate. Can be overwritten when the policy is specialized.
-		UA_CertificateVerification_AcceptAll(&config1.certificateVerification);
+		//UA_CertificateVerification_AcceptAll(&config1.certificateVerification);
 
 		// Limits for SecureChannels
 		config1.maxSecureChannels = 40;
@@ -969,12 +972,18 @@ void* StartOPCUAServer(void* x_void_ptr, char* argv[])
 cleanup:
 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "OPCUA Server was unexpectedly shut down");
 	if (uaServer1)	// (uaServer)
+	{
+		UA_Server_run_shutdown(uaServer1);
 		UA_Server_delete(uaServer1); // UA_Server_delete(uaServer);
+	}
 	else
+	{
 		UA_ServerConfig_clean(&config1); // UA_ServerConfig_clean(config);
-
+	}
 	close(sockfd);
 	CloseHistoryDBConnection();
+
+	return (void *)EXIT_FAILURE;
 	//return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
 //#endif
 }

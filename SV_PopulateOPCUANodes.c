@@ -16,6 +16,8 @@
 #include <libxml2/libxml/tree.h>
 #include <libxml2/libxml/xmlreader.h>
 
+#include "SV_PopulateOPCUANodes.h"
+
 #define MAX_BUFFER_SIZE 20000   // max number of bytes we can get at once
 #define PORT 20004
 
@@ -23,9 +25,6 @@ static int PopulateOPCUANodes_firstTime = 1;
 static int sockfd;
 static struct hostent* he;
 static struct sockaddr_in airgard_addr_data;        /* connector's address information */
-
-void PopulateOPCUANodes(char* g_argv_ip);
-int ExtractXMLElementNames(xmlNode * a_node);
 
 void PopulateOPCUANodes(char* g_argv_ip)    // g_argv_ip refers to the sensor IP
 {

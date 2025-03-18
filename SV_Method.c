@@ -1,17 +1,18 @@
 #ifdef almagamation
 //#include <xml.h>
-#include <open62541/plugin/log_stdout.h>
-#include <open62541/server.h>
-#include <open62541/server_config_default.h>
-#include <libxml2/libxml/parser.h>
-#include <libxml2/libxml/tree.h>
-#include <libxml2/libxml/xmlreader.h>
+  #include <open62541/plugin/log_stdout.h>
+  #include <open62541/server.h>
+  #include <open62541/server_config_default.h>
+  #include <libxml2/libxml/parser.h>
+  #include <libxml2/libxml/tree.h>
+  #include <libxml2/libxml/xmlreader.h>
 #else
   #include "open62541.h"
 #endif
 
 //#include "myNewServer.h"
-//#include "myNewMethod.h"
+#include <unistd.h>
+#include "SV_Method.h"
 #define MAX_STRING_SIZE 64
 
 
@@ -1004,8 +1005,10 @@ addGetSoftwareVersionMethod(UA_Server *server, UA_NodeId parent)
                             getSoftwareVersionAttr, &GetSoftwareVersionMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
+    #ifdef DEBUG
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Method Node created : Airgard->Methods->GetSoftwareVersion Node");
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetSoftwareVersion Node");
+    #endif
 }
 
 void
@@ -1033,9 +1036,10 @@ addGetDataBlockVersionMethod(UA_Server *server, UA_NodeId parent)
                             getDataBlockVersionAttr, &GetDataBlockVersionMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetDataBlockVersion Node");
-
+    #ifdef DEBUG
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetDataBlockVersion Node");
+    #endif
 }
 
 void
@@ -1062,10 +1066,10 @@ addGetInstrumentTimeMethod(UA_Server *server, UA_NodeId parent)
                             UA_QUALIFIEDNAME(namespaceIndex, "GetInstrumentTime"),
                             getInstrumentTimeAttr, &GetInstrumentTimeMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
-
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetInstrumentTime Node");
-
+    #ifdef DEBUG
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetInstrumentTime Node");
+    #endif
 }
 
 void
@@ -1093,8 +1097,10 @@ addGetMeasurementTimeMethod(UA_Server *server, UA_NodeId parent)
                             getMeasurementTimeAttr, &GetMeasurementTimeMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetMeasurementTime Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetMeasurementTime Node");
+     #endif
 
 }
 
@@ -1123,8 +1129,10 @@ addGetBootStatusMethod(UA_Server *server, UA_NodeId parent)
                             getBootStatusAttr, &GetBootStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetBootStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetBootStatus Node");
+     #endif
 
 
 }
@@ -1154,8 +1162,10 @@ addGetSnapshotStatusMethod(UA_Server *server, UA_NodeId parent)
                             getSnapshotStatusAttr, &GetSnapshotStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSnapshotStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetSnapshotStatus Node");
+     #endif
 
 }
 
@@ -1184,8 +1194,11 @@ addGetSCPStatusMethod(UA_Server *server, UA_NodeId parent)
                             getSCPStatusAttr, &GetSCPStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSCPStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetSCPStatus Node");
+
+     #endif
 
 }
 
@@ -1215,8 +1228,10 @@ addGetSFTPStatusMethod(UA_Server *server, UA_NodeId parent)
                             getSFTPStatusAttr, &GetSFTPStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSFTPStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetSFTPStatus Node");
+     #endif
 
 }
 
@@ -1246,8 +1261,10 @@ addGetRunScriptStatusMethod(UA_Server *server, UA_NodeId parent)
                             getRunScriptStatusAttr, &GetRunScriptStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetRunScriptStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetRunScriptStatus Node");
+     #endif
 
 }
 
@@ -1277,8 +1294,11 @@ addGetArchiveStatusMethod(UA_Server *server, UA_NodeId parent)
                             getArchiveStatusAttr, &GetArchiveStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetArchiveStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetArchiveStatus Node");
+     #endif
+
 }
 
 
@@ -1307,8 +1327,10 @@ addGetAncillarySensorStatusMethod(UA_Server *server, UA_NodeId parent)
                             getAncillarySensorStatusAttr, &GetAncillarySensorStatusMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetAncillarySensorStatus Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetAncillarySensorStatus Node");
+     #endif
 }
 
 void
@@ -1336,8 +1358,10 @@ addGetSensorMethod(UA_Server *server, UA_NodeId parent)
                             getSensorAttr, &GetSensorMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSensor Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetSensor Node");
+     #endif
 }
 
 void
@@ -1365,8 +1389,10 @@ addGetOperatingTimeMethod(UA_Server *server, UA_NodeId parent)
                             getOperatingTimeAttr, &GetOperatingTimeMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetOperatingTime Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetOperatingTime Node");
+     #endif
 }
 
 void
@@ -1394,8 +1420,10 @@ addGetWarningMessageMethod(UA_Server *server, UA_NodeId parent)
                             getWarningMessageAttr, &GetWarningMessageMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetWarningMessage Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetWarningMessage Node");
+     #endif
 }
 
 
@@ -1435,8 +1463,10 @@ addGetIgramPPMethod(UA_Server *server, UA_NodeId parent)
                             getIgramPPAttr, &GetIgramPPMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetIgramPP Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetIgramPP Node");
+     #endif
 }
 
 void
@@ -1464,8 +1494,10 @@ addGetIgramDCMethod(UA_Server *server, UA_NodeId parent)
                             getIgramDCAttr, &GetIgramDCMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetIgramDC Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetIgramDC Node");
+     #endif
 }
 
 void
@@ -1493,8 +1525,10 @@ addGetLaserPPMethod(UA_Server *server, UA_NodeId parent)
                             getLaserPPAttr, &GetLaserPPMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLaserPP Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetLaserPP Node");
+     #endif
 }
 
 void
@@ -1522,8 +1556,10 @@ addGetLaserDCMethod(UA_Server *server, UA_NodeId parent)
                             getLaserDCAttr, &GetLaserDCMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLaserDC Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Method Node created : Airgard->Methods->GetLaserDC Node");
+     #endif
 }
 
 void
@@ -1551,8 +1587,10 @@ addGetSingleBeamAt900Method(UA_Server *server, UA_NodeId parent)
                             getSingleBeamAt900Attr, &GetSingleBeamAt900MethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSingleBeamAt900 Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetSingleBeamAt900 Node");
+     #endif
 }
 
 void
@@ -1580,8 +1618,10 @@ addGetSingleBeamAt2500Method(UA_Server *server, UA_NodeId parent)
                             getSingleBeamAt2500Attr, &GetSingleBeamAt2500MethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSingleBeamAt2500 Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetSingleBeamAt2500 Node");
+     #endif
 }
 
 void
@@ -1609,8 +1649,10 @@ addGetSignalToNoiseAt2500Method(UA_Server *server, UA_NodeId parent)
                             getSignalToNoiseAt2500Attr, &GetSignalToNoiseAt2500MethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSignalToNoiseAt2500 Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetSignalToNoiseAt2500 Node");
+     #endif
 }
 
 void
@@ -1637,8 +1679,11 @@ addGetCenterBurstLocationMethod(UA_Server *server, UA_NodeId parent)
                             UA_QUALIFIEDNAME(namespaceIndex, "GetCenterBurstLocation"),
                             getCenterBurstLocationAttr, &GetCenterBurstLocationMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetCenterBurstLocation Node");
+
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetCenterBurstLocation Node");
+     #endif
 }
 
 void
@@ -1666,8 +1711,10 @@ addGetDetectorTempMethod(UA_Server *server, UA_NodeId parent)
                             getDetectorTempAttr, &GetDetectorTempMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetDetectorTemp Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetDetectorTemp Node");
+     #endif
 }
 
 void
@@ -1695,8 +1742,10 @@ addGetLaserFrequencyMethod(UA_Server *server, UA_NodeId parent)
                             getLaserFrequencyAttr, &GetLaserFrequencyMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLaserFrequency Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetLaserFrequency Node");
+     #endif
 }
 
 void
@@ -1724,8 +1773,10 @@ addGetHardDriveSpaceMethod(UA_Server *server, UA_NodeId parent)
                             getHardDriveSpaceAttr, &GetHardDriveSpaceMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetHardDriveSpace Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetHardDriveSpace Node");
+     #endif
 }
 
 void
@@ -1753,8 +1804,10 @@ addGetFlowMethod(UA_Server *server, UA_NodeId parent)
                             getFlowAttr, &GetFlowMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetFlow Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetFlow Node");
+     #endif
 }
 
 void
@@ -1782,8 +1835,10 @@ addGetTemperatureMethod(UA_Server *server, UA_NodeId parent)
                             getTemperatureAttr, &GetTemperatureMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetTemperature Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetTemperature Node");
+     #endif
 }
 
 void
@@ -1811,8 +1866,10 @@ addGetPressureMethod(UA_Server *server, UA_NodeId parent)
                             getPressureAttr, &GetPressureMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetPressure Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetPressure Node");
+     #endif
 }
 
 void
@@ -1840,8 +1897,10 @@ addGetTempOpticsMethod(UA_Server *server, UA_NodeId parent)
                             getTempOpticsAttr, &GetTempOpticsMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetTempOptics Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetTempOptics Node");
+     #endif
 }
 
 void
@@ -1869,8 +1928,10 @@ addGetBadScanCounterMethod(UA_Server *server, UA_NodeId parent)
                             getBadScanCounterAttr, &GetBadScanCounterMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetBadScanCounter Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetBadScanCounter Node");
+     #endif
 }
 
 void
@@ -1898,8 +1959,10 @@ addGetFreeMemorySpaceMethod(UA_Server *server, UA_NodeId parent)
                             getFreeMemorySpaceAttr, &GetFreeMemorySpaceMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetFreeMemorySpace Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetFreeMemorySpace Node");
+     #endif
 }
 
 void
@@ -1927,8 +1990,10 @@ addGetLABFilenameMethod(UA_Server *server, UA_NodeId parent)
                             getLABFilenameAttr, &GetLABFilenameMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLABFilename Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetLABFilename Node");
+     #endif
 }
 
 void
@@ -1956,8 +2021,10 @@ addGetLOGFilenameMethod(UA_Server *server, UA_NodeId parent)
                             getLOGFilenameAttr, &GetLOGFilenameMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLOGFilename Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetLOGFilename Node");
+     #endif
 }
 
 void
@@ -1985,8 +2052,10 @@ addGetLgFilenameMethod(UA_Server *server, UA_NodeId parent)
                             getLgFilenameAttr, &GetLgFilenameMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLgFilename Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetLgFilename Node");
+     #endif
 }
 
 void
@@ -2014,8 +2083,10 @@ addGetSecondLgFilenameMethod(UA_Server *server, UA_NodeId parent)
                             getSecondLgFilenameAttr, &GetSecondLgFilenameMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSecondLgFilename Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetSecondLgFilename Node");
+     #endif
 }
 
 
@@ -2044,8 +2115,10 @@ addGetSystemCounterMethod(UA_Server *server, UA_NodeId parent)
                             getSystemCounterAttr, &GetSystemCounterMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetSystemCounter Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetSystemCounter Node");
+     #endif
 }
 
 void
@@ -2073,8 +2146,10 @@ addGetDetectorCounterMethod(UA_Server *server, UA_NodeId parent)
                             getDetectorCounterAttr, &GetDetectorCounterMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetDetectorCounter Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetDetectorCounter Node");
+     #endif
 }
 
 void
@@ -2102,8 +2177,10 @@ addGetLaserCounterMethod(UA_Server *server, UA_NodeId parent)
                             getLaserCounterAttr, &GetLaserCounterMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetLaserCounter Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetLaserCounter Node");
+     #endif
 }
 
 void
@@ -2131,8 +2208,10 @@ addGetFlowPumpCounterMethod(UA_Server *server, UA_NodeId parent)
                             getFlowPumpCounterAttr, &GetFlowPumpCounterMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetFlowPumpCounter Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetFlowPumpCounter Node");
+     #endif
 }
 
 void
@@ -2160,8 +2239,10 @@ addGetDesiccantCounterMethod(UA_Server *server, UA_NodeId parent)
                             getDesiccantCounterAttr, &GetDesiccantCounterMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetDesiccantCounter Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetDesiccantCounter Node");
+     #endif
 
 }
 
@@ -2190,8 +2271,10 @@ void addGetNoOfAlarmsMethod(UA_Server *server, UA_NodeId parent)
                             getNoOfAlarmsAttr, &GetNoOfAlarmsMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetNoOfAlarms Node");
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetNoOfAlarms Node");
+     #endif
 
 }
 
@@ -2219,8 +2302,10 @@ void addGetArrayOfAlarmMethod(UA_Server *server, UA_NodeId parent)
                             getArrayOfAlarmAttr, &GetArrayOfAlarmMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
     //printf("retval from UA_Server_addMethodNode - GetArrayOfAlarm : %d \n", retval);
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                 "Method Node created : Airgard->Methods->GetArrayOfAlarms Node");
+     #endif
 }
 
 void addGetNoOfNonAlarmsMethod(UA_Server *server, UA_NodeId parent)
@@ -2248,9 +2333,10 @@ void addGetNoOfNonAlarmsMethod(UA_Server *server, UA_NodeId parent)
                             getNoOfNonAlarmsAttr, &GetNoOfNonAlarmsMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
-//    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-//                "Method Node created : Airgard->Methods->GetNoOfNonAlarms Node");
-
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "Method Node created : Airgard->Methods->GetNoOfNonAlarms Node");
+     #endif
 }
 
 
@@ -2280,8 +2366,10 @@ void addGetArrayOfNonAlarmMethod(UA_Server *server, UA_NodeId parent)
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
 	//printf("retval from UA_Server_addMethodNode - GetArrayOfNonAlarm : %d \n", retval);
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+    #ifdef DEBUG
+     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                 "Method Node created : Airgard->Methods->GetArrayOfNonAlarms Node");
+     #endif
 
 }
 
@@ -2310,9 +2398,10 @@ void addClearAlarmLEDMethod(UA_Server *server, UA_NodeId parent)
                             ClearAlarmLEDAttr, &ClearAlarmLEDMethodCallback,
                             0, NULL, 1, &outputArgument, NULL, NULL);
 
+     #ifdef DEBUG
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                 "Method Node created : Airgard->Methods->ClearAlarmLED Node");
-
+     #endif
 }
 
 /*
@@ -2371,8 +2460,12 @@ void addShutdownEventMethod(UA_Server *server, UA_NodeId parent)
 }
 */
 
-void CreateServerMethodItems(UA_Server *server, UA_NodeId r2_airgard_method_Id)
+void createMethods(UA_Server *server, UA_NodeId r2_airgard_method_Id)
 {
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Entering createMethods function : Method_Id passed in is %d", r2_airgard_method_Id.identifier.numeric);
+
         addGetSoftwareVersionMethod(server, r2_airgard_method_Id);
         addGetDataBlockVersionMethod(server, r2_airgard_method_Id);
         addGetInstrumentTimeMethod(server, r2_airgard_method_Id);
@@ -2429,4 +2522,8 @@ void CreateServerMethodItems(UA_Server *server, UA_NodeId r2_airgard_method_Id)
 	// methods that invokes Events; event id needs to be sent over the wire
 	//addResetEventMethod(server, r2_airgard_method_Id);
 	//addShutdownEventMethod(server, r2_airgard_method_Id);
+
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                "--------SV_Method.c : Leaving createMethods function : Method_Id passed in is %d", r2_airgard_method_Id.identifier.numeric);
+
 }

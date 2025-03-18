@@ -10,13 +10,18 @@ CFLAGS=2=-I$(HOME)open62541 -I/usr/include/libxml2 -I/usr/include/
 CFLAGS3=-g -pass-exit-codes
 DEPS=
 LIBS=-lm -lrt -lpthread  -lcrypto -lssl -lmbedcrypto -lmbedtls -lmbedx509 -lwebsockets -lmariadbclient -lxml2 -ljson-c
-OBJ= open62541.o SV_Misc.o SV_ExtractXMLElementNames.o SV_Event.o  \
-SV_Monitor.o SV_Method.o SV_PopulateOPCUANodes.o SV_CreateOPCUANodes.o \
-SV_StartOPCUAServer.o json_checker.o SV_PubSub.o SV_mainOPCUAServer.o
+OBJ= open62541.o SV_Misc.o  SV_Historizing.o \
+SV_Event.o SV_Monitor.o SV_Method.o  SV_CreateNodes.o \
+json_checker.o SV_Register.o SV_Configure.o SV_Encrypt.o SV_main.o
 
 #KIV
 # SV_Alarm.o
-# SV_Historizing.o
+# SV_WebSockets.o
+# SV_RegisterOPCServerToLDS.o \
+# SV_PubSub.o
+# SV_StartOPCUAServer.o => replaced by SV_main, SV_Encrypt, SV_Configure, SV_Register
+# SV_ExtractXMLElementNames.o => implemented in Client
+# SV_PopulateOPCUANodes.o => implemented in Client
 
 ODIR=obj
 LDIR1=-L/usr/local/lib/
