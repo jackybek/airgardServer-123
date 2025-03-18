@@ -245,4 +245,7 @@ RUN export SVR_APPLICATION_NAME="OPC UA Server based on open62541"
 RUN export SVR_PRIVATEKEYLOC="/usr/local/ssl/private/Svrprivate-key.pem"
 RUN export SVR_SSLCERTIFICATELOC="/usr/local/ssl/certs/Svrcert.pem"
 RUN export SVR_SQLCONNECTION_IP="192.168.1.127"
-
+RUN export SVR_SQL_USERNAME="debian"
+RUN export SVR_SQL_PASSWORD="molekhaven24"
+RUN export SVR_SQL_DATABSE="HistoryAirgard"
+RUN export SVR_SQL_PORT="3306"
