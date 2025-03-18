@@ -237,6 +237,7 @@ VOLUME /usr/local/ssl/private
 ##########################################
 # -- build the user-defined application
 # -- saved to /etc/profile.d/open62541-export.sh
+# list in order : env -0 | sort -z | tr '\0' '\n'
 ##########################################
 RUN export SVR_PRODUCT_URI="http://svr.virtualskies.com.sg"
 RUN export SVR_MANUFACTURER_NAME="Virtual Skies"
