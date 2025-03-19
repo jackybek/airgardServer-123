@@ -25,6 +25,7 @@
 #include <mariadb/mysql.h>
 #include "SV_Historizing.h"
 
+#define MAX_TRIES 6
 //#include "myNewServer.h"
 //#include "myNewMethod.h"
 #define MAX_STRING_SIZE 64
@@ -163,24 +164,56 @@ setValue(UA_Server *server, void *hdgContext, const UA_NodeId *sessionId,
 void GetHistoryDBConnection()
 {
                 // establish connection to mySQL server
+	short no_of_tries = 0;
 
-	const char *env_sqlconn = getenv("SVR_SQLCONNECTION_IP");
+	const char *env_sqlconnIP = getenv("SVR_SQL_CONNECTION_IP");
 	const char *env_sqlusername = getenv("SVR_SQL_USERNAME");
 	const char *env_sqlpassword = getenv("SVR_SQL_PASSWORD");
 	const char *env_sqldatabase = getenv("SVR_SQL_DATABASE");
 	const char *env_sqlport = getenv("SVR_SQL_PORT");
 
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"==========================================================");
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Establishing connection to Historian database .........");
+	if ( (env_sqlconnIP==NULL) || (env_sqlusername==NULL) || (env_sqlpassword==NULL) || (env_sqldatabase==NULL) || (env_sqlport==NULL) )
+	{
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"==========================================================");
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Error reading environment variables");
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_CONNECTION_IP = %s", env_sqlconnIP);
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_USERNAME      = %s", env_sqlusername);
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_PASSWORD      = %s", env_sqlpassword);
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_DATABASE      = %s", env_sqldatabase);
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_PORT          = %s", env_sqlport); 
+		exit(-1);
+	}
+
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Acquiring connection handler to Historian database .........");
+
+	while (no_of_tries < MAX_TRIES)
+	{
                 conn = mysql_init(NULL);
 		//char errmessage[255];
                 if (conn == NULL)
                 {
-                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error initialising mySQL connection");
-                        exit(-1);
+			if (no_of_tries < MAX_TRIES)
+			{
+				no_of_tries++;
+                        	UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error initialising mySQL connection.. retry (%d of %d) in 10 seconds...", no_of_tries, MAX_TRIES);
+				sleep(10);
+                        	continue;
+			}
+			else
+			{
+				UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error initialising mySQL connection after multiple tries.. aborting...");
+				exit(-1);
+			}
                 }
-                else
-                {
+		else
+			break;
+	}
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Establishing connection to Historian database .........");
+		no_of_tries = 0;
+		while (no_of_tries < MAX_TRIES)
+		{
                         // writes historydata to database 'HistoryAirgard' table 'HistoryAirgardIgramDC'
                         /*mysql_real_connect(MYSQL *mysql, const char *host,
                                            const char *user,
@@ -192,7 +225,7 @@ void GetHistoryDBConnection()
                         */
 			/*
 			if (mysql_real_connect(conn,
-						env_sqlconn,
+						env_sqlconnIP,
 						env_sqlusername,
 						env_sqlpassword,
 						env_sqldatabase,
@@ -226,16 +259,39 @@ void GetHistoryDBConnection()
 					default : break;
 				}
 			*/
-				UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : %s %s %s %s %s", env_sqlconn, env_sqlusername, env_sqlpassword, env_sqldatabase, env_sqlport); 
+				UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : %s %s %s %s %s", env_sqlconnIP, env_sqlusername, env_sqlpassword, env_sqldatabase, env_sqlport); 
 				UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : sql error (%d) %s", mysql_errno(conn), mysql_error(conn) );
-				mysql_close(conn);
-
-                                return;
+				if (no_of_tries < MAX_TRIES)
+				{
+					no_of_tries++;
+                        		UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : Error connecting to database.. retry (%d of %d) in 30 seconds...", no_of_tries, MAX_TRIES);
+                        		sleep(30);
+                        		continue; // back to WHILE loop
+				}
+				else
+				{
+					// location X is here
+					UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : Error connecting to database after multiple tries.. aborting...");
+					mysql_close(conn);
+                                	exit(-1);
+				}
                         }
 			else
-				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Successfully connected to Historian database"); 
-                }
+			{
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+					"--------SV_Historizing.c : Successfully connected to Historian database : %s %s %s %s %s",
+					env_sqlconnIP, env_sqlusername, env_sqlpassword, env_sqldatabase, env_sqlport );
+				break; // out of WHILE loop
+			}
+                } // end WHILE
 
+		// somehow it is not able to exit() at location X
+		if (no_of_tries >= MAX_TRIES)
+		{
+			UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Historizing.c : Error connecting to database after multiple tries (%d of %d).. aborting...", no_of_tries, MAX_TRIES);
+                                        mysql_close(conn);
+                                        exit(-1);
+		}
 }
 
 void CloseHistoryDBConnection()
