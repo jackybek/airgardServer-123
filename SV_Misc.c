@@ -95,7 +95,7 @@ UA_ByteString loadFile(char* filename)
 }
 */
 
-#ifdef HOLD
+//#ifdef HOLD
 // Implementation of itoa()
 
 char* itoa(int num, char* buffer, int base) {
@@ -143,4 +143,4 @@ char* itoa(int num, char* buffer, int base) {
     buffer[curr] = '\0';
     return buffer;
 }
-#endif
+//#endif
