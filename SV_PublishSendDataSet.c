@@ -42,6 +42,10 @@ void
 pubSendDataSet(UA_Server *uaServer) {
     /* The PublishedDataSetConfig contains all necessary public
     * informations for the creation of a new PublishedDataSet */
+
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "==========================================================");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishSendDataSet.c ");
+
     UA_PublishedDataSetConfig publishedDataSetConfig;
     memset(&publishedDataSetConfig, 0, sizeof(UA_PublishedDataSetConfig));
     publishedDataSetConfig.publishedDataSetType = UA_PUBSUB_DATASET_PUBLISHEDITEMS;

@@ -166,11 +166,11 @@ void GetHistoryDBConnection()
                 // establish connection to mySQL server
 	short no_of_tries = 0;
 
-	const char *env_sqlconnIP = getenv("SVR_SQL_CONNECTION_IP");
+	const char *env_sqlconnIP   = getenv("SVR_SQL_CONNECTION_IP");
 	const char *env_sqlusername = getenv("SVR_SQL_USERNAME");
 	const char *env_sqlpassword = getenv("SVR_SQL_PASSWORD");
 	const char *env_sqldatabase = getenv("SVR_SQL_DATABASE");
-	const char *env_sqlport = getenv("SVR_SQL_PORT");
+	const char *env_sqlport     = getenv("SVR_SQL_PORT");
 
 	if ( (env_sqlconnIP==NULL) || (env_sqlusername==NULL) || (env_sqlpassword==NULL) || (env_sqldatabase==NULL) || (env_sqlport==NULL) )
 	{
@@ -181,7 +181,13 @@ void GetHistoryDBConnection()
 		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_PASSWORD      = %s", env_sqlpassword);
 		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_DATABASE      = %s", env_sqldatabase);
 		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : SVR_SQL_PORT          = %s", env_sqlport); 
-		exit(-1);
+
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Historizing.c : Setting to default values");
+		env_sqlconnIP = "192.168.1.127";
+		env_sqlusername = "debian";
+		env_sqlpassword = "molekhaven24";
+		env_sqldatabase = "HistoryAirgard";
+		env_sqlport = "3306";
 	}
 
 

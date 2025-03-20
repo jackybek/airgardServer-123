@@ -9,7 +9,7 @@ CFLAGS1=-g -std=c99 -Wall -Werror -Wno-implicit -Wfatal-errors
 CFLAGS=2=-I$(HOME)open62541 -I/usr/include/libxml2 -I/usr/include/
 CFLAGS3=-g -pass-exit-codes
 DEPS=
-LIBS=-lm -lrt -pthread  -lcrypto -lssl -lmbedcrypto -lmbedtls -lmbedx509 -lwebsockets -lmariadbclient -lxml2 -ljson-c
+LIBS=-lm -lrt -lpthread  -lcrypto -lssl -lmbedcrypto -lmbedtls -lmbedx509 -lwebsockets -lmariadbclient -lxml2 -ljson-c
 OBJ= open62541.o SV_Misc.o \
 SV_PubSubInitialise.o SV_PubSubAddConnection.o  \
 SV_PublishDataSetWriter.o SV_PublishInitialiseField.o SV_PublishSendDataSet.o SV_PublishWriterGroup.o \

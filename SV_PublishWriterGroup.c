@@ -90,7 +90,7 @@ pubWriterGroup(UA_Server *uaServer)
     if(useJson)
     {
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c :addWriterGroup : useJson = UA_TRUE");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c :addWriterGroup : useJson = UA_TRUE");
         #endif
         writerGroupConfig.encodingMimeType = UA_PUBSUB_ENCODING_JSON;
         writerGroupConfig.messageSettings.encoding = UA_EXTENSIONOBJECT_DECODED;
@@ -128,7 +128,7 @@ pubWriterGroup(UA_Server *uaServer)
     else
     {
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addWriterGroup : useJson = UA_FALSE");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c : addWriterGroup : useJson = UA_FALSE");
         #endif
 
         writerGroupConfig.encodingMimeType = UA_PUBSUB_ENCODING_UADP;
@@ -174,7 +174,7 @@ pubWriterGroup(UA_Server *uaServer)
      retval = UA_Server_setWriterGroupEncryptionKeys(uaServer, writerGroupIdentifier, 1, sk, ek, kn);        // 1 = securityTokenId
      if (retval!= UA_STATUSCODE_GOOD)
      {
-             UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_PubSub.c : addWriterGroup : UA_Server_setWriterGroupEncryptionKeys : failure %s", UA_StatusCode_name(retval));
+             UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubWriterGroup.c : addWriterGroup : UA_Server_setWriterGroupEncryptionKeys : failure %s", UA_StatusCode_name(retval));
              sleep(2);
              //exit (EXIT_FAILURE);
      }
@@ -183,7 +183,7 @@ pubWriterGroup(UA_Server *uaServer)
     // The above is for UDAP; now this is for MQTT
     if (MQTT_Enable == UA_TRUE) // publish to MQTT Broker
     {
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c addWriterGroup : MQTT_Enable = %d \n", MQTT_Enable);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c addWriterGroup : MQTT_Enable = %d \n", MQTT_Enable);
         // configure the mqtt publish topic
         UA_BrokerWriterGroupTransportDataType brokerTransportSettings;
         memset(&brokerTransportSettings, 0, sizeof(UA_BrokerWriterGroupTransportDataType));
@@ -208,7 +208,7 @@ pubWriterGroup(UA_Server *uaServer)
         //UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
 
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c :addWriterGroup : MQTT_TLS_Enable = %d", MQTT_TLS_Enable);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c :addWriterGroup : MQTT_TLS_Enable = %d", MQTT_TLS_Enable);
         #endif
         if (MQTT_TLS_Enable == UA_TRUE) //port 888x
         {
@@ -239,7 +239,7 @@ pubWriterGroup(UA_Server *uaServer)
                 retval = UA_Server_setWriterGroupEncryptionKeys(uaServer, writerGroupIdentifier, 1, sk, ek, kn);        // 1 = securityTokenId
                 if (retval!= UA_STATUSCODE_GOOD)
                 {
-                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_PubSub.c : addWriterGroup (with TLS) : UA_Server_setWriterGroupEncryptionKeys : failure %s", UA_StatusCode_name(retval));
+                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishWriterGroup.c : addWriterGroup (with TLS) : UA_Server_setWriterGroupEncryptionKeys : failure %s", UA_StatusCode_name(retval));
                         sleep(2);
                         //exit (EXIT_FAILURE);
                 }
@@ -253,8 +253,8 @@ pubWriterGroup(UA_Server *uaServer)
      else // MQTT_Enable == UA_FALSE
      {
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addWriterGroup : MQTT_Enable = %d", MQTT_Enable);
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c : addWriterGroup : MQTT_TLS_Enable = %d", MQTT_TLS_Enable);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c : addWriterGroup : MQTT_Enable = %d", MQTT_Enable);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c : addWriterGroup : MQTT_TLS_Enable = %d", MQTT_TLS_Enable);
         // do nothing
         #endif
      }

@@ -161,19 +161,37 @@ int main(int argc, char *argv[])
 	//UA_NodeId r2_airgard_data_Id;
         switch (argc)
         {
-		case 1: argv[0]= "./myNewServer" ;
+/*		case 1: argv[0]= "./myNewServer" ;
 			argv[1] = "192.168.1.33";
 			argv[2] = "192.168.1.157";
-			argv[3] = "192.168.1.11";
-			argv[4] = "192.168.1.44"; //"OPCLds-44";	//"192.168.1.44";
+			argv[3] = "192.168.1.44";
+			argv[4] = "192.168.1.11"; //"OPCLds-44";	//"192.168.1.44";
 			argv[5] = "1883";
 			argv[6] = "--pub";
 			argc=7;
-			printf("%s %s %s %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);sleep(1);break;
-                case 3: break;
-                case 5: break;
-                case 6: break;
-		case 7: break;
+			printf("%s %s %s %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+			break;
+*/
+		case 1: printf("Usage : ./myNewServer <local ip> <sensor ip> <LDS ip> [<*broker ip> <port> <{--all}|--pub|--sub] \n");
+                        printf("Note* : port number to differentiate between MQTT (1883) or AMQP (5672) \n");
+                        exit (0);
+
+                case 4: argv[4] = NULL; //broker ip
+			argv[5] = "0";	// port
+			argv[6] = "nomode"; //mode
+			printf("%s %s %s %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+			break;
+
+                case 5: printf("Usage : ./myNewServer <local ip> <sensor ip> <LDS ip> [<*broker ip> <port> <{--all}|--pub|--sub] \n");
+                        printf("Note* : port number to differentiate between MQTT (1883) or AMQP (5672) \n");
+                        exit (0);
+
+                case 6: printf("%s %s %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
+			argv[6] = "--all"; // mode
+                        break;
+
+		case 7: break; // ok
+
                 default:
                         printf("Usage : ./myNewServer <local ip> <sensor ip> <LDS ip> [<*broker ip> <port> <{--all}|--pub|--sub] \n");
                         printf("Note* : port number to differentiate between MQTT (1883) or AMQP (5672) \n");
@@ -205,11 +223,11 @@ int main(int argc, char *argv[])
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_main.c : OPCUA server ready to start ");
         status = UA_Server_run_startup(server);
         if (status != UA_STATUSCODE_GOOD)
-                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_main.c : Could not start and run LDS Server : %s", UA_StatusCode_name(status));
+                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_main.c : Could not start and run OPCUA Server : %s", UA_StatusCode_name(status));
         else
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_main.c : OPCUA server started successfully ...");
 
-	registerToLDS(server, argv[4]);
+	UA_ClientConfig *lds = (UA_ClientConfig*)registerToLDS(server, argv[3]);
 	UA_NodeId *nodes, r2_airgard_method_Id, r2_airgard_event_Id;
 
 	nodes = createNodes(server);
@@ -222,7 +240,7 @@ int main(int argc, char *argv[])
 		GetHistoryDBConnection(server);
 		createHistorizingItems(server);
 		int port = atoi(argv[5]);
-		pubSubInitialise(server, argv[3],port,argv[6]);
+		pubSubInitialise(server, argv[4],port,argv[6]);
 
 		// finally execute other new functions
 		//createWebSockets(server);
@@ -239,9 +257,20 @@ int main(int argc, char *argv[])
 
 		while (running)
 			UA_Server_run_iterate(server, true);
+
 		if (!running)
 		{
- 			UA_Server_delete(server);
+			if (lds != NULL)
+			{
+				int status = UA_Server_deregisterDiscovery(server, lds, UA_STRING(argv[3]));
+				if (status != UA_STATUSCODE_GOOD)
+					UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
+                     					"--------SV_main.c : Could not unregister OPCUA server from discovery server. StatusCode %s",
+                     					UA_StatusCode_name(status));
+
+				UA_Server_run_shutdown(server);
+ 				UA_Server_delete(server);
+			}
                 }
 		return EXIT_SUCCESS;
 }

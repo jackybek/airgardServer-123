@@ -69,12 +69,12 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
         // if opc.udp, no need to specify networkinterface
         // if opc.eth then need to specify networkinterface
 
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : CreateServerPubSub()");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise.c : CreateServerPubSub()");
 
         if ( brokeraddress != NULL) // broker-based PubSub i.e. MQTT, AMQP
         {
                 char portbuf[5];
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : brokeraddress : %s, port %d", brokeraddress, port);
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise.c : brokeraddress is <%s>, port is <%d>", brokeraddress, port);
                 MQTT_Port = port;       // save to global variable
                 if ( (port == 8883) || (port == 8884) || (port == 8885) || (port == 8887) )
                 {
@@ -89,7 +89,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
                         strcat(URI_mqtt, ":");
                         itoa(port, portbuf, 10);
                         strcat(URI_mqtt, portbuf);
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : URI_mqtt : <%s>", URI_mqtt);
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise.c : URI_mqtt : <%s>", URI_mqtt);
 
                         transportProfile = UA_STRING(TRANSPORT_PROFILE_URI_MQTT);
                         networkAddressUrl.url = UA_STRING(URI_mqtt);
@@ -108,7 +108,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
                         strcat(URI_mqtt, ":");
                         itoa(port, portbuf, 10);
                         strcat(URI_mqtt, portbuf);
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : URI_mqtt : <%s>", URI_mqtt);
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise.c : URI_mqtt : <%s>", URI_mqtt);
 
                         transportProfile = UA_STRING(TRANSPORT_PROFILE_URI_MQTT);
                         networkAddressUrl.url = UA_STRING(URI_mqtt);
@@ -125,7 +125,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
                         strcpy(URI_amqp, "opc.amqp://");
                         strcat(URI_amqp, brokeraddress);
                         strcat(URI_amqp, ":5672");
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : URI_amqp : <%s>", URI_amqp);
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise.c : URI_amqp : <%s>", URI_amqp);
 
                         transportProfile = UA_STRING(TRANSPORT_PROFILE_URI_AMQP);
                         networkAddressUrl.url = UA_STRING(URI_amqp);
@@ -133,6 +133,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
         }
         else // broker-less PubSub i.e. UDP, ETH
         {
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise.c : broker-less segment");
                 MQTT_Enable = UA_FALSE;
                 MQTT_TLS_Enable = UA_FALSE;
                 AMQP_Enable = UA_FALSE;
@@ -183,7 +184,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
         {
                 /* defunct:v1.2.1 */ //config->pubsubTransportLayers[2] = UA_PubSubTransportLayerMQTT();
                 /* defunct:v1.2.1 */ //config->pubsubTransportLayersSize++;
-                /* new:v1.2.2 */ //UA_ServerConfig_addPubSubTransportLayer(config, UA_PubSubTransportLayerMQTT());
+                /* new:v1.2.2 */// UA_ServerConfig_addPubSubTransportLayer(config, UA_PubSubTransportLayerMQTT());
         }
         else if (MQTT_Enable == UA_FALSE && AMQP_Enable == UA_TRUE)
         {
@@ -218,9 +219,9 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
 
                 retval = CreateServerWebSockets(&publishedDataSetIdentifier, &networkAddressUrlWss);    // inititalise the port and send the data to this port
                 if (retval != UA_STATUSCODE_GOOD)
-                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSubInitialise.c : cannot initialise websockets port 7681");
+                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_PubSubInitialise.c : cannot initialise websockets port 7681");
                 else
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSubInitialise.c : Successfully initialise websockets port 7681");
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_PubSubInitialise.c : Successfully initialise websockets port 7681");
 
         #endif
 // ?????????????????????????????????????????????????????????????????????????????????????????????????????????????
@@ -230,20 +231,21 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
         config->pubsubTransportLayersSize++;
 */
 
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : networkAddressUrl.networkInterface           : %s", networkAddressUrl.networkInterface.data);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "------SV_PubSubInitialise.c : networkAddressUrl.networkInterface is <%s>", networkAddressUrl.networkInterface.data);
         //printf("config->pubsubTransportLayers[0]              : %s \n", config->pubsubTransportLayers[0].data);
         // defunct: printf("config->pubsubTransportLayersSize           : %d \n", config->pubsubTransportLayersSize);
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------
-//                                                                         Step 3 : Call <addPubSubConnection()>
+//                                                                         Step 3 : Call <PubSubAddConnection()>
 // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
         pubSubAddConnection(uaServer, &transportProfile, &networkAddressUrl);
         // at this point, the global variable 'PubSubconnectionIdentifier' should be initialised
 
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "==========================================================");
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : after addPubSubConnection() completed");
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : brokeraddress %s", brokeraddress);
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode %s", mode);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : brokeraddress <%s>", brokeraddress);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode <%s>", mode);
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------
 //                                     Step 4 : Depending on the connection type (i.e. broker/ broker-less) AND mode (i.e pub, sub or pub&sub), call the relevant functions (combination)
@@ -254,25 +256,25 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
         {
                 if ( (strncmp(mode, "nomode", 6)==0) && (strlen(mode)==6) && (brokeraddress == NULL) )
                 {
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode = UADP");
+        	                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode = UADP");
                         pubSendDataSet(uaServer);
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubSendDataSet() completed");
+                	        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubSendDataSet() completed");
                         pubInitialiseField(uaServer);
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubInitialiseField() completed");
+                	        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubInitialiseField() completed");
                         pubWriterGroup(uaServer);
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubWriterGroup() completed");
+                        	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubWriterGroup() completed");
                         pubDataSetWriter(uaServer);
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubDataSetWriter() completed");
+                        	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubDataSetWriter() completed");
 
                         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSubInitialise.c : successfully initialise Publisher routine");
                         return;
                 }
 
-                else if ( (strncmp(mode, "pubsub", 6)==0) && (strlen(mode)==6) && (brokeraddress != NULL) )
+                else if ( (strncmp(mode, "--all", 6)==0) && (strlen(mode)==6) && (brokeraddress != NULL) )
                 {
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode = 'pubsub'");
 
                         // publish
+	                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode = 'pubsub'");
                         pubSendDataSet(uaServer);
 				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubSendDataSet() completed");
                         pubInitialiseField(uaServer);
@@ -281,6 +283,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
 				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubWriterGroup() completed");
                         pubDataSetWriter(uaServer);
 				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : pubSetWriter() completed");
+
 			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSubInitialise.c : successfully initialise Publisher routine");
 
                         // subscribe
@@ -297,7 +300,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
                         //addSubscription(uaServer, connection);
                 }
 
-                else if ( (strncmp(mode, "pub", 3)==0) && (strlen(mode)==3) && (brokeraddress != NULL) )
+                else if ( (strncmp(mode, "--pub", 5)==0) && (strlen(mode)==5) && (brokeraddress != NULL) )
                 {
                         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode = 'pub'");
 			// publish
@@ -314,7 +317,7 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
                         return;
                 }
 	/*
-                else if ( (strncmp(mode, "sub", 3)==0) && (strlen(mode)==3) && (brokeraddress != NULL) )
+                else if ( (strncmp(mode, "--sub", 5)==0) && (strlen(mode)==5) && (brokeraddress != NULL) )
                 {
                         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PubSubInitialise.c : mode = 'sub'");
                         addReaderGroup(uaServer);

@@ -401,8 +401,8 @@ pubInitialiseField(UA_Server *uaServer)
 
     // add in order :: limit seemed to be 32
     // count = 4
-    #ifdef DEBUG
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_PubSub.c 733 : addDataSetField()");
+    #ifdef DEBUG_MODE
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSub.c 733 : addDataSetField()");
     #endif
     // added by Jacky on 4/4/2021 to update MQTT payload (MetaDataVersion)
     // the corresponding change has to take place in open62541.c : UA_Server_addDataSetField() - however this change cause publisher to have error
@@ -433,7 +433,7 @@ pubInitialiseField(UA_Server *uaServer)
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgAncillarySensorStatus, NULL); //&f_AncillarySensorStatus_Id);
 
     #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_PubSub.c :755 : addDataSetField()");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSub.c :755 : addDataSetField()");
     #endif
 // count = 25
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgIgramPP, NULL); //&f_IgramPP_Id);
@@ -463,8 +463,8 @@ pubInitialiseField(UA_Server *uaServer)
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgDesiccantCounter, NULL); //&f_DesiccantCounter_Id);
 
     #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_PubSub.c :784 : addDataSetField()");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishedInitialiseField.c : addDataSetField()");
     #endif
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_PubSub.c : addDataSetField : success");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishedInitialiseField.c : addDataSetField : success");
 
 }

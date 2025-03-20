@@ -5,6 +5,7 @@
 #else
   #include "open62541.h"
 #endif
+#include "SV_CreateNodes.h"
 
 #include <stdio.h>
 #include <string.h>

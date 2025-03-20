@@ -85,7 +85,7 @@ UA_DURATIONRANGE(UA_Duration min, UA_Duration max) {
 }
 
 
-void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
+UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
 {
         UA_StatusCode retval;
 
@@ -103,7 +103,7 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 {
                         UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c: Unable to load file : %s", DISCOVERY_SSLCERTIFICATELOC);
                         //goto cleanup;
-                        return;
+                        return NULL;
                 }
 		else
 			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : successfully loaded LDS certificate");
@@ -114,7 +114,7 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 {
                         UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Unable to load file : %s", DISCOVERY_PRIVATEKEYLOC);
                         //goto cleanup;
-                        return;
+                        return NULL;
                 }
 		else
                 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : successfully loaded LDS privateKey");
@@ -161,7 +161,7 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 {
                         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "--------SV_Register.c.c  Error setting securityPolicies : %s", UA_StatusCode_name(UA_STATUSCODE_BADOUTOFMEMORY));
                         //goto cleanup;
-                        return;
+                        return LDSClient_config1;
                 }
         //      LDSClient_config1->initConnectionFunc = UA_ClientConnectionTCP_init; /* for async client */
         //      LDSClient_config1->pollConnectionFunc = UA_ClientConnectionTCP_poll; /* for async connection */
@@ -180,7 +180,7 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
 		if (retval != UA_STATUSCODE_GOOD)
 		{
 			UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Cannot encrypt itself as Client to LDS server : %s",  UA_StatusCode_name(retval));
-			return;
+			return LDSClient_config1;
 		}
  		else
 		{
@@ -204,7 +204,7 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : error is %s", UA_StatusCode_name(retval));
 			UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : UA_LDS_connectUsername() : failure");
                         //goto cleanup;
-                        return;
+                        return LDSClient_config1;
                 }
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : Successfully connected to LDS %s", lds_endpoint);
 
@@ -226,16 +226,17 @@ void registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 if (LDS_retval != UA_STATUSCODE_GOOD)
                 {
                         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
-                                "--------SV_Register.c : registering to remote LDS server  : Fail at UA_Server_addPeriodicServerRegisterCallback. StatusCode %s",
+                                "--------SV_Register.c : registering to remote LDS server  : Could not create periodic job for server register. StatusCode %s",
                                 UA_StatusCode_name(LDS_retval));
                         UA_Client_disconnect(LDSclient);
                         UA_Client_delete(LDSclient);
                         //goto cleanup;
-                        return;
+                        return LDSClient_config1;
                 }
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : End LDS registration process");
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : registered to LDS Server <%s>", DISCOVERY_SERVER_ENDPOINT);
                 #endif  // UA_ENABLE_DISCOVERY
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "=============================================================");
 
+		return LDSClient_config1;
 }

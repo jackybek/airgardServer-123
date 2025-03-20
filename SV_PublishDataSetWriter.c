@@ -99,7 +99,7 @@ pubDataSetWriter(UA_Server *uaServer) {
     if(useJson)
     {
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "SV_PubSub.c :addDataSetWriter : useJson = UA_TRUE");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishDataSetWriter.c :addDataSetWriter : useJson = UA_TRUE");
         #endif
         // JSON config for the dataSetWriter
         jsonDswMd.dataSetMessageContentMask = (UA_JsonDataSetMessageContentMask)

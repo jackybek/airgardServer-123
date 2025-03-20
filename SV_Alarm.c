@@ -6,6 +6,8 @@
    #include "open62541.h"
 #endif
 
+#include "SV_Alarm.h"
+
 #define UA_ENABLE_SUBSCRIPTIONS_ALARMS_CONDITIONS
 
 // function prototypes declaration
