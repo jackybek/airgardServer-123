@@ -10,8 +10,11 @@ CFLAGS=2=-I$(HOME)open62541 -I/usr/include/libxml2 -I/usr/include/
 CFLAGS3=-g -pass-exit-codes
 DEPS=
 LIBS=-lm -lrt -lpthread  -lcrypto -lssl -lmbedcrypto -lmbedtls -lmbedx509 -lwebsockets -lmariadbclient -lxml2 -ljson-c
-OBJ= open62541.o SV_Misc.o  SV_Historizing.o \
-SV_Event.o SV_Monitor.o SV_Method.o  SV_CreateNodes.o \
+OBJ= open62541.o SV_Misc.o \
+SV_PubSubInitialise.o SV_PubSubAddConnection.o  \
+SV_PublishDataSetWriter.o SV_PublishInitialiseField.o SV_PublishSendDataSet.o SV_PublishWriterGroup.o \
+SV_SubscribeDataSetReader.o SV_SubscribeInitialiseField.o SV_SubscribeReceiveDataSet.o SV_SubscribeReaderGroup.o \
+SV_Historizing.o SV_Event.o SV_Monitor.o SV_Method.o  SV_CreateNodes.o \
 json_checker.o SV_Register.o SV_Configure.o SV_Encrypt.o SV_main.o
 
 #KIV
