@@ -54,7 +54,9 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 
         if ( (certificate.length != 0) && (privateKey.length != 0) )
         {
-                status = UA_ServerConfig_setDefaultWithSecurityPolicies(config, 4840,
+        	int SVRport = atoi(env_SVRport);
+
+                status = UA_ServerConfig_setDefaultWithSecurityPolicies(config, SVRport,
                                                        &certificate, &privateKey,
                                                        trustList, trustListSize,
                                                        issuerList, issuerListSize,
@@ -238,8 +240,12 @@ int generateSSCert(UA_Server *uaSvrServer, UA_ServerConfig *config,
         //UA_ServerConfig *config = UA_Server_getConfig(uaSvrServer);
         //if (!config)
         //     UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_Encrypt.c : Error getting pointer to config");
-        UA_ServerConfig_setMinimal(config, 4840, NULL);
-        status = UA_ServerConfig_setDefaultWithSecurityPolicies(config, 4840,
+
+        const char *env_SVRport = getenv("SVR_PORT");
+        int SVRport = atoi(env_SVRport);
+
+        UA_ServerConfig_setMinimal(config, SVRport, NULL);
+        status = UA_ServerConfig_setDefaultWithSecurityPolicies(config, SVRport,
                                                         derCert, derPrivKey,
                                                         trustList, trustListSize,
                                                         issuerList, issuerListSize,

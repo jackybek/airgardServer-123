@@ -176,6 +176,15 @@ int main(int argc, char *argv[])
                         printf("Note* : port number to differentiate between MQTT (1883) or AMQP (5672) \n");
                         exit (0);
 
+		case 2: // to test reverseConnect, need the local ip
+			argv[2] = NULL; // sensor ip
+			argv[3] = "192.168.1.44"; // LDS ip
+			argv[4] = NULL; // broker ip
+			argv[5] = "0"; // port
+			argv[6] = "nomode"; // mode
+			printf("%s %s %s %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+			break;
+
                 case 4: argv[4] = NULL; //broker ip
 			argv[5] = "0";	// port
 			argv[6] = "nomode"; //mode
@@ -226,6 +235,10 @@ int main(int argc, char *argv[])
                 UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_main.c : Could not start and run OPCUA Server : %s", UA_StatusCode_name(status));
         else
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_main.c : OPCUA server started successfully ...");
+
+
+	// start making function call
+	reverseConnect(server, argv[2]);
 
 	UA_ClientConfig *lds = (UA_ClientConfig*)registerToLDS(server, argv[3]);
 	UA_NodeId *nodes, r2_airgard_method_Id, r2_airgard_event_Id;

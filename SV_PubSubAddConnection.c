@@ -356,9 +356,17 @@ typedef struct {
     connectionConfig.transportProfileUri = UA_STRING("http://opcfoundation.org/UA-Profile/Transport/pubsub-udp-uadp");
     /* The address and interface is part of the standard
      * defined UA_NetworkAddressUrlDataType. */
-    UA_NetworkAddressUrlDataType networkAddressUrl = {UA_STRING_NULL , UA_STRING("opc.udp://224.0.0.22:4840/")};
-    UA_Variant_setScalar(&connectionConfig.address, &networkAddressUrl, &UA_TYPES[UA_TYPES_NETWORKADDRESSURLDATATYPE]);
-    connectionConfig.publisherId.uint16 = PUBLISHERID;
+
+        const char *env_SVRport = getenv("SVR_PORT");
+        char new_URL[100] = "opc.udp://224.0.0.22:";
+	strncpy(&new_URL[21], env_SVRport, strlen(env_SVRport));
+	new_URL[strlen(new_URL)] = '/';
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Step 3.1 : Assembled URL is <%s>", new_URL);
+      //  UA_NetworkAddressUrlDataType networkAddressUrl = {UA_STRING_NULL , UA_STRING("opc.udp://224.0.0.22:4840/")};
+        UA_NetworkAddressUrlDataType networkAddressUrl = {UA_STRING_NULL , UA_STRING(new_URL)};
+        UA_Variant_setScalar(&connectionConfig.address, &networkAddressUrl, &UA_TYPES[UA_TYPES_NETWORKADDRESSURLDATATYPE]);
+        connectionConfig.publisherId.uint16 = PUBLISHERID;
 
         /*7*/
         /*UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,

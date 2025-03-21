@@ -139,13 +139,23 @@ UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubInitialise
                 AMQP_Enable = UA_FALSE;
                 if ( strncmp(NETWORKADDRESSURL_PROTOCOL, "opc.udp://", 10) == 0)
                 {
+		        const char *env_SVRport = getenv("SVR_PORT");
+		        char new_URL[100] = "opc.udp://224.0.0.22:";
+	        	strncpy(&new_URL[21], env_SVRport, strlen(env_SVRport));
+        		new_URL[strlen(new_URL)] = '/';
+
                         transportProfile = UA_STRING(TRANSPORT_PROFILE_URI_UDP);
-                        networkAddressUrl.url = UA_STRING("opc.udp://224.0.0.22:4840/");
+                        networkAddressUrl.url = UA_STRING(new_URL); //UA_STRING("opc.udp://224.0.0.22:4840/");
                 }
                 else if ( strncmp(NETWORKADDRESSURL_PROTOCOL, "opc.eth://", 10) == 0)
                 {
+                        const char *env_SVRport = getenv("SVR_PORT");
+                        char new_URL[100] = "opc.eth://224.0.0.22:";
+                        strncpy(&new_URL[21], env_SVRport, strlen(env_SVRport));
+                        new_URL[strlen(new_URL)] = '/';
+
                         transportProfile = UA_STRING(TRANSPORT_PROFILE_URI_ETH);
-                        networkAddressUrl.url = UA_STRING("opc.eth://224.0.0.22:4840/");
+                        networkAddressUrl.url = UA_STRING(new_URL); //UA_STRING("opc.eth://224.0.0.22:4840/");
                         //networkAddressUrl.networkInterface = UA_STRING("eth0");
                 }
 
