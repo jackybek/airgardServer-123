@@ -220,15 +220,21 @@ authorityKeyIdentifier=keyid,issuer
 # extendedKeyUsage = critical,timeStamping
 
 [ v3_req ]
-
 # Extensions to add to a certificate request
-
+authorityKeyIdentifier = keyid,issuer
+subjectKeyIdentifier=hash
 basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+keyUsage = nonRepudiation,digitalSignature,keyEncipherment,dataEncipherment,keyAgreement,keyCertSign
+extendedKeyUsage = serverAuth
 subjectAltName = @san
 
 [ san ]
-DNS.1=lds.virtualskies.com.sg
+#if running on lds server use DNS2 and DNS3
+#else use DNS.1
+#DNS.1=urn:svr.virtualskies.com.sg
+URI=urn:svr.virtualskies.com.sg
+IP=192.168.1.44
+DNS=OPCLds-44
 
 [ v3_ca ]
 
