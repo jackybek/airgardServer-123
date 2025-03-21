@@ -245,6 +245,7 @@ RUN export SVR_PRODUCT_NAME="Virtual Skies OPC UA Server"
 RUN export SVR_APPLICATION_URI_SERVER="urn:svr.virtualskies.com.sg"
 RUN export SVR_APPLICATION_NAME="OPC UA Server based on open62541"
 RUN export SVR_PRIVATEKEYLOC="/usr/local/ssl/private/Svrprivate-key.pem"
+RUN export SVR_TRUSTLISTLOC="/usr/local/ssl/trustlist/
 RUN export SVR_PORT="4840"
 RUN export SVR_REVERSE_CONNECT_PORT="4839"
 RUN export SVR_SSLCERTIFICATELOC="/usr/local/ssl/certs/Svrcert.pem"
