@@ -19,12 +19,46 @@
 // the following is required for Unified Automation UAExpert
 static const size_t usernamePasswordsSize = 2;
 static UA_UsernamePasswordLogin logins[2] = {
-        {UA_STRING_STATIC("jackybek"), UA_STRING_STATIC("thisisatestpassword24")},
-        {UA_STRING_STATIC("admin"),UA_STRING_STATIC("defaultadminpassword24")}
+       // {UA_STRING_STATIC("jackybek"), UA_STRING_STATIC("thisisatestpassword24")},
+        {UA_STRING_STATIC("jackybek"),UA_STRING_STATIC("8ebe744e41fa3494536e9648093ab4f4ae156071eb54274c1dbf4c320c2023e0")},
+       //{UA_STRING_STATIC("admin"), UA_STRING_STATIC("defaultadminpassword")}
+	{UA_STRING_STATIC("admin"), UA_STRING_STATIC("e10351222ba08fce9d5867d676e8af9a5bef18807d40dea7f048eaf0a3f8a738")}
 };
 
-int configureServer(UA_Server *uaLDSServer)
+int configureServer(UA_Server *uaLDSServer, char* userid, char* password)
 {
+    // check the password hash
+    UA_Boolean found = UA_FALSE;
+    for (int i=0; i < usernamePasswordsSize; i++)
+    {
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, " ==============================================================================");
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : calling configureServer ()");
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : parameters passed in : <%s> <%s>", userid, password);
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : Begin by comparing userid : <%s> with <%s> ...", userid, logins[i].username.data);
+    	if ( strcmp(userid, (char *)logins[i].username.data) == 0 ) // found the username
+	{
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : Next, compare password : <%s> with <%s> ...", password, logins[i].password.data);
+		if ( strcmp(password, (char *)logins[i].password.data) == 0 ) // password match
+		{
+			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : Password provided is found to match OPCUA registry");
+			found = UA_TRUE;
+			break;
+		}
+		else
+			UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : Password provided do not match OPCUA registry");
+	}
+	else
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : Userid provided do not match OPCUA registry");
+
+   }
+   if (found == UA_FALSE) // cannot find the username in the list
+   {
+   	UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : your given username and password cannot be found in OPCUA registry.  Shutting down");
+	exit(0);
+   }
+
     UA_StatusCode status;
     UA_ServerConfig *config = UA_Server_getConfig(uaLDSServer);
 

@@ -3,6 +3,8 @@
 // Resources: https://github.com/EddieEldridge/SHA256-in-C/blob/master/README.md
 // Section Reference: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
 
+#include "open62541.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,30 +59,79 @@ int fillMessageBlock();
 void calculateHash(FILE *file);
 int nextMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *state, __uint64_t *numBits);
 
+extern char hashpassword[255];
 
 // ==== Main ===
-int main(int argc, char *argv[])
+char *passwordHash(int argc, char *plainpassword)
 {
+    // Print header
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "==============================================================================");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : Generating password hash");
+    //printf("\n passwd provided is <%s>", plainpassword);
+
+#ifdef KIV
+
+    FILE* fp_newhashfile;
+    FILE* fileForPrinting;
+
+
+    // step 1 : write the plain password into a file 'newhash"
+    fp_newhashfile = fopen("newhash", "w+");
+    // First check to make sure the file can be created
+    if (fp_newhashfile == NULL) {
+       UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Unknown error : cannot create temporary file <newhash>");
+        exit(0);
+    }
+    // now write the plain password into 'newhash'
+    fwrite(plainpassword, sizeof(char), strlen(plainpassword), fp_newhashfile);
+    fclose(fp_newhashfile);
+
+    // step 2 - perform hashing
+    // Open the file, specifiying which file using command line arguments
+    fileForPrinting = fopen("newhash", "r");
+    fp_newhashfile = fopen("newhash", "w");
+
+        // Function calls
+        //printf("\n File ok, executing functions.. \n");
+        endianCheckPrint();
+        printFileContents(fileForPrinting);
+
+    	// Open a file, specifiying which file using command line arguments
+    	calculateHash(fp_newhashfile); //
+	fclose(fp_newhashfile);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_PasswordHash.c : hash generated and is stored in <newhash>");
+
+        // step 3 - open the newhash file and check the contents
+	fp_newhashfile = fopen("newhash", "r");	// somehow rewind(file) does not work
+	// check the filesize to determine how many bytes to read using fread()
+	fseek(fp_newhashfile, 0, SEEK_END);
+	int filesize = ftell(fp_newhashfile);
+	fseek(fp_newhashfile, 0, SEEK_SET);
+	fread(hashpassword, sizeof(char), filesize, fp_newhashfile);
+printf("contents of the newhash is : %s \n", hashpassword);
+    	return 0;
+#endif
+
+//    #ifdef ORIGINAL
+
      // Variables
     FILE *file;
     FILE *fileForPrinting;
     char* fileName;
     int argumentCount = argc;
 
-    // Print header
-    printf("\n======== SHA256 - HASHING ALGORITHM ========");
-
     // Test to make sure the user is inputting a filename
     if(argumentCount == 1)
     {
         printf("Please supply a file to hash as command line arguments.");
-        exit;
+        exit(0);
     }
     else if(argumentCount >= 2)
     {
+
         printf("\n Correct arguments. Attemping to read file.. \n");
 
-        fileName = argv[1];
+        fileName = plainpassword; //argv[1];
 
         // Open a file, specifiying which file using command line arguments
         fileForPrinting = fopen(fileName, "r");
@@ -92,6 +143,7 @@ int main(int argc, char *argv[])
         }
         else
         {
+
             // Function calls
             printf("\n File ok, executing functions.. \n");
             endianCheckPrint();
@@ -99,21 +151,17 @@ int main(int argc, char *argv[])
 
              // Open a file, specifiying which file using command line arguments
             calculateHash(file);
-
         }
     }
     else
-    {
         printf("Invalid arguments, please recheck your spelling.");
-        exit;
-    }
     return 0;
 
 }
 
 // === Functions ===
 void calculateHash(FILE *file)
-{   
+{
     // Variables
     // The current message block
     union messageBlock msgBlock;
@@ -173,16 +221,16 @@ void calculateHash(FILE *file)
 
     // The current message block
 
-    // For loop to iterate through the message block 
+    // For loop to iterate through the message block
     int j;
-    int o;
+    //int o;
 
     printf("\n Initalized variables... Entering loops\n");
 
     while(fillMessageBlock(file, &msgBlock, &state, &numBits))
     {
         for(j=0; j<16; j++)
-        {   
+        {
             // Fist check for big or little endian
             // If our system is big endian we dont need to do any conversion
             if(endianCheck()==true)
@@ -195,7 +243,7 @@ void calculateHash(FILE *file)
                 // Convert to big endian first
                 W[j] = byteSwap32(msgBlock.t[j]);
             }
-           
+
         }
 
         for (j=16; j<64; j++)
@@ -242,28 +290,38 @@ void calculateHash(FILE *file)
         H[5] = f + H[5];
         H[6] = g + H[6];
         H[7] = h + H[7];
-    
+
     }// end while
-    
+
     // Print the results
     printf("\n=================== HASH OUTPUT ==================================\n\n");
-    printf("%08llx", H[0]);
-    printf("%08llx", H[1]);
-    printf("%08llx", H[2]);
-    printf("%08llx", H[3]);
-    printf("%08llx", H[4]);
-    printf("%08llx", H[5]);
-    printf("%08llx", H[6]);
-    printf("%08llx", H[7]);
-    
+    printf("%08llx", (long long unsigned int)H[0]);
+    printf("%08llx", (long long unsigned int)H[1]);
+    printf("%08llx", (long long unsigned int)H[2]);
+    printf("%08llx", (long long unsigned int)H[3]);
+    printf("%08llx", (long long unsigned int)H[4]);
+    printf("%08llx", (long long unsigned int)H[5]);
+    printf("%08llx", (long long unsigned int)H[6]);
+    printf("%08llx", (long long unsigned int)H[7]);
+
     printf("\n\n==================================================================\n\n");
+    // copy to the global variable : hashpassword (declared in SV_main.c)
+    sprintf(hashpassword, "%08llx%08llx%08llx%08llx%08llx%08llx%08llx%08llx", 
+    (long long unsigned int)H[0],
+    (long long unsigned int)H[1],
+    (long long unsigned int)H[2],
+    (long long unsigned int)H[3],
+    (long long unsigned int)H[4],
+    (long long unsigned int)H[5],
+    (long long unsigned int)H[6],
+    (long long unsigned int)H[7] );
 
     fclose(file);
 }
 
 // This function is used to handle the opening and reading of files
 int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *state, __uint64_t *numBits)
-{   
+{
     // Variables
     __uint64_t numBytes;
     int i;
@@ -307,10 +365,10 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
     // Read bytes instead of characters
     // Read until the end of the file
     numBytes = fread(msgBlock->e, 1, 64, file);
-    
+
     // Keep track of the number of bytes we've read
     *numBits = *numBits + (numBytes * 8);
-    
+
     // If theres enough room to finish the padding
     if(numBytes < 56)
     {
@@ -323,7 +381,7 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
         {
             // Add the index into our block
             numBytes = numBytes +1;
-            
+
             // Add enough zeroes so that there are 64 bits left at the end
             msgBlock->e[numBytes] = 0x00;
         }
@@ -336,10 +394,10 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
     }
     // Otherwise, check if we can put some padding into this message block
     else if(numBytes < 64)
-    {   
+    {
         // Set the state to PAD0
         *state = PAD0;
-        
+
         // 0x80 = 10000000
         // Add the one bit into the current message block
         msgBlock->e[numBytes] = 0x80;
@@ -358,7 +416,7 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
         // We need a message Block full of padding
         *state = PAD1;
     }
-    
+
     // Print padding
     /*
     printf("\n--- PADDING --- \n");
@@ -370,13 +428,13 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
     */
     return 1;
 }
-    
+
 // This function is used to read the contents of the file and return them as an array of chars
 void printFileContents(FILE *fileForPrinting)
 {
     // Variables
     char fileContents[MAXCHAR];
-    char fileContentsAsString[MAXCHAR];
+    //char fileContentsAsString[MAXCHAR];
     long fileSize;
 
     // First check to make sure the file could be found
@@ -388,7 +446,7 @@ void printFileContents(FILE *fileForPrinting)
         // Calculate the size of the file
         fileSize = calcFileSize(fileForPrinting);
 
-        printf("\n File Size (characters): %d \n", fileSize);
+        printf("\n File Size (characters): %ld \n", fileSize);
 
         printf("\n ============= File Contents ============= \n");
 
@@ -398,7 +456,7 @@ void printFileContents(FILE *fileForPrinting)
             // Print the contents of the file
             printf(" %s\n", fileContents);
         };
-        
+
         printf("\n ========================================= \n");
 
         fclose(fileForPrinting);
@@ -406,7 +464,7 @@ void printFileContents(FILE *fileForPrinting)
         // Close the file 
         return;
     }
-    
+
 }
 // Simple function that calcuates the size of a file
 int calcFileSize(FILE *file)
@@ -414,7 +472,7 @@ int calcFileSize(FILE *file)
     int prev=ftell(file);
     fseek(file, 0L, SEEK_END);
     int size=ftell(file);
-    fseek(file,prev,SEEK_SET); 
+    fseek(file,prev,SEEK_SET);
     return size;
 }
 
@@ -438,8 +496,8 @@ _Bool endianCheck()
         }
 }
 
-// Section 4.1.2  
-// ROTR = Rotate Right 
+// Section 4.1.2
+// ROTR = Rotate Right
 // SHR = Shift Right
 // ROTR_n(x) = (x >> n) | (x << (32-n))
 // SHR_n(x) = (x >> n)

@@ -145,6 +145,7 @@ UA_NodeId outLaserCounter_Id;
 UA_NodeId outFlowPumpCounter_Id;
 UA_NodeId outDesiccantCounter_Id;
 
+char hashpassword[255];
 MYSQL *conn;
 
 // function prototypes
@@ -207,6 +208,36 @@ int main(int argc, char *argv[])
                         exit (0);
         }
 
+
+	// prompt for userid and password for opcServer => to be replaced by OPCpasswd file
+
+	char userid[255], passwd[255];
+	printf("Please provide the userid for opcServer : "); scanf("%s", userid);
+	printf("Now provide the password                : "); scanf("%s", passwd);
+
+	// save the password to a temporary file
+	FILE *fp = fopen("passwordfile", "w");
+        if (fp == NULL) {
+         	UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Unknown error : cannot create temporary file <passwordfile>");
+           	exit(0);
+        }
+	fwrite(passwd, sizeof(char), strlen(passwd), fp);
+	fclose(fp);
+
+	if (passwordHash(2, "passwordfile") != 0)
+	{
+		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_main.c : Hashing your password failed");
+		exit(0);
+	}
+	// after hashing the password, it is stored in a global variable <char hashpassword[255]>
+	// inspect the hashpassword
+	printf("the generated hashpassword is %s\n", hashpassword);
+
+
+	// prompt for userid and password for mySQL
+
+
+
         UA_Server *server = UA_Server_new();	// UA_Server_new(config)
 
 	size_t namespaceIndex;
@@ -227,7 +258,7 @@ int main(int argc, char *argv[])
     //if (results = pthread_create(&OPCUAServerthread, NULL, StartOPCUAServer, server))
 		//StartOPCUAServer(server, argv[1], argv); //(server, 192.168.1.109, 192.168.1.11);
 	encryptServer(server, config);
-	configureServer(server);
+	configureServer(server, userid, hashpassword);
 
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_main.c : OPCUA server ready to start ");
         status = UA_Server_run_startup(server);

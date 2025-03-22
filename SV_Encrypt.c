@@ -10,20 +10,63 @@
 #endif
 
 #include <stdio.h>
+#include <dirent.h>
 #include "SV_Encrypt.h"
 #include "SV_Misc.h"
+
+int stringEndsWith(
+        char const * const name,
+        char const * const extension_to_find)
+{
+	#ifdef DEBUG
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : in stringEndsWith() function : name = %s, extension = %s", name, extension_to_find);
+	#endif
+
+    int is_found = 0;
+    size_t length = 0;
+    char* ldot = NULL;
+    if (name == NULL) return -1;
+    if (extension_to_find == NULL) return -1;
+    length = strlen(extension_to_find);
+    if (length == 0) return -1;
+    ldot = strrchr(name, extension_to_find[0]);
+    if (ldot != NULL)
+    {
+	#ifdef DEBUG
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : ldot = %s, extension = %s, length = %d", ldot, extension_to_find, length);
+	#endif
+        is_found = strncmp(ldot, extension_to_find, length);
+	if (is_found == 0) // found
+	{
+		//UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : found file <%s>", name);
+		return 0;	// success return 0
+	}
+	else
+		return -1;	// fail to find : return -1
+    }
+    else
+       return -1;	// all other situation return -1
+}
 
 int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 {
         UA_StatusCode status;
 
 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Entering encryptServer() function"); 
+	const char *env_SVRport = getenv("SVR_PORT");
         //UA_ServerConfig *config = UA_Server_getConfig(uaSvrServer);
         const char *env_sslcertificateloc = getenv("SVR_SSLCERTIFICATELOC");	// export SVR_SSLCERTIFICATELOC /usr/local/ssl/certs
         UA_ByteString certificate = loadFile(env_sslcertificateloc);
-        const char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");		// export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
+	const char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");		// export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
         UA_ByteString privateKey = loadFile(env_privatekeyloc);
-	const char *env_SVRport = getenv("SVR_PORT");
+
+        const char *env_trustlistloc = getenv("SVR_TRUSTLISTLOC");		// then iterate through the directory and save into uaSvrServer object - refer to Load trustlist
+        //UA_ByteString trustlistloc = loadFile(env_trustlistloc);		// export "SVR_TRUSTLISTLOC" /usr/local/ssl/trustlist
+
+	UA_ByteString *trustList=NULL;
+	size_t trustListSize = 0;
+	int total_pem_files=0, total_der_files=0, counter=0;			// count the number of files with .pem and .der extension
+	UA_ByteString trustcertificate;
 
         UA_ServerConfig_setMinimal(config, atoi(env_SVRport), NULL);
 
@@ -36,12 +79,124 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 	else
 		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded SSL private key %s", env_privatekeyloc);
 
-       // Load trustlist
-        //UA_ByteString *trustList = (UA_ByteString *)UA_Array_new(1, &UA_TYPES[UA_TYPES_BYTESTRING]);
-        //UA_ByteString_copy(&certificate, &trustList[0]);
-        UA_ByteString *trustList = NULL;
-        size_t trustListSize = 0;
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded trustlist");
+        // --------------------------------------------------------------------------------------Load trustlist
+	struct dirent *de;	// pointer for directory entry
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : trustlistloc.data = %s", env_trustlistloc);
+
+	DIR *dr = opendir((char *)env_trustlistloc);
+	if (dr == NULL)
+		 UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot find trustlist directory %s", env_trustlistloc);
+	else
+	{
+		int retval;
+		counter = 0;
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,("--------SV_Encrypt.c : Start while loop ") );
+
+		while ((de = readdir(dr)) != NULL) // read the list of files in the directory
+		{
+			#ifdef DEBUG
+			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c :  iterating through the trustlist directory : pass %d", counter);
+			#endif
+                        //char* file_name = de->d_name;
+			// process only the files with .pem extension
+			retval = stringEndsWith((char*)de->d_name, "pem");		// first count the total number .pem files
+			if (retval == 0) // file name ends with .pem
+			{
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Found PEM filename : <%s>", de->d_name);
+				total_pem_files++;
+			}
+			else
+			{
+				retval = stringEndsWith((char*)de->d_name, "der");		// also count the total number of .der files (e.g. UAExpert certificates
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Found DER filename : <%s>", de->d_name);
+				if (retval == 0) // file name ends with .der
+				{
+					total_der_files++;
+					// convert to .pem format as loadFile() can only read PEM files
+					char derToPemfile[255];
+					strncpy(derToPemfile, de->d_name, strlen(de->d_name));
+					int len = strlen(de->d_name);
+					derToPemfile[len-3] = 'p';
+					derToPemfile[len-2] = 'e';
+					derToPemfile[len-1] = 'm';
+					derToPemfile[len] = '\0';
+					UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : converted der filename is <%s>", derToPemfile);
+
+					// run the command to convert .der to .pem
+					// sudo openssl x509 -inform der -in uaexpert.der -out uaexpert.pem
+
+					char sys_command[255];
+					strcpy(sys_command, "sudo openssl x509 -inform der -in ");
+					strcat(sys_command, env_trustlistloc);
+					strcat(sys_command, de->d_name);
+					strcat(sys_command, " -out ");
+					strcat(sys_command, env_trustlistloc);
+					strcat(sys_command, derToPemfile);
+					UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : command to execute <%s>", sys_command);
+					//sprintf(sys_command, "sudo openssl x509 -inform der -in %s -out %s", de->d_name, derfile);
+					system(sys_command);
+					// alternative, look for a C function in openssl to do the conversion
+				}
+			}
+		}
+
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c :  pass 1 iterating through the trustlist directory for .pem and .der files : %d %d", total_pem_files, total_der_files);
+
+		// next, based on the total number of files with .pem extension, allocate memory to trustlist
+	        trustList = (UA_ByteString *)UA_Array_new(total_pem_files+total_der_files, &UA_TYPES[UA_TYPES_BYTESTRING]);
+
+		rewinddir(dr);		// now, rewind the directory pointer to the start
+		while ((de =  readdir(dr)) != NULL)	// finally process the .pem and .der files and save into trustlist
+		{
+			// get the file (.pem)
+			//char* file_name = de->d_name;
+			retval = stringEndsWith((char*)de->d_name, ".pem");
+			char fullpathname[100];
+			if (retval == 0) // file name ends with .pem
+			{
+				strcpy(fullpathname, env_trustlistloc);
+				strcat(fullpathname, de->d_name);
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : .pem certificate found is <%s>", fullpathname);
+
+				// loadFile needs the full path
+				trustcertificate = loadFile(fullpathname);
+        			UA_ByteString_copy(&trustcertificate, &trustList[counter]);
+				counter++;
+				//UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : contents of the .pem certificate is <%s>", trustcertificate.data); // display the contents of the certificate
+
+			}
+
+			#ifdef DER_FILES_ARE_NOT_USED_IN_OPEN62541
+			// get the file (.der)
+			retval = stringEndsWith((char*)de->d_name, ".der");
+			if (retval == 0) // file name ends with .der
+			{
+                                strcpy(fullpathname, env_trustlistloc);
+                                strcat(fullpathname, de->d_name);
+				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c : .der certificate found is <%s>", fullpathname);
+				// loadFile needs the full path
+				trustcertificate = loadFile((char*)fullpathname);
+				UA_ByteString_copy(&trustcertificate,&trustList[counter]);
+				counter++;
+				//UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c : contents of the certificate is %s", trustcertificate.data);	// NULL????????
+			}
+			#endif
+			//skip to the next file
+		}
+		closedir(dr);
+	}
+        trustListSize = counter;
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded trustlist : no of trustlist loaded : %d", counter);
+
+	#ifdef DEBUG
+	for (counter=0; counter < trustListSize; counter++)
+	{
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c :  Display the trustlist contents %d of %d", counter+1, trustListSize);
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"%s", trustList[counter].data);
+	}
+	#endif
+	// ------------------------------------------------------------------------- finish loading trustlist
+
         // Loading of a issuer list, not used in this application
         UA_ByteString *issuerList = NULL;
         size_t issuerListSize = 0;
