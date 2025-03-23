@@ -1,5 +1,5 @@
 ###########################################################################################################
-#  Dockerfile : creates a docker image that runs a open62541 instance called airgardServer-33 #
+#  Dockerfile : creates a docker image that sudos a open62541 instance called airgardServer-33 #
 ###########################################################################################################
 
 #########################
@@ -12,56 +12,56 @@ SHELL ["/bin/bash", "-c"]
 ########################################
 # -- update and upgrade OS patches
 ########################################
-RUN apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y 
+sudo apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y 
 
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install -y apt-utils
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install -y apt-utils
 # -- prepare the build environment for OPC62541
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install build-essential pkg-config python3 net-tools iputils-ping -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install cmake-curses-gui -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install check libsubunit-dev -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install libmbedtls-dev -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install wget -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install lib32readline8 lib32readline-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install build-essential pkg-config python3 net-tools iputils-ping -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install cmake-curses-gui -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install check libsubunit-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install libmbedtls-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install wget -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install lib32readline8 lib32readline-dev -y
 
 #########################################################
 # -- build GCC from source to get the latest version
 # -- https://iq.opengenus.org/build-gcc-from-source/
 #########################################################
 WORKDIR /root
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install git -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
 # -------DO NOT remove GCC otherwise git-clone will be very slow
-#RUN DEBIAN_FRONTEND="noninteractive" apt-get remove gcc -y
+#sudo DEBIAN_FRONTEND="noninteractive" apt-get remove gcc -y
 
 ###############################
 # -- pre-requisites for GCC
 ###############################
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install flex -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install flex -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
 
 #############################################################################
 # -- get gcc from source using git-clone : https://gcc.gnu.org/gcc-14/
 #############################################################################
-RUN git clone git://gcc.gnu.org/git/gcc.git
+sudo git clone git://gcc.gnu.org/git/gcc.git
 WORKDIR /root/gcc
-RUN git checkout releases/gcc-14.2.0
-RUN ./contrib/download_prerequisites
+sudo git checkout releases/gcc-14.2.0
+sudo ./contrib/download_prerequisites
 WORKDIR /root
-RUN mkdir objdir
+sudo mkdir objdir
 WORKDIR /root/objdir
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install g++
-RUN ../gcc/configure --prefix=/usr/local/gcc14.2.0 --disable-multilib --with-system-zlib --enable-languages=c,c++ --program-suffix=14.2.0
-RUN ulimit -m unlimited
-RUN ulimit -v unlimited
-RUN make -j4                     
-RUN make install
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install g++
+sudo ../gcc/configure --prefix=/usr/local/gcc14.2.0 --disable-multilib --with-system-zlib --enable-languages=c,c++ --program-suffix=14.2.0
+sudo ulimit -m unlimited
+sudo ulimit -v unlimited
+sudo make -j4                     
+sudo make install
 WORKDIR /etc
-RUN echo "PATH=/usr/local/gcc14.2.0/bin:"$PATH > environment 
+sudo echo "PATH=/usr/local/gcc14.2.0/bin:"$PATH > environment 
 # original environment : PATH=/root/cmake-3.31.6/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
-RUN source /etc/environment
-RUN echo $PATH
+sudo source /etc/environment
+sudo echo $PATH
 WORKDIR /usr/local/gcc14.2.0/bin
-RUN ln -s gcc14.2.0 gcc
-RUN gcc --version -a
+sudo ln -s gcc14.2.0 gcc
+sudo gcc --version -a
 
 WORKDIR /etc/profile.d
 #binaries are installed in:/usr/local/gcc14.2.0/bin
@@ -80,67 +80,67 @@ WORKDIR /etc/profile.d
 ###################################################
 # -- remove default openssl libraries
 ###################################################
-RUN DEBIAN_FRONTEND="noninteractive" apt-get remove openssl -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get remove openssl -y
 
 #######################
 # -- install zlib
 #######################
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
 # -- alternate - compile from source
 #WORKDIR /root
-#RUN wget https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz
-#RUN tar -xvf zlib-1.2.13.tar.gz
+#sudo wget https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz
+#sudo tar -xvf zlib-1.2.13.tar.gz
 #WORKDIR /root/zlib-2.2.13
-#RUN ./configure --prefix=/usr/local/zlib
-#RUN make
-#RUN make install
+#sudo ./configure --prefix=/usr/local/zlib
+#sudo make
+#sudo make install
 
 ####################################
 # -- reinstall openssl libraries
 ####################################
 WORKDIR /root
-RUN wget https://www.openssl.org/source/openssl-3.4.1.tar.gz
-RUN tar -xf openssl-3.4.1.tar.gz
-RUN pwd
+sudo wget https://www.openssl.org/source/openssl-3.4.1.tar.gz
+sudo tar -xf openssl-3.4.1.tar.gz
+sudo pwd
 WORKDIR /root/openssl-3.4.1
-RUN ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl/ shared zlib
-RUN make -j4
-# RUN make test
-RUN make install_sw
+sudo ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl/ shared zlib
+sudo make -j4
+# sudo make test
+sudo make install_sw
 WORKDIR /etc/ld.so.conf.d/
-RUN touch openssl-open62541.conf 
-RUN echo "/usr/local/ssl/lib64/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
-RUN export LD_LIBRARY_PATH=/usr/local/ssl/lib64/
+sudo touch openssl-open62541.conf 
+sudo echo "/usr/local/ssl/lib64/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
+sudo export LD_LIBRARY_PATH=/usr/local/ssl/lib64/
 WORKDIR /etc/profile.d
-RUN echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib64; ldconfig" | tee -a ssl_export_ld_library_path.sh
-RUN ldconfig -v
+sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib64; ldconfig" | tee -a ssl_export_ld_library_path.sh
+sudo ldconfig -v
 WORKDIR /etc/
-#RUN echo ":/usr/local/ssl/bin" | tee -a environment 
-#RUN source /etc/environment
-RUN echo $PATH
-RUN /usr/local/ssl/bin/openssl version -a
+#sudo echo ":/usr/local/ssl/bin" | tee -a environment 
+#sudo source /etc/environment
+sudo echo $PATH
+sudo /usr/local/ssl/bin/openssl version -a
 
 ############################################################################
 # -- build CMAKE from source to get the latest version : https://cmake.org
 # -- https://markusthill.github.io/blog/2024/installing-cmake/
 ############################################################################
 WORKDIR /root
-RUN DEBIAN_FRONTEND="noninteractive" apt-get remove --purge --autoremove cmake -y
-RUN wget https://cmake.org/files/v3.31/cmake-3.31.6.tar.gz
-RUN tar -xvf cmake-3.31.6.tar.gz
-RUN cd cmake-3.31.6/
-RUN ./configure
-RUN gmake
-RUN make install
+sudo DEBIAN_FRONTEND="noninteractive" apt-get remove --purge --autoremove cmake -y
+sudo wget https://cmake.org/files/v3.31/cmake-3.31.6.tar.gz
+sudo tar -xvf cmake-3.31.6.tar.gz
+sudo cd cmake-3.31.6/
+sudo ./configure
+sudo gmake
+sudo make install
 WORKDIR /etc/profile.d
-RUN echo "export CMAKE_ROOT=/root/cmake-3.31.6/bin/; sudo ldconfig" | tee -a cmake_export_CMAKE_root_path.sh
-RUN ldconfig -v
+sudo echo "export CMAKE_ROOT=/root/cmake-3.31.6/bin/; sudo ldconfig" | tee -a cmake_export_CMAKE_root_path.sh
+sudo ldconfig -v
 WORKDIR /etc
-#RUN echo "export PATH=export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/root/cmake-3.31.6/bin:$PATH" | tee -a environment
-RUN echo "PATH=/root/cmake-3.31.6/bin:"$PATH > environment
-RUN source /etc/environment
-RUN echo $PATH
-RUN cmake --version -a
+#sudo echo "export PATH=export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/root/cmake-3.31.6/bin:$PATH" | tee -a environment
+sudo echo "PATH=/root/cmake-3.31.6/bin:"$PATH > environment
+sudo source /etc/environment
+sudo echo $PATH
+sudo cmake --version -a
 # -- alternative - use apt-get
 # DEBIAN_FRONTEND="noninteractive" apt-get install cmake
 
@@ -149,79 +149,79 @@ RUN cmake --version -a
 ######################################
 # -- library is installed  to /usr/local/include
 WORKDIR /root
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install git -y
-RUN git clone https://libwebsockets.org/repo/libwebsockets
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
+sudo git clone https://libwebsockets.org/repo/libwebsockets
 WORKDIR /root/libwebsockets
-RUN mkdir build
+sudo mkdir build
 WORKDIR /root/libwebsockets/build
-RUN cmake ..
-RUN make -j4
-RUN make install
-RUN ldconfig
-RUN pkg-config --modversion libwebsockets
-#RUN DEBIAN_FRONTEND="noninteractive" apt-get remove git -y
+sudo cmake ..
+sudo make -j4
+sudo make install
+sudo ldconfig
+sudo pkg-config --modversion libwebsockets
+#sudo DEBIAN_FRONTEND="noninteractive" apt-get remove git -y
 # -- alternative - use apt-get
-#RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-#RUN DEBIAN_FRONTEND="noninteractive" apt-get install libwebsockets-dev -y
+#sudo echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+#sudo DEBIAN_FRONTEND="noninteractive" apt-get install libwebsockets-dev -y
 
 #######################################################################################
 # -- install other libraries needed for user-defined application e.g. open62541lds
 #######################################################################################
 WORKDIR /root
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install libjson-c-dev -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install libxml2-dev -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install mariadb-client -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install libmariadb3 libmariadb-dev -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install mosquitto-clients -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install net-tools proftpd nano -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install python3-sphinx graphviz -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install python3-sphinx-rtd-theme -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install texlive-latex-recommended -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install libavahi-client-dev libavahi-common-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install libjson-c-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install libxml2-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install mariadb-client -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install libmariadb3 libmariadb-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install mosquitto-clients -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install net-tools proftpd nano -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install python3-sphinx graphviz -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install python3-sphinx-rtd-theme -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install texlive-latex-recommended -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install libavahi-client-dev libavahi-common-dev -y
 
 ################################################
 # -- get the open62541 source from github
 ################################################
 WORKDIR /root 
-#RUN DEBIAN_FRONTEND="noninteractive" apt-get install git -y
-RUN git clone https://github.com/open62541/open62541.git --branch v1.4.9 -c advice.detachedHead=FALSE
+#sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
+sudo git clone https://github.com/open62541/open62541.git --branch v1.4.9 -c advice.detachedHead=FALSE
 WORKDIR /root/open62541
-RUN git submodule update --init --recursive
+sudo git submodule update --init --recursive
 
 ##################################
 # -- install options for cmake
 ##################################
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install biber -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install clang-format -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install clang-tidy -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install latex2html -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install texlive-xetex -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install xindy -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install biber -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install clang-format -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install clang-tidy -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install latex2html -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install texlive-xetex -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install xindy -y
 
 ###########################################
 # -- build the base open62541 libraries
 ###########################################
 WORKDIR /root/open62541
-RUN mkdir build
+sudo mkdir build
 WORKDIR /root/open62541/build
 # -- clears cache
-RUN rm CMakeCache.txt
-RUN rm *.cmake
-RUN rm -r CMakeFiles
-RUN rm -r doc
+sudo rm CMakeCache.txt
+sudo rm *.cmake
+sudo rm -r CMakeFiles
+sudo rm -r doc
 
 # once gcc is updated to v14.2.0, need to modify the following
 # -DCMAKE_C_COMPILER=/usr/local/gcc14.2.0/bin/gcc14.2.0 
 # -DCMAKE_C_COMPILER_AR=/usr/local/gcc14.2.0/bin/gcc-ar14.2.0
 # -DCMAKE_C_COMPILER_RANLIB=/usr/local/gcc14.2.0/bin/gcc-ranlib14.2.0
-RUN cmake -S .. -DCMAKE_C_COMPILER=/usr/local/gcc14.2.0/bin/gcc14.2.0 -DCMAKE_C_COMPILER_AR=/usr/local/gcc14.2.0/bin/gcc-ar14.2.0 -DCMAKE_C_COMPILER_RANLIB=/usr/local/gcc14.2.0/bin/gcc-ranlib14.2.0 -DOPENSSL_CRYPTO_LIBRARY=/usr/local/ssl/lib64/libcrypto.so -DOPENSSL_INCLUDE_DIR=/usr/local/ssl/include -DOPENSSL_SSL_LIBRARY=/usr/local/ssl/lib64/libssl.so -DUA_ARCHITECTURE=posix -DUA_DEBUG_FILE_LINE_INFO=ON -DUA_ENABLE_AMALGAMATION=OFF -DBUILD_SHARED_LIBS=OFF -DUA_ENABLE_DA=ON -DUA_ENABLE_DATATYPES_ALL=ON -DUA_ENABLE_DEBUG_SANITIZER=ON -DUA_ENABLE_DIAGNOSTICS=ON -DUA_ENABLE_DISCOVERY=ON -DUA_ENABLE_DISCOVERY_MULTICAST=ON -DUA_ENABLE_DISCOVERY_SEMAPHORE=ON -DUA_ENABLE_ENCRYPTION=OPENSSL -DUA_ENABLE_ENCRYPTION_OPENSSL=ON -DUA_ENABLE_HISTORIZING=ON -DUA_ENABLE_JSON_ENCODING=ON -DUA_ENABLE_METHODCALLS=ON -DUA_ENABLE_MQTT=ON -DUA_ENABLE_NODEMANAGEMENT=ON -DUA_ENABLE_NODESETLOADER=OFF -DUA_ENABLE_NODESET_COMPILER_DESCRIPTIONS=ON -DUA_ENABLE_PARSING=ON -DUA_ENABLE_PUBSUB=ON -DUA_ENABLE_PUBSUB_ENCRYPTION=ON -DUA_ENABLE_PUBSUB_FILE_CONFIG=ON -DUA_ENABLE_PUBSUB_INFORMATIONMODEL=ON -DUA_ENABLE_SUBSCRIPTIONS=ON -DUA_ENABLE_SUBSCRIPTIONS_EVENTS=ON -DUA_ENABLE_TYPEDESCRIPTION=ON -DUA_ENABLE_XML_ENCODING=ON -DUA_FORCE_WERROR=ON -DUA_LOGLEVEL=100 -DUA_NAMESPACE_ZERO=FULL
+sudo cmake -S .. -DCMAKE_C_COMPILER=/usr/local/gcc14.2.0/bin/gcc14.2.0 -DCMAKE_C_COMPILER_AR=/usr/local/gcc14.2.0/bin/gcc-ar14.2.0 -DCMAKE_C_COMPILER_RANLIB=/usr/local/gcc14.2.0/bin/gcc-ranlib14.2.0 -DOPENSSL_CRYPTO_LIBRARY=/usr/local/ssl/lib64/libcrypto.so -DOPENSSL_INCLUDE_DIR=/usr/local/ssl/include -DOPENSSL_SSL_LIBRARY=/usr/local/ssl/lib64/libssl.so -DUA_ARCHITECTURE=posix -DUA_DEBUG_FILE_LINE_INFO=ON -DUA_ENABLE_AMALGAMATION=OFF -DBUILD_SHARED_LIBS=OFF -DUA_ENABLE_DA=ON -DUA_ENABLE_DATATYPES_ALL=ON -DUA_ENABLE_DEBUG_SANITIZER=ON -DUA_ENABLE_DIAGNOSTICS=ON -DUA_ENABLE_DISCOVERY=ON -DUA_ENABLE_DISCOVERY_MULTICAST=ON -DUA_ENABLE_DISCOVERY_SEMAPHORE=ON -DUA_ENABLE_ENCRYPTION=OPENSSL -DUA_ENABLE_ENCRYPTION_OPENSSL=ON -DUA_ENABLE_HISTORIZING=ON -DUA_ENABLE_JSON_ENCODING=ON -DUA_ENABLE_METHODCALLS=ON -DUA_ENABLE_MQTT=ON -DUA_ENABLE_NODEMANAGEMENT=ON -DUA_ENABLE_NODESETLOADER=OFF -DUA_ENABLE_NODESET_COMPILER_DESCRIPTIONS=ON -DUA_ENABLE_PARSING=ON -DUA_ENABLE_PUBSUB=ON -DUA_ENABLE_PUBSUB_ENCRYPTION=ON -DUA_ENABLE_PUBSUB_FILE_CONFIG=ON -DUA_ENABLE_PUBSUB_INFORMATIONMODEL=ON -DUA_ENABLE_SUBSCRIPTIONS=ON -DUA_ENABLE_SUBSCRIPTIONS_EVENTS=ON -DUA_ENABLE_TYPEDESCRIPTION=ON -DUA_ENABLE_XML_ENCODING=ON -DUA_FORCE_WERROR=ON -DUA_LOGLEVEL=100 -DUA_NAMESPACE_ZERO=FULL
 
 WORKDIR /root/open62541/build/
-RUN make -j4
-RUN make doc
-RUN make doc_pdf
-RUN make latexpdf
-RUN export open62541_NODESET_DIR='/root/open62541/deps/ua-nodeset/Schema/'
+sudo make -j4
+sudo make doc
+sudo make doc_pdf
+sudo make latexpdf
+sudo export open62541_NODESET_DIR='/root/open62541/deps/ua-nodeset/Schema/'
 
 ##########################################
 # -- creates the volume in container
@@ -239,23 +239,23 @@ VOLUME /usr/local/ssl/private
 # -- saved to /etc/profile.d/open62541-export.sh
 # list in order : env -0 | sort -z | tr '\0' '\n'
 ##########################################
-RUN export SVR_PRODUCT_URI="http://svr.virtualskies.com.sg"
-RUN export SVR_MANUFACTURER_NAME="Virtual Skies"
-RUN export SVR_PRODUCT_NAME="Virtual Skies OPC UA Server"
-RUN export SVR_APPLICATION_URI_SERVER="urn:svr.virtualskies.com.sg"
-RUN export SVR_APPLICATION_NAME="OPC UA Server based on open62541"
-RUN export SVR_PRIVATEKEYLOC="/usr/local/ssl/private/Svrprivate-key.pem"
-RUN export SVR_SSLCERTIFICATELOC="/usr/local/ssl/certs/Svrcert.pem"
-RUN export SVR_TRUSTLISTLOC="/usr/local/ssl/trustlist/"
-RUN export SVR_PORT="4840"
-RUN export SVR_REVERSE_CONNECT_PORT="4839"
-RUN export SVR_SQL_CONNECTION_IP="192.168.1.127"
-RUN export SVR_SQL_USERNAME="debian"
-RUN export SVR_SQL_PASSWORD="molekhaven24"
-RUN export SVR_SQL_DATABASE="HistoryAirgard"
-RUN export SVR_SQL_PORT="3306"
-RUN export SVR_SQL_HISTORY_OPTION="ValueSet"
-RUN export SVR_SQL_HISTORY_OPTION="Poll"
-RUN export SVR_SQL_HISTORY_OPTION="UserDefine"
-RUN export SVR_LDS_USERNAME="admin"
-RUN export SVR_LDS_PASSWORD="defaultadminpassword24"
+sudo export SVR_PRODUCT_URI="http://svr.virtualskies.com.sg"
+sudo export SVR_MANUFACTURER_NAME="Virtual Skies"
+sudo export SVR_PRODUCT_NAME="Virtual Skies OPC UA Server"
+sudo export SVR_APPLICATION_URI_SERVER="urn:svr.virtualskies.com.sg"
+sudo export SVR_APPLICATION_NAME="OPC UA Server based on open62541"
+sudo export SVR_PRIVATEKEYLOC="/usr/local/ssl/private/Svrprivate-key.pem"
+sudo export SVR_SSLCERTIFICATELOC="/usr/local/ssl/certs/Svrcert.pem"
+sudo export SVR_TRUSTLISTLOC="/usr/local/ssl/trustlist/"
+sudo export SVR_PORT="4840"
+sudo export SVR_REVERSE_CONNECT_PORT="4839"
+sudo export SVR_SQL_CONNECTION_IP="192.168.1.127"
+sudo export SVR_SQL_USERNAME="debian"
+sudo export SVR_SQL_PASSWORD="molekhaven24"
+sudo export SVR_SQL_DATABASE="HistoryAirgard"
+sudo export SVR_SQL_PORT="3306"
+sudo export SVR_SQL_HISTORY_OPTION="ValueSet"
+sudo export SVR_SQL_HISTORY_OPTION="Poll"
+sudo export SVR_SQL_HISTORY_OPTION="UserDefine"
+sudo export SVR_LDS_USERNAME="admin"
+sudo export SVR_LDS_PASSWORD="defaultadminpassword24"
