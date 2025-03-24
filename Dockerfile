@@ -132,6 +132,12 @@ sudo wget https://cmake.org/files/v3.31/cmake-3.31.6.tar.gz
 sudo tar -xvf cmake-3.31.6.tar.gz
 cd cmake-3.31.6/
 sudo ./configure
+# if the above step fail do the following
+  # export OPENSSL_INCLUDE=/usr/local/ssl/include/
+  # export OPENSSL_LIBRARIES=/usr/local/ssl/lib/
+  # export OPENSSL_INCLUDE=/usr/local/ssl/include/
+  # in /etc/profile.d, add the above 3 lines
+  # sudo apt-get install libssl-dev
 sudo gmake
 sudo make install
 WORKDIR /etc/profile.d
