@@ -141,11 +141,11 @@ sudo ./configure
 sudo gmake
 sudo make install
 WORKDIR /etc/profile.d
-sudo echo "export CMAKE_ROOT=/root/cmake-3.31.6/bin/; sudo ldconfig" | tee -a cmake_export_CMAKE_root_path.sh
+sudo echo "export CMAKE_ROOT=/usr/local/src/cmake-3.31.6/bin/; sudo ldconfig" | tee -a cmake_export_CMAKE_root_path.sh
 sudo ldconfig -v
 WORKDIR /etc
 #sudo echo "export PATH=export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin:/root/cmake-3.31.6/bin:$PATH" | tee -a environment
-sudo echo "PATH=/root/cmake-3.31.6/bin:"$PATH > environment
+sudo echo "PATH=/usr/local/src/cmake-3.31.6/bin:"$PATH > environment
 sudo source /etc/environment
 sudo echo $PATH
 sudo cmake --version -a
@@ -156,12 +156,12 @@ sudo cmake --version -a
 # -- add websockets capability
 ######################################
 # -- library is installed  to /usr/local/include
-WORKDIR /root
+WORKDIR /usr/local/src/
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
 sudo git clone https://libwebsockets.org/repo/libwebsockets
-WORKDIR /root/libwebsockets
+WORKDIR /usr/local/src/libwebsockets
 sudo mkdir build
-WORKDIR /root/libwebsockets/build
+WORKDIR /usr/local/src/libwebsockets/build
 sudo cmake ..
 sudo make -j4
 sudo make install
@@ -192,7 +192,7 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install libavahi-client-dev libava
 ################################################
 WORKDIR /root 
 #sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
-sudo git clone https://github.com/open62541/open62541.git --branch v1.4.9 -c advice.detachedHead=FALSE
+sudo git clone https://github.com/open62541/open62541.git --branch v1.4.10 -c advice.detachedHead=FALSE
 WORKDIR /root/open62541
 sudo git submodule update --init --recursive
 
