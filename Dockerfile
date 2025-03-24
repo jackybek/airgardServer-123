@@ -55,6 +55,7 @@ sudo ulimit -v unlimited
 sudo make -j4                     
 sudo make install
 WORKDIR /etc
+su -
 sudo echo "PATH=/usr/local/gcc14.2.0/bin:"$PATH > environment 
 # original environment : PATH=/root/cmake-3.31.6/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 sudo source /etc/environment
