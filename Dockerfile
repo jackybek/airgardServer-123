@@ -99,21 +99,21 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
 ####################################
 # -- reinstall openssl libraries
 ####################################
-WORKDIR /root
+WORKDIR /usr/local/src/
 sudo wget https://www.openssl.org/source/openssl-3.4.1.tar.gz
 sudo tar -xf openssl-3.4.1.tar.gz
 sudo pwd
-WORKDIR /root/openssl-3.4.1
+WORKDIR /usr/local/src/openssl-3.4.1/
 sudo ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl/ shared zlib
 sudo make -j4
 # sudo make test
 sudo make install_sw
 WORKDIR /etc/ld.so.conf.d/
 sudo touch openssl-open62541.conf 
-sudo echo "/usr/local/ssl/lib64/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
-sudo export LD_LIBRARY_PATH=/usr/local/ssl/lib64/
+sudo echo "/usr/local/ssl/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
+sudo export LD_LIBRARY_PATH=/usr/local/ssl/lib/
 WORKDIR /etc/profile.d
-sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib64; ldconfig" | tee -a ssl_export_ld_library_path.sh
+sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib; ldconfig" | tee -a ssl_export_ld_library_path.sh
 sudo ldconfig -v
 WORKDIR /etc/
 #sudo echo ":/usr/local/ssl/bin" | tee -a environment 
@@ -127,9 +127,10 @@ sudo /usr/local/ssl/bin/openssl version -a
 ############################################################################
 WORKDIR /root
 sudo DEBIAN_FRONTEND="noninteractive" apt-get remove --purge --autoremove cmake -y
+WORKDIR /usr/local/src/
 sudo wget https://cmake.org/files/v3.31/cmake-3.31.6.tar.gz
 sudo tar -xvf cmake-3.31.6.tar.gz
-sudo cd cmake-3.31.6/
+cd cmake-3.31.6/
 sudo ./configure
 sudo gmake
 sudo make install
