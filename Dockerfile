@@ -257,5 +257,7 @@ sudo export SVR_SQL_PORT="3306"
 sudo export SVR_SQL_HISTORY_OPTION="ValueSet"
 sudo export SVR_SQL_HISTORY_OPTION="Poll"
 sudo export SVR_SQL_HISTORY_OPTION="UserDefine"
+sudo export SVR_LDS_SSLCERTIFICATELOC="/usr/local/ssl/certs/ldscert44.pem"
+sudo export SVR_LDS_APPLICATION_URI=urn:lds.virtualskies.com.sg
 sudo export SVR_LDS_USERNAME="admin"
 sudo export SVR_LDS_PASSWORD="defaultadminpassword24"
