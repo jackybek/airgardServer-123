@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 	//UA_NodeId r2_airgard_data_Id;
         switch (argc)
         {
-/*		case 1: argv[0]= "./myNewServer" ;
+		case 1: argv[0]= "./myNewServer" ;
 			argv[1] = "192.168.1.33";
 			argv[2] = "192.168.1.157";
 			argv[3] = "192.168.1.44";
@@ -172,11 +172,11 @@ int main(int argc, char *argv[])
 			argc=7;
 			printf("%s %s %s %s %s %s %s\n", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
 			break;
-*/
+/*
 		case 1: printf("Usage : ./myNewServer <local ip> <sensor ip> <LDS ip> [<*broker ip> <port> <{--all}|--pub|--sub] \n");
                         printf("Note* : port number to differentiate between MQTT (1883) or AMQP (5672) \n");
-                        exit (0);
-
+                        exit(0);
+*/
 		case 2: // to test reverseConnect, need the local ip
 			argv[2] = NULL; // sensor ip
 			argv[3] = "192.168.1.44"; // LDS ip

@@ -112,9 +112,9 @@ config->applicationDescription.applicationUri.data[len]='\0';
     config->applicationDescription.productUri = UA_STRING_ALLOC(env_product_uri); //PRODUCT_URI);
     config->applicationDescription.applicationName = UA_LOCALIZEDTEXT_ALLOC("en", env_application_name); //, APPLICATION_NAME);
 
-    // LDS ++ refer to https://opcfoundation.org/UA/schemas/1.04/ServerCapabilities.csv
+    // LDS ++ refer to https://opcfoundation.org/UA/schemas/1.05/ServerCapabilities.csv
     // NA, DA, HD, AC, HE, GDS, LDS, DI, ADI, FDI, FDIC, PLC, S95, RCP, PUB, AUTOID, MDIS, CNC, PLK, FDT, TMC, CSPP, 61850, PACKML, MTC
-    // AUTOML, SERCOS, MIMOSA, WITSML, DEXPI, IOLINK, VROBOT, PNO
+    // AUTOML, SERCOS, MIMOSA, WITSML, DEXPI, IOLINK, VROBOT, PNO,PADMIN, ALIAS, SKS, FXAC, FXCM 
     config->applicationDescription.applicationType = UA_APPLICATIONTYPE_DISCOVERYSERVER;   // acts as DISCOVERY SERVER ONLY OR UA_APPLICATIONTYPE_SERVER
 
 
@@ -123,12 +123,15 @@ config->applicationDescription.applicationUri.data[len]='\0';
     config->mdnsConfig.mdnsServerName = UA_String_fromChars("Local Discovery Server");
     config->mdnsInterfaceIP = UA_String_fromChars("0.0.0.0");  // 42.42.42.42
     // set the capabilities
-    config->mdnsConfig.serverCapabilitiesSize = 1;
-    UA_String *caps = (UA_String *)UA_Array_new(1, &UA_TYPES[UA_TYPES_STRING]);
-    caps[0] = UA_String_fromChars("LDS");   // local discovery service
-    //caps[1] = UA_String_fromChars("HD");  // provide historical data
-    //caps[2] = UA_String_fromChars("DA");  // provide current data
-    //caps[3] = UA_String_fromChars("GDS"); // global discovery Server information model
+    config->mdnsConfig.serverCapabilitiesSize = 7;
+    UA_String *caps = (UA_String *)UA_Array_new(config->mdnsConfig.serverCapabilitiesSize, &UA_TYPES[UA_TYPES_STRING]);
+    caps[0] = UA_String_fromChars("DA");  // provide current data
+    caps[1] = UA_String_fromChars("HD");  // provide historical data
+    caps[2] = UA_String_fromChars("AC");   // alarms & conditions that may reqiure operator interaction
+    caps[3] = UA_String_fromChars("HE");   // historical alarms & events
+    caps[4] = UA_String_fromChars("GDS"); // global discovery Server information model
+    caps[5] = UA_String_fromChars("RCP"); // supports the reverse connect capabilities defined in Part 6
+    caps[6] = UA_String_fromChars("PUB"); // supports the Publisher capabilities defined in Part 14
     config->mdnsConfig.serverCapabilities = caps;
     config->discoveryCleanupTimeout = 60*60;
     config->verifyRequestTimestamp = UA_RULEHANDLING_ACCEPT; //UA_RULEHANDLING_WARN;

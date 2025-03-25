@@ -10,9 +10,9 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-//#include <libxml2/libxml/parser.h>
-//#include <libxml2/libxml/tree.h>
-//#include <libxml2/libxml/xmlreader.h>
+#include <libxml2/libxml/parser.h>
+#include <libxml2/libxml/tree.h>
+#include <libxml2/libxml/xmlreader.h>
 #include "SV_Misc.h"
 
 //UA_ByteString loadFile(const char *const);
@@ -48,7 +48,7 @@ UA_ByteString loadFile(const char *const path)
     return fileContents;
 }
 
-#ifdef WAIT
+
 xmlNodePtr srSeekChildNodeNamed(xmlNode* p, char* name, int len)
 {
 	xmlNodePtr curr_node;
@@ -69,7 +69,7 @@ xmlNodePtr srSeekChildNodeNamed(xmlNode* p, char* name, int len)
 	}
 	return NULL;
 }
-#endif
+
 
 /*
 UA_ByteString loadFile(char* filename)

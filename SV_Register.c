@@ -85,6 +85,62 @@ UA_DURATIONRANGE(UA_Duration min, UA_Duration max) {
 }
 
 
+/*
+ * Get the endpoint from the server, where we can call RegisterServer2 (or RegisterServer).
+ * This is normally the endpoint with highest supported encryption mode.
+ *
+ * @param discoveryServerUrl The discovery url from the remote server
+ * @return The endpoint description (which needs to be freed) or NULL
+ */
+#ifdef KIV
+static UA_EndpointDescription *
+getRegisterEndpointFromServer(const char *discoveryServerUrl) {
+    UA_Client *client = UA_Client_new();
+    UA_ClientConfig_setDefault(UA_Client_getConfig(client));
+    UA_EndpointDescription *endpointArray = NULL;
+    size_t endpointArraySize = 0;
+    UA_StatusCode retval = UA_Client_getEndpoints(client, discoveryServerUrl,
+                                                  &endpointArraySize, &endpointArray);
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_Array_delete(endpointArray, endpointArraySize,
+                        &UA_TYPES[UA_TYPES_ENDPOINTDESCRIPTION]);
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
+                     "GetEndpoints failed with %s", UA_StatusCode_name(retval));
+        UA_Client_delete(client);
+        return NULL;
+    }
+
+    UA_LOG_DEBUG(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Server has %lu endpoints", (unsigned long)endpointArraySize);
+    UA_EndpointDescription *foundEndpoint = NULL;
+    for(size_t i = 0; i < endpointArraySize; i++) {
+        UA_LOG_DEBUG(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "\tURL = %.*s, SecurityMode = %s",
+                     (int) endpointArray[i].endpointUrl.length,
+                     endpointArray[i].endpointUrl.data,
+                     endpointArray[i].securityMode == UA_MESSAGESECURITYMODE_NONE ? "None" :
+                     endpointArray[i].securityMode == UA_MESSAGESECURITYMODE_SIGN ? "Sign" :
+                     endpointArray[i].securityMode == UA_MESSAGESECURITYMODE_SIGNANDENCRYPT ? "SignAndEncrypt" :
+                     "Invalid"
+        );
+        // find the endpoint with highest supported security mode
+	if ( (UA_String_equal(&endpointArray[i].securityPolicyUri, &UA_SECURITY_POLICY_NONE_URI)) && ( foundEndpoint == NULL || foundEndpoint->securityMode < endpointArray[i].securityMode) )
+
+   //     if((UA_String_equal(&endpointArray[i].securityPolicyUri, &UA_SECURITY_POLICY_NONE_URI) ||
+   //         	UA_String_equal(&endpointArray[i].securityPolicyUri, &UA_SECURITY_POLICY_BASIC128_URI)) &&
+   //	( foundEndpoint == NULL || foundEndpoint->securityMode < endpointArray[i].securityMode))
+            foundEndpoint = &endpointArray[i];
+    }
+    UA_EndpointDescription *returnEndpoint = NULL;
+    if(foundEndpoint != NULL) {
+        returnEndpoint = UA_EndpointDescription_new();
+        UA_EndpointDescription_copy(foundEndpoint, returnEndpoint);
+    }
+    UA_Array_delete(endpointArray, endpointArraySize,
+                    &UA_TYPES[UA_TYPES_ENDPOINTDESCRIPTION]);
+    UA_Client_delete(client);
+    return returnEndpoint;
+}
+#endif
+
 UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
 {
         UA_StatusCode retval;
@@ -134,10 +190,11 @@ UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
 		const char *env_LDSport = getenv("LDS_PORT");
 		char lds_endpoint[100];
 		//printf("1 : %s, %d \n", lds_endpoint_A, strlen(lds_endpoint_A));
+		strcpy(lds_endpoint, "opc.tcp://");
 		int index = strlen(lds_endpoint_A);
-		strncpy(lds_endpoint, lds_endpoint_A, strlen(lds_endpoint_A));
-		lds_endpoint[index]= ':';
-		strcpy(&lds_endpoint[index+1], env_LDSport);
+		strncpy(&lds_endpoint[10], lds_endpoint_A, strlen(lds_endpoint_A));
+		lds_endpoint[index+10]= ':';
+		strcpy(&lds_endpoint[index+11], env_LDSport);
 		//printf("2 : %s, %d \n", lds_endpoint, strlen(lds_endpoint));
 
 		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : successfully assembled lds endpoint url : %s", lds_endpoint);
@@ -145,32 +202,90 @@ UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 UA_ClientConfig *LDSClient_config1 = UA_Client_getConfig(LDSclient);
                 //UA_ClientConfig_setDefault(UA_Client_getConfig(LDSclient));
                 //UA_ClientConfig_setDefault(LDSClient_config1);
-                LDSClient_config1->localConnectionConfig = UA_ConnectionConfig_default;
 
+
+                LDSClient_config1->clientContext = NULL;
+		LDSClient_config1->logging = NULL;
+		LDSClient_config1->timeout = 0;
+                UA_ApplicationDescription_clear(&LDSClient_config1->clientDescription);
+
+		const char *env_ldscertificateloc = getenv("SVR_LDS_SSLCERTIFICATELOC");
+		//const char *env_ldsapplicationuri = getenv("SVR_LDS_APPLICATION_URI");// if use SVR_LDS_APPLICATION_URI, will get a warning on mismtach ApplicationURI
+		const char *env_ldsapplicationuri = getenv("SVR_APPLICATION_URI_SERVER"); // try to swap with the server application uri
+
+		LDSClient_config1->securityPoliciesSize = 1; // load the LDS cert, since SVR is connecting to LDS
+		LDSClient_config1->securityPolicies[0].localCertificate = loadFile(env_ldscertificateloc);
+                LDSClient_config1->clientDescription.applicationUri = UA_STRING_ALLOC(env_ldsapplicationuri);
+
+		// endpointUrl format : opc.tcp://192.168.1.44:4841
 		LDSClient_config1->endpointUrl = UA_STRING_ALLOC(lds_endpoint);
 
-                UA_ApplicationDescription_clear(&LDSClient_config1->clientDescription);
-                LDSClient_config1->clientDescription.applicationUri = UA_STRING_ALLOC(DISCOVERY_SERVER_APPLICATION_URI);
-
                 // Secure client connect
-                LDSClient_config1->securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT; //UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;  // require encryption
+                LDSClient_config1->securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT; // require encryption
                 LDSClient_config1->securityPolicyUri = UA_STRING_ALLOC("");
+		LDSClient_config1->noSession = UA_FALSE;
+		LDSClient_config1->noReconnect = UA_FALSE;
+		LDSClient_config1->noNewSession = UA_FALSE;
+
+		//LDSClient_config1->endpoint = ???;
+		//LDSClient_config1->userTokenPolicy = ???;
+		//LDSClient_config1->applicationUri = ???;
+
+		// custom Data types
+                LDSClient_config1->customDataTypes = NULL;
+
+		// Advance Client Configuration
                 LDSClient_config1->secureChannelLifeTime = 10 * 60 * 1000;        // 10 minutes
-                LDSClient_config1->securityPolicies = (UA_SecurityPolicy*)UA_malloc(sizeof(UA_SecurityPolicy));
+                LDSClient_config1->requestedSessionTimeout = 1200000; /* requestedSessionTimeout */
+                LDSClient_config1->localConnectionConfig = UA_ConnectionConfig_default;
+                LDSClient_config1->connectivityCheckInterval = 3000; // in milliseconds
+
+		// Event loop
+		//LDSClient_config1->eventLoop = ???
+		//LDSClient_config1->externalEventLoop = ???
+
+		// Available security policies
+		LDSClient_config1->securityPolicies->localCertificate = LDScertificate; 
+
+#ifdef KIV
+		UA_SecurityPolicy *securityPolicy;
+		LDSClient_config1->securityPoliciesSize = 4;
+		for (size_t i=0; i< LDSClient_config1->securityPoliciesSize; i++)
+			securityPolicy[i] = (UA_SecurityPolicy)UA_malloc(sizeof(UA_SecurityPolicy));
+
+		/*
+		securityPolicy[0].policyUri = UA_String(UA_SECURITY_POLICY_NONE_URI);
+		securityPolicy[1].policyUri = UA_String(UA_SECURITY_POLICY_BASIC256SHA256_URI);
+		securityPolicy[2].policyUri = UA_String(UA_SECURITY_POLICY_AES256SHA256RSAPSS_URI);
+		securityPolicy[3].policyUri = UA_String(UA_SECURITY_POLICY_AES128SHA256RSAOAEP_URI);
+		LDSClient_config1->securityPolicies = securityPolicy;
+		*/
+		//LDSClient_config1->securityPolicies[i] = (UA_SecurityPolicy) UA_malloc(sizeof(UA_SecurityPolicy));
                 if (!LDSClient_config1->securityPolicies)
                 {
-                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "--------SV_Register.c.c  Error setting securityPolicies : %s", UA_StatusCode_name(UA_STATUSCODE_BADOUTOFMEMORY));
+                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "--------SV_Register.c.c  Error initialising securityPolicies : %s", UA_StatusCode_name(UA_STATUSCODE_BADOUTOFMEMORY));
                         //goto cleanup;
                         return LDSClient_config1;
                 }
+		LDSClient_config1->securityPolicies[0].securityPolicies = UA_SECURITY_POLICY_NONE_URI;
+		LDSClient_config1->securityPolicies[1].securityPolicies = UA_SECURITY_POLICY_BASIC256SHA256_URI;
+		LDSClient_config1->securityPolicies[2].securityPolicies = UA_SECURITY_POLICY_AES256SHA256RSAPSS_URI;
+		LDSClient_config1->securityPolicies[3].securityPolicies = UA_SECURITY_POLICY_AES128SHA256RSAOAEP_URI;
+#endif
+		//LDSClient_config1->certificateVerification = NULL;
+		LDSClient_config1->authSecurityPoliciesSize = 0;
+		//LDSClient_config1->authSecurityPolicies = NULL;
+		//LDSClient_config1->authSecurityPolicyUri = ;
+
         //      LDSClient_config1->initConnectionFunc = UA_ClientConnectionTCP_init; /* for async client */
         //      LDSClient_config1->pollConnectionFunc = UA_ClientConnectionTCP_poll; /* for async connection */
-                LDSClient_config1->customDataTypes = NULL;
-                LDSClient_config1->connectivityCheckInterval = 0;
-                LDSClient_config1->requestedSessionTimeout = 1200000; /* requestedSessionTimeout */
+
                 LDSClient_config1->inactivityCallback = NULL;
-                LDSClient_config1->clientContext = NULL;
-                LDSClient_config1->connectivityCheckInterval = 3000; // in milliseconds
+		LDSClient_config1->subscriptionInactivityCallback = NULL;
+		// Session config
+		LDSClient_config1->sessionName = UA_STRING("AirgardServer33 connection to LDS");
+		LDSClient_config1->sessionLocaleIds = NULL;
+		LDSClient_config1->sessionLocaleIdsSize = 0;
 
                 UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Encrypting Svr with LDS certificates");
                 retval = UA_ClientConfig_setDefaultEncryption(LDSClient_config1, LDScertificate, LDSprivateKey,
@@ -191,22 +306,34 @@ UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Successfully encrypted Svr with LDS certificates as LDS Client");
 		}
 
-		const char* env_lds_username = getenv("SVR_LDS_USERNAME");
-		const char* env_lds_password = getenv("SVR_LDS_PASSWORD");
+		//const char* env_lds_username = getenv("SVR_LDS_USERNAME");
+		//const char* env_lds_password = getenv("SVR_LDS_PASSWORD");
+		char userid[100];
+		char passwd[100];
 
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Trying to connect to LDS server %s using %s %s", lds_endpoint, env_lds_username, env_lds_password);
-                retval = UA_Client_connectUsername(LDSclient, lds_endpoint, DISCOVERY_USERNAME, DISCOVERY_PASSWORD);
+		printf("Please enter the username to login to LDS : "); scanf("%s", userid);
+		printf("Please enter the password to login to LDS : "); scanf("%s", passwd);
 
+                //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Trying to connect to LDS server <%s> using <%s> <%s> ...", lds_endpoint, userid, passwd); //env_lds_username, env_lds_password);
+		// lds_endpoint format : opc.tcp://192.168.1.44:4841
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Trying to connect to LDS server <%s> using <%s> <%s> ...", lds_endpoint, userid, passwd);
+		#define UA_LOG_LEVEL = 300 // is used in UA_Client_connectUsername and functions
+                retval = UA_Client_connectUsername(LDSclient, lds_endpoint, userid, passwd); //DISCOVERY_USERNAME, DISCOVERY_PASSWORD);
 
                 if (retval != UA_STATUSCODE_GOOD)
                 {
-                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Cannot login securely to LDS Server : %s", lds_endpoint);
+			UA_ClientConfig *myConfig = LDSClient_config1;
+			// myConfig->userIdentityToken is of type UA_ExtensionObject
+			UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : endpoint=<%s> userid=<%s> password=<%s>", 
+							myConfig->endpointUrl.data, (char*)myConfig->userIdentityToken.content.decoded.data, (char*)myConfig->userIdentityToken.content.decoded.data);
+                        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Cannot login securely to LDS Server : <%s>", lds_endpoint);
                         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : error is %s", UA_StatusCode_name(retval));
 			UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : UA_LDS_connectUsername() : failure");
                         //goto cleanup;
-                        return LDSClient_config1;
+                        //return LDSClient_config1;
                 }
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : Successfully connected to LDS %s", lds_endpoint);
+		else
+                	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c  : Successfully connected to LDS %s", lds_endpoint);
 
 		// register the server to LDS
 		UA_StatusCode LDS_retval =  UA_Server_registerDiscovery(uaServer1, LDSClient_config1,
