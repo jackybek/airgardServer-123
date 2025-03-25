@@ -16,8 +16,8 @@ sudo apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
 # if cannot update legacy key do the following
   # apt-key list | grep -A4 "trusted.gpg$"
   # -----get the last 8 characters (excluding the space) under the line in /etc/apt/trusted.gpg
-  # sudo apt-key export <7FA3303E> | sudo gpg --dearmor -o /tmp/raspi.gpg
-  # sudo apt-key del <7FA3303E>
+  # sudo apt-key export 90FDDD2E | sudo gpg --dearmor -o /tmp/raspi.gpg
+  # sudo apt-key del 90FDDD2E
   # sudo mv /tmp/raspi.gpg /etc/apt/trusted.gpg.d/
   
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install -y apt-utils
