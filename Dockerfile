@@ -275,3 +275,4 @@ sudo export SVR_LDS_SSLCERTIFICATELOC="/usr/local/ssl/certs/ldscert44.pem"
 sudo export SVR_LDS_APPLICATION_URI=urn:lds.virtualskies.com.sg
 sudo export SVR_LDS_USERNAME="admin"
 sudo export SVR_LDS_PASSWORD="defaultadminpassword24"
+sudo export SVR_LDS_PORT="4841"
