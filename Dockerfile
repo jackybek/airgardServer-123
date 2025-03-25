@@ -13,7 +13,13 @@ SHELL ["/bin/bash", "-c"]
 # -- update and upgrade OS patches
 ########################################
 sudo apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y 
-
+# if cannot update legacy key do the following
+  # apt-key list | grep -A4 "trusted.gpg$"
+  # -----get the last 8 characters (excluding the space) under the line in /etc/apt/trusted.gpg
+  # sudo apt-key export <7FA3303E> | sudo gpg --dearmor -o /tmp/raspi.gpg
+  # sudo apt-key del <7FA3303E>
+  # sudo mv /tmp/raspi.gpg /etc/apt/trusted.gpg.d/
+  
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install -y apt-utils
 # -- prepare the build environment for OPC62541
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install build-essential pkg-config python3 net-tools iputils-ping -y
