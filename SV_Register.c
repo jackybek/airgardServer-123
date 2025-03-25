@@ -153,22 +153,56 @@ UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 //-------------- register itself to the LDS Server <192.168.1.44>
                 // code based on githug/open62541/62541/examples/discovery/server_register.c
                 // acting as an OPCUA Client to LDS Server
-                UA_ByteString LDScertificate = loadFile(DISCOVERY_SSLCERTIFICATELOC);  //loadFile("/etc/ssl/certs/62541LDSServerCert.pem"); //=> symbolic link
+                char* env_ldscertificate = getenv("SVR_LDS_SSLCERTIFICATELOC");
+                if (env_ldscertificate != NULL)
+                         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : retrieved environment variable <SVR_LDS_SSLCERTIFICATELOC> : %s", env_ldscertificate);
+                else
+                {
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : cannot retrieve environment variable <SVR_LDS_SSLCERTIFICATELOC : %s>", env_ldscertificate);
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : default to /usr/local/ssl/certs/ldscert44.pem");
+                        env_ldscertificate = (char*)calloc(255, sizeof(char));
+                        if (env_ldscertificate != NULL)
+                                strcpy(env_ldscertificate, "/usr/local/ssl/certs/ldscert44.pem");
+                        else
+                        {
+                                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : cannot retrieve environment variable <SVR_LDS_SSLCERTIFICATELOC> : out of memory");
+                                exit(UA_FALSE);
+                        }
+                }
+
+                char* env_ldsprivatekeyloc = getenv("SVR_LDS_PRIVATEKEYLOC");
+                if (env_ldsprivatekeyloc != NULL)
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : retrieved environment variable <SVR_LDS_PRIVATEKEYLOC> : %s", env_ldsprivatekeyloc);
+                else
+                {
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : cannot retrieve environment variable <SVR_LDS_PRIVATEKEYLOC> : %s", env_ldsprivatekeyloc);
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : default to /usr/local/ssl/private/ldsprivate-key44.pem");
+                        env_ldsprivatekeyloc = (char*)calloc(255, sizeof(char));
+                        if (env_ldsprivatekeyloc != NULL)
+                                strcpy(env_ldsprivatekeyloc, "/usr/local/ssl/certs/ldscert44.pem");
+                        else
+                        {
+                                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Register.c : cannot retrieve environment variable <SVR_LDS_PRIVATEKEYLOC> : out of memory");
+                                exit(UA_FALSE);
+                        }
+                }
+
+                UA_ByteString LDScertificate = loadFile(env_ldscertificate); // loadFile(DISCOVERY_SSLCERTIFICATELOC);  //loadFile("/etc/ssl/certs/62541LDSServerCert.pem"); //=> symbolic link
                 //UA_ByteString certificate = loadFile("/usr/local/ssl/certs/ldscert44.pem"); // actual location
                 if (LDScertificate.length == 0)
                 {
-                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c: Unable to load file : %s", DISCOVERY_SSLCERTIFICATELOC);
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c: Unable to load file : %s", env_ldscertificate);
                         //goto cleanup;
                         return NULL;
                 }
 		else
 			UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : successfully loaded LDS certificate");
 
-                UA_ByteString LDSprivateKey = loadFile(DISCOVERY_PRIVATEKEYLOC);  //loadFile("/usr/local/ssl/private/62541LDSprivate-key.pem");
+                UA_ByteString LDSprivateKey = loadFile(env_ldsprivatekeyloc);  //loadFile(DISCOVERY_PRIVATEKEYLOC);  //loadFile("/usr/local/ssl/private/62541LDSprivate-key.pem");
                 //UA_ByteString LDSprivateKey = loadFile("/usr/local/ssl/private/ldsprivate-key.pem");
                 if (LDSprivateKey.length == 0)
                 {
-                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Unable to load file : %s", DISCOVERY_PRIVATEKEYLOC);
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Register.c : Unable to load file : %s", env_ldsprivatekeyloc);
                         //goto cleanup;
                         return NULL;
                 }
@@ -187,7 +221,7 @@ UA_ClientConfig *registerToLDS(UA_Server *uaServer1, char* lds_endpoint_A)
                 size_t LDSrevocationListSize = 0;
 
                 UA_Client *LDSclient = UA_Client_new();
-		const char *env_LDSport = getenv("LDS_PORT");
+		const char *env_LDSport = getenv("SVR_LDS_PORT");
 		char lds_endpoint[100];
 		//printf("1 : %s, %d \n", lds_endpoint_A, strlen(lds_endpoint_A));
 		strcpy(lds_endpoint, "opc.tcp://");

@@ -52,16 +52,77 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 {
         UA_StatusCode status;
 
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Entering encryptServer() function"); 
-	const char *env_SVRport = getenv("SVR_PORT");
-        //UA_ServerConfig *config = UA_Server_getConfig(uaSvrServer);
-        const char *env_sslcertificateloc = getenv("SVR_SSLCERTIFICATELOC");	// export SVR_SSLCERTIFICATELOC /usr/local/ssl/certs
-        UA_ByteString certificate = loadFile(env_sslcertificateloc);
-	const char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");		// export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
-        UA_ByteString privateKey = loadFile(env_privatekeyloc);
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Entering encryptServer() function");
+	char *env_SVRport = getenv("SVR_PORT");
+        if (env_SVRport != NULL)
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable : SVR_PORT : %s", env_SVRport);
+        else
+        {
+                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PORT : %s>", env_SVRport);
+                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to 4840");
+                env_SVRport = (char*)calloc(5,sizeof(char));
+                if (env_SVRport != NULL)
+                        strcpy(env_SVRport, "4840");
+                else
+                {
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PORT> :  out of memory");
+                        exit(UA_FALSE);
+                }
+        }
+        char *env_sslcertificateloc = getenv("SVR_SSLCERTIFICATELOC");	// export SVR_SSLCERTIFICATELOC /usr/local/ssl/certs
+        if (env_sslcertificateloc != NULL)
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable <SVR_SSLCERTIFICATELOC : %s>", env_sslcertificateloc);
+        else
+        {
+                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_SSLCERTIFICATELOC : %s>", env_sslcertificateloc);
+                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/certs/Svrcert33.pem");
+                env_sslcertificateloc = (char *)calloc(255, sizeof(char));
+                if (env_sslcertificateloc != NULL)
+                        strcpy(env_sslcertificateloc, "/usr/local/ssl/certs/Svrcert33.pem");
+                else
+                {
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_SSLCERTIFICATELOC> :  out of memory");
+                        exit(UA_FALSE);
+                }
+        }
 
-        const char *env_trustlistloc = getenv("SVR_TRUSTLISTLOC");		// then iterate through the directory and save into uaSvrServer object - refer to Load trustlist
-        //UA_ByteString trustlistloc = loadFile(env_trustlistloc);		// export "SVR_TRUSTLISTLOC" /usr/local/ssl/trustlist
+        char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");          // export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
+        if (env_privatekeyloc != NULL)
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable <SVR_PRIVATEKEYLOC : %s>", env_privatekeyloc);
+        else
+        {
+                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PRIVATEKEYLOC : %s>", env_privatekeyloc);
+                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/private/Svrprivate-key33.pem");
+                env_privatekeyloc = (char *)calloc(255, sizeof(char));
+                if (env_privatekeyloc != NULL)
+                        strcpy(env_privatekeyloc, "/usr/local/ssl/private/Svrprivate-key33.pem");
+                else
+                {
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PRIVATEKEYLOC> : out of memory");
+                        exit(UA_FALSE);
+                }
+        }
+
+        UA_ByteString certificate = loadFile(env_sslcertificateloc);
+        UA_ByteString privateKey = loadFile(env_privatekeyloc);
+        char *env_trustlistloc = getenv("SVR_TRUSTLISTLOC");		// then iterate through the directory and save into uaSvrServer object - refer to Load trustlist
+        if (env_trustlistloc != NULL)
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable : SVR_TRUSTLISTLOC : %s", env_trustlistloc);
+        else
+        {
+                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_TRUSTLISTLOC : %s>", env_trustlistloc);
+                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/trustlist/");
+                env_trustlistloc = (char *)calloc(255, sizeof(char));
+                if (env_trustlistloc != NULL)
+                        strcpy(env_trustlistloc, "/usr/local/ssl/trustlist/");
+                else
+                {
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_TRUSTLISTLOC> : out of memory");
+                        exit(UA_FALSE);
+                }
+        }
+
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Finished retrieving all environment variables");
 
 	UA_ByteString *trustList=NULL;
 	size_t trustListSize = 0;
@@ -78,6 +139,7 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
                  UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot find SSL private key %s", env_privatekeyloc);
 	else
 		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded SSL private key %s", env_privatekeyloc);
+
 
         // --------------------------------------------------------------------------------------Load trustlist
 	struct dirent *de;	// pointer for directory entry
