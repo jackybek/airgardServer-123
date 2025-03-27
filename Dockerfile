@@ -28,6 +28,7 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install check libsubunit-dev -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install libmbedtls-dev -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install wget -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install lib32readline8 lib32readline-dev -y
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install gnome
 
 #########################################################
 # -- build GCC from source to get the latest version
