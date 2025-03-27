@@ -119,7 +119,7 @@ sudo touch openssl-open62541.conf
 sudo echo "/usr/local/ssl/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
 sudo export LD_LIBRARY_PATH=/usr/local/ssl/lib/
 cd /etc/profile.d
-sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib; ldconfig" | tee -a ssl_export_ld_library_path.sh
+sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib; ldconfig" | sudo tee -a ssl_export_ld_library_path.sh
 sudo ldconfig -v
 cd /etc/
 #sudo echo ":/usr/local/ssl/bin" | tee -a environment 
