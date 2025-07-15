@@ -4,27 +4,31 @@
 #include "json5.h"
 #endif
 
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
-#include <open62541/plugin/log_stdout.h>
-#include <open62541/server.h>
-#include <open62541/server_config_default.h>
-#include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
+   #include <open62541/plugin/log_stdout.h>
+   #include <open62541/server.h>
+   #include <open62541/server_config_default.h>
+   #include <open62541/server_pubsub.h>
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
-   #define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 #endif
 #include "SV_PubSub.h"
 
@@ -45,7 +49,7 @@ static UA_NodeId writerGroupIdentifier;
 
 
 void
-pubDataSetWriter(UA_Server *uaServer) {
+pubDataSetWriterBrokerless(UA_Server *uaServer) {
 
     // We need now a DataSetWriter within the WriterGroup. This means we must
     // create a new DataSetWriterConfig and add call the addWriterGroup function.
@@ -93,7 +97,7 @@ pubDataSetWriter(UA_Server *uaServer) {
         /* addDataSetReader Timeout must be greater than publishing interval of corresponding WriterGroup */
 
 
-#ifdef UA_ENABLE_JSON_ENCODING          // currently set as UA_TRUE in ccmake
+#ifdef KIV //UA_ENABLE_JSON_ENCODING          // currently set as UA_TRUE in ccmake
     UA_JsonDataSetWriterMessageDataType jsonDswMd;
     UA_ExtensionObject messageSettings;
     if(useJson)
@@ -117,6 +121,7 @@ pubDataSetWriter(UA_Server *uaServer) {
     }
 #endif
 
+#ifdef KIV
    if (MQTT_Enable)
     {
         //TODO: Modify MQTT send to add DataSetWriters broker transport settings
@@ -145,6 +150,7 @@ pubDataSetWriter(UA_Server *uaServer) {
 
         dataSetWriterConfig.transportSettings = transportSettings;
     }
+#endif
 
     UA_Server_addDataSetWriter(uaServer, writerGroupIdentifier, publishedDataSetIdentifier,
                                &dataSetWriterConfig, &dataSetWriterIdentifier);

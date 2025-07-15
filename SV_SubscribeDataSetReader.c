@@ -4,33 +4,36 @@
 #include "json5.h"
 #endif
 
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
-   #define UA_ENABLE_PUBSUB_MQTT
-   #define UA_ENABLE_JSON_ENCODING
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 
 #endif
 #include "SV_PubSub.h"
 
-#include "json_checker.h"
+#include "SV_JsonChecker.h"
 #include <json-c/json.h>        // https://json-c.github.io/json-c; install in /usr/local/include/
 //#include "json.h"             //https://raw.githubusercontent.com/udp/json-parser/master/json.h
 //#include "ua_pubsub_amqp.h"   //https://github.com/open62541/open62541/pull/3850

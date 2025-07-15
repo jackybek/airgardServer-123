@@ -6,25 +6,29 @@
 
 #ifdef almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
-   #define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 #endif
 #include "SV_PubSub.h"
 
@@ -43,13 +47,17 @@
  static UA_Boolean useJson = UA_FALSE;
 #endif
 
+#ifndef UA_AES128CTR_SIGNING_KEY_LENGTH
 #define UA_AES128CTR_SIGNING_KEY_LENGTH 16
-#define UA_AES128CTR_KEY_LENGTH 16
-#define UA_AES128CTR_KEYNONCE_LENGTH 4
+#endif
 
-UA_Byte signingKey[UA_AES128CTR_SIGNING_KEY_LENGTH]= {0};
-UA_Byte encryptingKey[UA_AES128CTR_KEY_LENGTH] = {0};
-UA_Byte keyNonce[UA_AES128CTR_KEYNONCE_LENGTH] = {0};
+#ifndef UA_AES128CTR_KEY_LENGTH
+#define UA_AES128CTR_KEY_LENGTH 16
+#endif
+
+#ifndef UA_AES128CTR_KEYNONCE_LENGTH
+#define UA_AES128CTR_KEYNONCE_LENGTH 4
+#endif
 
 // only 1 PubSubConnection for both reader and writer
 extern UA_NodeId PubSubconnectionIdentifier;
@@ -69,7 +77,7 @@ extern int MQTT_Port;   // default set to 1883
  * parameters for the message creation.
  */
 void
-pubWriterGroup(UA_Server *uaServer)
+pubWriterGroupBroker(UA_Server *uaServer)
 {
     /* Now we create a new WriterGroupConfig and add the group to the existing PubSubConnection. */
     UA_ServerConfig *ua_config = UA_Server_getConfig(uaServer);
@@ -84,10 +92,10 @@ pubWriterGroup(UA_Server *uaServer)
     writerGroupConfig.maxEncapsulatedDataSetMessageCount = 100;
     writerGroupConfig.rtLevel = UA_PUBSUB_RT_NONE;
 
-    UA_StatusCode retval = UA_STATUSCODE_GOOD;
+    //UA_StatusCode retval = UA_STATUSCODE_GOOD;
 
     /* decide whether to use JSON or UADP encoding*/
-    if(useJson)
+    if (useJson)
     {
         #ifdef DEBUG_MODE
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c :addWriterGroup : useJson = UA_TRUE");
@@ -100,7 +108,6 @@ pubWriterGroup(UA_Server *uaServer)
          * objects are defined by the standard. e.g.
          * UadpWriterGroupMessageDataType */
 
-        #ifdef KIV
         // Add the encryption key information
         if (MQTT_TLS_Enable == UA_TRUE)
         {
@@ -108,7 +115,6 @@ pubWriterGroup(UA_Server *uaServer)
                 writerGroupConfig.securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;
                 writerGroupConfig.securityPolicy = &config->pubSubConfig.securityPolicies[0];
         }
-        #endif
 
         UA_JsonWriterGroupMessageDataType *Json_writerGroupMessage = UA_JsonWriterGroupMessageDataType_new();
         /* Change message settings of writerGroup to send PublisherId,
@@ -120,11 +126,23 @@ pubWriterGroup(UA_Server *uaServer)
                                                                 (UA_JsonNetworkMessageContentMask)UA_JSONNETWORKMESSAGECONTENTMASK_PUBLISHERID |
                                                                 (UA_JsonNetworkMessageContentMask)UA_JSONNETWORKMESSAGECONTENTMASK_DATASETCLASSID);
         writerGroupConfig.messageSettings.content.decoded.data = Json_writerGroupMessage;
+
+	#if defined(UA_ENABLE_ENCRYPTION_MBEDTLS) && !defined(UA_ENABLE_JSON_ENCODING)
+    		/* Encryption settings */
+    		UA_ServerConfig *config = UA_Server_getConfig(server);
+    		writerGroupConfig.securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;
+    		writerGroupConfig.securityPolicy = &config->pubSubConfig.securityPolicies[0];
+	#endif
+
         // the following seemed to be defunct : tutorial_pubsub_mqtt_publish.c
+	/*
         UA_Server_addWriterGroup(uaServer, PubSubconnectionIdentifier, &writerGroupConfig, &writerGroupIdentifier);
         UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
         UA_JsonWriterGroupMessageDataType_delete(Json_writerGroupMessage);
+	*/
     }
+
+#ifdef TO_BE_REMOVED
     else
     {
         #ifdef DEBUG_MODE
@@ -179,11 +197,12 @@ pubWriterGroup(UA_Server *uaServer)
              //exit (EXIT_FAILURE);
      }
      #endif
+#endif
 
     // The above is for UDAP; now this is for MQTT
     if (MQTT_Enable == UA_TRUE) // publish to MQTT Broker
     {
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c addWriterGroup : MQTT_Enable = %d \n", MQTT_Enable);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroupWithBroker.c pubWriterGroupBroker() : MQTT_Enable = %d \n", MQTT_Enable);
         // configure the mqtt publish topic
         UA_BrokerWriterGroupTransportDataType brokerTransportSettings;
         memset(&brokerTransportSettings, 0, sizeof(UA_BrokerWriterGroupTransportDataType));
@@ -204,14 +223,14 @@ pubWriterGroup(UA_Server *uaServer)
         transportSettings.content.decoded.data = &brokerTransportSettings;
 
         writerGroupConfig.transportSettings = transportSettings;
-        //UA_Server_addWriterGroup(uaServer, PubSubconnectionIdentifier, &writerGroupConfig, &writerGroupIdentifier);
+        UA_Server_addWriterGroup(uaServer, PubSubconnectionIdentifier, &writerGroupConfig, &writerGroupIdentifier);
         //UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
 
-        #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c :addWriterGroup : MQTT_TLS_Enable = %d", MQTT_TLS_Enable);
-        #endif
         if (MQTT_TLS_Enable == UA_TRUE) //port 888x
         {
+           #ifdef DEBUG_MODE
+           UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroupWithBroker.c :pubWriterGroupBroker : MQTT_TLS_Enable = %d", MQTT_TLS_Enable);
+           #endif
            if (!ua_config->pubSubConfig.securityPolicies)
            {
                 ua_config->pubSubConfig.securityPolicies = (UA_PubSubSecurityPolicy *) UA_malloc(sizeof(UA_PubSubSecurityPolicy));
@@ -227,9 +246,10 @@ pubWriterGroup(UA_Server *uaServer)
            writerGroupConfig.securityMode = UA_MESSAGESECURITYMODE_SIGNANDENCRYPT;
            writerGroupConfig.securityPolicy = &ua_config->pubSubConfig.securityPolicies[0];
 
-           UA_Server_addWriterGroup(uaServer, PubSubconnectionIdentifier, &writerGroupConfig, &writerGroupIdentifier);
-           UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
+           //UA_Server_addWriterGroup(uaServer, PubSubconnectionIdentifier, &writerGroupConfig, &writerGroupIdentifier);
+           //UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
 
+	/*
                 // Now Add the encryption key information for UADP - default is ON
                 UA_ByteString sk = {UA_AES128CTR_SIGNING_KEY_LENGTH, signingKey};
                 UA_ByteString ek = {UA_AES128CTR_KEY_LENGTH, encryptingKey};
@@ -243,6 +263,7 @@ pubWriterGroup(UA_Server *uaServer)
                         sleep(2);
                         //exit (EXIT_FAILURE);
                 }
+	*/
         }
         else
         {

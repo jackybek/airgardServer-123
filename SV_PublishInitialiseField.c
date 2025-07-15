@@ -4,26 +4,31 @@
 #include "json5.h"
 #endif
 
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 #endif
 #include "SV_PubSub.h"
 
@@ -402,7 +407,7 @@ pubInitialiseField(UA_Server *uaServer)
     // add in order :: limit seemed to be 32
     // count = 4
     #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSub.c 733 : addDataSetField()");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishInitialiseField.c  : now start addDataSetField() routines");
     #endif
     // added by Jacky on 4/4/2021 to update MQTT payload (MetaDataVersion)
     // the corresponding change has to take place in open62541.c : UA_Server_addDataSetField() - however this change cause publisher to have error
@@ -433,7 +438,7 @@ pubInitialiseField(UA_Server *uaServer)
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgAncillarySensorStatus, NULL); //&f_AncillarySensorStatus_Id);
 
     #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubSub.c :755 : addDataSetField()");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishInitialiseField.c : addDataSetField() adding mid-way");
     #endif
 // count = 25
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgIgramPP, NULL); //&f_IgramPP_Id);
@@ -462,9 +467,6 @@ pubInitialiseField(UA_Server *uaServer)
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgFlowPumpCounter, NULL); //&f_FlowPumpCounter_Id);
     UA_Server_addDataSetField(uaServer, publishedDataSetIdentifier, &dsCfgDesiccantCounter, NULL); //&f_DesiccantCounter_Id);
 
-    #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishedInitialiseField.c : addDataSetField()");
-    #endif
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishedInitialiseField.c : addDataSetField : success");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishedInitialiseField.c : addDataSetField() : completed");
 
 }

@@ -4,31 +4,37 @@
 #include "json5.h"
 #endif
 
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
-   #define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 #endif
 #include "SV_PubSub.h"
+#include <unistd.h>
 
 #define WRITERGROUPID                   100     // used in addDataSetReader() and addWriterGroup()
+#define MESSAGE_TIMEOUT_UDAP		12000
 
 #ifdef UA_ENABLE_PUBSUB_MQTT
  #define MESSAGE_TIMEOUT_MQTT           12000
@@ -37,19 +43,31 @@
 
 #endif
 
+#ifdef TO_BE_REMOVED
 #ifdef UA_ENABLE_JSON_ENCODING
  static UA_Boolean useJson = UA_TRUE;
 #else
  static UA_Boolean useJson = UA_FALSE;
 #endif
+#endif
 
+#ifndef UA_AES128CTR_SIGNING_KEY_LENGTH
 #define UA_AES128CTR_SIGNING_KEY_LENGTH 16
-#define UA_AES128CTR_KEY_LENGTH 16
-#define UA_AES128CTR_KEYNONCE_LENGTH 4
+#endif
 
-UA_Byte signingKey[UA_AES128CTR_SIGNING_KEY_LENGTH]= {0};
-UA_Byte encryptingKey[UA_AES128CTR_KEY_LENGTH] = {0};
-UA_Byte keyNonce[UA_AES128CTR_KEYNONCE_LENGTH] = {0};
+#ifndef UA_AES128CTR_KEY_LENGTH
+#define UA_AES128CTR_KEY_LENGTH 16
+#endif
+
+#ifndef UA_AES128CTR_KEYNONCE_LENGTH
+#define UA_AES128CTR_KEYNONCE_LENGTH 4
+#endif
+
+
+extern UA_Byte signingKey[UA_AES128CTR_SIGNING_KEY_LENGTH];
+extern UA_Byte encryptingKey[UA_AES128CTR_KEY_LENGTH];
+extern UA_Byte keyNonce[UA_AES128CTR_KEYNONCE_LENGTH];
+
 
 // only 1 PubSubConnection for both reader and writer
 extern UA_NodeId PubSubconnectionIdentifier;
@@ -69,23 +87,24 @@ extern int MQTT_Port;   // default set to 1883
  * parameters for the message creation.
  */
 void
-pubWriterGroup(UA_Server *uaServer)
+pubWriterGroupBrokerless(UA_Server *uaServer)
 {
     /* Now we create a new WriterGroupConfig and add the group to the existing PubSubConnection. */
-    UA_ServerConfig *ua_config = UA_Server_getConfig(uaServer);
+    //UA_ServerConfig *ua_config = UA_Server_getConfig(uaServer);
 
     UA_WriterGroupConfig writerGroupConfig;
     memset(&writerGroupConfig, 0, sizeof(UA_WriterGroupConfig));
     writerGroupConfig.name = UA_STRING("Airgard WriterGroup");
         /* addDataSetReader Timeout= must be greater than publishing interval of corresponding WriterGroup */
-    writerGroupConfig.publishingInterval = (UA_Double) MESSAGE_TIMEOUT_MQTT;    // set as 12000 millisec
+    writerGroupConfig.publishingInterval = (UA_Double) MESSAGE_TIMEOUT_UDAP;    // set as 12000 millisec
     writerGroupConfig.enabled = UA_FALSE;       // in the example (tutorial_pubsub_mqtt_publish.c)  this is UA_FALSE
     writerGroupConfig.writerGroupId = WRITERGROUPID;
     writerGroupConfig.maxEncapsulatedDataSetMessageCount = 100;
     writerGroupConfig.rtLevel = UA_PUBSUB_RT_NONE;
 
-    UA_StatusCode retval = UA_STATUSCODE_GOOD;
+    //UA_StatusCode retval = UA_STATUSCODE_GOOD;
 
+#ifdef TO_BE_REMOVED
     /* decide whether to use JSON or UADP encoding*/
     if(useJson)
     {
@@ -126,9 +145,10 @@ pubWriterGroup(UA_Server *uaServer)
         UA_JsonWriterGroupMessageDataType_delete(Json_writerGroupMessage);
     }
     else
-    {
+#endif
+//    {
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroup.c : addWriterGroup : useJson = UA_FALSE");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroupBrokerless.c pubWriterGroupBrokerless(): useJson = UA_FALSE");
         #endif
 
         writerGroupConfig.encodingMimeType = UA_PUBSUB_ENCODING_UADP;
@@ -139,7 +159,7 @@ pubWriterGroup(UA_Server *uaServer)
          * objects are defined by the standard. e.g.
          * UadpWriterGroupMessageDataType */
 
-        #ifdef KIV
+        #ifdef TO_BE_REMOVED
         // Add the encryption key information
         if (MQTT_TLS_Enable == UA_TRUE)
         {
@@ -149,37 +169,50 @@ pubWriterGroup(UA_Server *uaServer)
         }
         #endif
 
-        UA_UadpWriterGroupMessageDataType *writerGroupMessage = UA_UadpWriterGroupMessageDataType_new();
+        UA_UadpWriterGroupMessageDataType writerGroupMessage;
+	UA_UadpWriterGroupMessageDataType_init(&writerGroupMessage);
         /* Change message settings of writerGroup to send PublisherId,
          * WriterGroupId in GroupHeader and DataSetWriterId in PayloadHeader
          * of NetworkMessage */
-        writerGroupMessage->networkMessageContentMask = (UA_UadpNetworkMessageContentMask)(UA_UADPNETWORKMESSAGECONTENTMASK_PUBLISHERID |
+        writerGroupMessage.networkMessageContentMask = (UA_UadpNetworkMessageContentMask)(UA_UADPNETWORKMESSAGECONTENTMASK_PUBLISHERID |
                                                         (UA_UadpNetworkMessageContentMask)UA_UADPNETWORKMESSAGECONTENTMASK_GROUPHEADER |
                                                         (UA_UadpNetworkMessageContentMask)UA_UADPNETWORKMESSAGECONTENTMASK_WRITERGROUPID |
                                                         (UA_UadpNetworkMessageContentMask)UA_UADPNETWORKMESSAGECONTENTMASK_PAYLOADHEADER);
-        writerGroupConfig.messageSettings.content.decoded.data = writerGroupMessage;
+        //writerGroupConfig.messageSettings.content.decoded.data = writerGroupMessage;
         // the following seemed to be defunct : tutorial_pubsub_mqtt_publish.c
+	UA_ExtensionObject_setValue(&writerGroupConfig.messageSettings, &writerGroupMessage,
+                                &UA_TYPES[UA_TYPES_UADPWRITERGROUPMESSAGEDATATYPE]);
         UA_Server_addWriterGroup(uaServer, PubSubconnectionIdentifier, &writerGroupConfig, &writerGroupIdentifier);
-        UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
-        UA_UadpWriterGroupMessageDataType_delete(writerGroupMessage);
-     } // if (useJson)
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroupBrokerless.c : UA_Server_addWriterGroup() completed");
+         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "---------------------------------------------------------------------------------");
 
-    #ifdef KIV
+        //UA_Server_setWriterGroupOperational(uaServer, writerGroupIdentifier);
+        //UA_UadpWriterGroupMessageDataType_delete(writerGroupMessage);
+ //    } // if (useJson)
+
+
+
+
+
+
      // Now Add the encryption key information for UADP - default is ON
      UA_ByteString sk = {UA_AES128CTR_SIGNING_KEY_LENGTH, signingKey};
      UA_ByteString ek = {UA_AES128CTR_KEY_LENGTH, encryptingKey};
      UA_ByteString kn = {UA_AES128CTR_KEYNONCE_LENGTH, keyNonce};
 
      // Set the group key for the message encryption
-     retval = UA_Server_setWriterGroupEncryptionKeys(uaServer, writerGroupIdentifier, 1, sk, ek, kn);        // 1 = securityTokenId
+     int retval = UA_Server_setWriterGroupEncryptionKeys(uaServer, writerGroupIdentifier, 1, sk, ek, kn);        // 1 = securityTokenId
      if (retval!= UA_STATUSCODE_GOOD)
      {
-             UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PubWriterGroup.c : addWriterGroup : UA_Server_setWriterGroupEncryptionKeys : failure %s", UA_StatusCode_name(retval));
+             UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"----------SV_PublishWriterGroupBrokerless.c : UA_Server_setWriterGroupEncryptionKeys : failure %s", UA_StatusCode_name(retval));
              sleep(2);
              //exit (EXIT_FAILURE);
      }
-     #endif
+     else
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "----------SV_PublishWriterGroupBrokerless.c : UA_Server_setWriterGroupEncryptionKeys : success");
 
+
+#ifdef TO_BE_REMOVED
     // The above is for UDAP; now this is for MQTT
     if (MQTT_Enable == UA_TRUE) // publish to MQTT Broker
     {
@@ -258,4 +291,6 @@ pubWriterGroup(UA_Server *uaServer)
         // do nothing
         #endif
      }
+#endif
+
 }

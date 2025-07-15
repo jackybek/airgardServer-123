@@ -4,29 +4,34 @@
 #include "json5.h"
 #endif
 
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
-   #define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 #endif
 #include "SV_PubSub.h"
+#include <stdio.h>
 
 // Subscriber section variables & functions
 extern UA_DataSetReaderConfig dataSetReaderConfig;
@@ -402,7 +407,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 			{
 				case 0 : // 80300 Software Version-----------------General
                                         #ifdef DEBUG_MODE
-					printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SoftwareVersion: %s\n", i, subscribedSoftwareVersion.data);
+					printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SoftwareVersion: %s\n", (int)i, subscribedSoftwareVersion.data);
 					#endif
 					//outputStr = UA_STRING(subscribedSoftwareVersion);
 					UA_Variant_init(&variant_string);
@@ -412,7 +417,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 1 : // 80301 Data Block Version
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Block Version : %s\n", i, subscribedDataBlockVersion.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Block Version : %s\n", (int)i, subscribedDataBlockVersion.data);
 					#endif
 					//outputStr = UA_STRING(subscribedDataBlockVersion);
 					UA_Variant_init(&variant_string);
@@ -422,7 +427,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 2 : // 80302---------------------Timestamp
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Instrument Time : %s\n", i, subscribedInstrumentTime.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Instrument Time : %s\n", (int)i, subscribedInstrumentTime.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedInstrumentTime);
                                         UA_Variant_init(&variant_string);
@@ -432,7 +437,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 3 : // 80303
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Measurement Time : %s\n", i, subscribedMeasurementTime.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Measurement Time : %s\n", (int)i, subscribedMeasurementTime.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedMeasurementTime);
                                         UA_Variant_init(&variant_string);
@@ -443,7 +448,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 4 : // 80304--------------------Status
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Sensor : %s\n", i, subscribedSensor.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Sensor : %s\n", (int)i, subscribedSensor.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedSensor);
                                         UA_Variant_init(&variant_string);
@@ -453,7 +458,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
 				case 5 : // 80305
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Operating Time : %d\n", i, subscribedOperatingTime);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Operating Time : %d\n", (int)i, subscribedOperatingTime);
 					#endif
                                         //outputStr = UA_STRING(subscribedOperatingTime);
                                         UA_Variant_setScalar(&variant_int, &subscribedOperatingTime, &UA_TYPES[UA_TYPES_INT16]);
@@ -462,7 +467,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 6 : // 80306
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Warning Message : %s\n", i, subscribedWarningMessage.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Warning Message : %s\n", (int)i, subscribedWarningMessage.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedWarningMessage);
                                         UA_Variant_init(&variant_string);
@@ -472,7 +477,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 7 : // 80307---------------------Status(info)
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Boot Status : %s\n", i, subscribedBootStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Boot Status : %s\n", (int)i, subscribedBootStatus.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedBootStatus);
                                         UA_Variant_init(&variant_string);
@@ -482,7 +487,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 8 : // 80308
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Snapshot Status : %s\n", i, subscribedSnapshotStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Snapshot Status : %s\n", (int)i, subscribedSnapshotStatus.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedSnapshotStatus);
                                         UA_Variant_init(&variant_string);
@@ -492,7 +497,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 9 : // 80309
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SCP Status : %s\n", i, subscribedSCPStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SCP Status : %s\n", (int)i, subscribedSCPStatus.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedSCPStatus);
                                         UA_Variant_init(&variant_string);
@@ -502,7 +507,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 10 : // 80310
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SFTP Status : %s\n", i, subscribedSFTPStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SFTP Status : %s\n", (int)i, subscribedSFTPStatus.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedSFTPStatus);
                                         UA_Variant_init(&variant_string);
@@ -512,7 +517,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 11 : // 80311
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Runscript Status : %s\n", i, subscribedRunScriptStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Runscript Status : %s\n", (int)i, subscribedRunScriptStatus.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedRunScriptStatus);
                                         UA_Variant_init(&variant_string);
@@ -522,7 +527,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 12 : // 80312
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Archive Status : %s\n", i, subscribedArchiveStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Archive Status : %s\n", (int)i, subscribedArchiveStatus.data);
                                         //outputStr = UA_STRING(subscribedArchiveStatus);
 					#endif
                                         UA_Variant_init(&variant_string);
@@ -532,7 +537,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 13 : // 80313
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Ancillary Sensor Status : %s\n", i, subscribedAncillarySensorStatus.data);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Ancillary Sensor Status : %s\n", (int)i, subscribedAncillarySensorStatus.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedAncillarySensorStatus);
                                         UA_Variant_init(&variant_string);
@@ -542,7 +547,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
 				case 14 : // 80314 IgramPP-------------------------Diagnostics
                                         #ifdef DEBUG_MODE
-					printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() IgramPP : %f\n", i, subscribedIgramPP);
+					printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() IgramPP : %f\n", (int)i, subscribedIgramPP);
 					#endif
 
 					UA_Variant_setScalar(&variant_float, &subscribedIgramPP, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -561,7 +566,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
 				case 15: // 80315 IgramDC
                                         #ifdef DEBUG_MODE
-					printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() IgramDC : %f \n", i, subscribedIgramDC);
+					printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() IgramDC : %f \n", (int)i, subscribedIgramDC);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedIgramDC, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -570,7 +575,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 16: // 80316 LaserPP
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() LaserPP : %f \n", i, subscribedLaserPP);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() LaserPP : %f \n", (int)i, subscribedLaserPP);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedLaserPP, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -579,7 +584,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 17: // 80317 LaserDC
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() LaserDC : %f \n", i, subscribedLaserDC);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() LaserDC : %f \n", (int)i, subscribedLaserDC);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedLaserDC, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -588,7 +593,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 18: // 80318 SingleBeamAt900
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SingleBeamAt900 : %f \n", i, subscribedSingleBeamAt900);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SingleBeamAt900 : %f \n", (int)i, subscribedSingleBeamAt900);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedSingleBeamAt900, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -597,7 +602,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 19: // 80319 SingleBeamAt2500
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SingleBeamAt2500 : %f \n", i, subscribedSingleBeamAt2500);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() SingleBeamAt2500 : %f \n", (int)i, subscribedSingleBeamAt2500);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedSingleBeamAt2500, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -606,7 +611,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 20: // 80320 SignalToNoiseAt2500
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******SignalToNoiseAt2500 : %d \n", i, subscribedSignalToNoiseAt2500);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******SignalToNoiseAt2500 : %d \n", (int)i, subscribedSignalToNoiseAt2500);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedSignalToNoiseAt2500, &UA_TYPES[UA_TYPES_INT16]);
@@ -615,7 +620,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 21: // 80321 CenterBurstLocation
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() CenterBurstLocation : %f \n", i, subscribedCenterBurstLocation);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() CenterBurstLocation : %f \n", (int)i, subscribedCenterBurstLocation);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedCenterBurstLocation, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -624,7 +629,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 22: // 80322 DetectorTemp
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() DetectorTemp : %f \n", i, subscribedDetectorTemp);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() DetectorTemp : %f \n", (int)i, subscribedDetectorTemp);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedDetectorTemp, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -633,7 +638,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 23: // 80323 LaserFrequency
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Laser Frequency : %f \n", i, subscribedLaserFrequency);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Laser Frequency : %f \n", (int)i, subscribedLaserFrequency);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedLaserFrequency, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -642,7 +647,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 24: // 80324 HardDriveSpace
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Hard Drive Space : %d \n", i, subscribedHardDriveSpace);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Hard Drive Space : %d \n", (int)i, subscribedHardDriveSpace);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedHardDriveSpace, &UA_TYPES[UA_TYPES_INT16]);
@@ -651,7 +656,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 25: // 80325 Flow
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Flow : %d \n", i, subscribedFlow);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Flow : %d \n", (int)i, subscribedFlow);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedFlow, &UA_TYPES[UA_TYPES_INT16]);
@@ -660,7 +665,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 26: // 80326 Temperature
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Temperature : %d \n", i, subscribedTemperature);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Temperature : %d \n", (int)i, subscribedTemperature);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedTemperature, &UA_TYPES[UA_TYPES_INT16]);
@@ -669,7 +674,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 27: // 80327 Pressure
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Pressure : %f \n", i, subscribedPressure);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Pressure : %f \n", (int)i, subscribedPressure);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedPressure, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -678,7 +683,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 28: // 80328 TempOptics
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Temp Optics : %d \n", i, subscribedTempOptics);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Temp Optics : %d \n", (int)i, subscribedTempOptics);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedTempOptics, &UA_TYPES[UA_TYPES_INT16]);
@@ -687,7 +692,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 29: // 80329 BadScanCounter
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******BadScan Counter : %d \n", i, subscribedBadScanCounter);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******BadScan Counter : %d \n", (int)i, subscribedBadScanCounter);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedBadScanCounter, &UA_TYPES[UA_TYPES_INT16]);
@@ -696,7 +701,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 30: // 80330 FreeMemorySpace
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Free Memory Space : %d \n", i, subscribedFreeMemorySpace);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() ******Free Memory Space : %d \n", (int)i, subscribedFreeMemorySpace);
 					#endif
 
                                         UA_Variant_setScalar(&variant_int, &subscribedFreeMemorySpace, &UA_TYPES[UA_TYPES_INT16]);
@@ -705,7 +710,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 31: // 80331
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() LAB Filename : %s\n", i, subscribedLABFilename.data);
+                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() LAB Filename : %s\n", (int)i, subscribedLABFilename.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedLABFilename);
                                         UA_Variant_init(&variant_string);
@@ -715,7 +720,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 32: // 80332
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() LOG Filename : %s\n", i, subscribedLOGFilename.data);
+                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() LOG Filename : %s\n", (int)i, subscribedLOGFilename.data);
                                         //outputStr = UA_STRING(subscribedLOGFilename);
 					#endif
                                         UA_Variant_init(&variant_string);
@@ -725,7 +730,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 33: // 80333
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() Lg Filename : %s\n", i, subscribedLgFilename.data);
+                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() Lg Filename : %s\n", (int)i, subscribedLgFilename.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedLgFilename);
                                         UA_Variant_init(&variant_string);
@@ -735,7 +740,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 34: // 80334
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() Second Lg Filename : %s\n", i, subscribedSecondLgFilename.data);
+                                        printf("SV_PubSub.c 1687: (%d) addSubscribedVariables() Second Lg Filename : %s\n", (int)i, subscribedSecondLgFilename.data);
 					#endif
                                         //outputStr = UA_STRING(subscribedSecondLgFilename);
                                         UA_Variant_init(&variant_string);
@@ -746,7 +751,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 35: // 80335 SystemCounter
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() System Counter : %f \n", i, subscribedSystemCounter);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() System Counter : %f \n", (int)i, subscribedSystemCounter);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedSystemCounter, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -755,7 +760,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 36: // 80336 DetectorCounter
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Detector Counter : %f \n", i, subscribedDetectorCounter);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Detector Counter : %f \n", (int)i, subscribedDetectorCounter);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedDetectorCounter, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -764,7 +769,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 37: // 80337 LaserCounter
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Laser Counter : %f \n", i, subscribedLaserCounter);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Laser Counter : %f \n", (int)i, subscribedLaserCounter);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedLaserCounter, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -773,7 +778,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 38: // 80338 FlowPumpCounter
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Flow Pump Counter : %f \n", i, subscribedFlowPumpCounter);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Flow Pump Counter : %f \n", (int)i, subscribedFlowPumpCounter);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedFlowPumpCounter, &UA_TYPES[UA_TYPES_FLOAT]);
@@ -782,7 +787,7 @@ subInitialiseField(UA_Server *uaServer, UA_NodeId dataSetReaderId)
 
                                 case 39: // 80339 DesiccantCounter
                                         #ifdef DEBUG_MODE
-                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Desiccant Counter : %f \n", i, subscribedDesiccantCounter);
+                                        printf("SV_PubSub.c 1838: (%d) addSubscribedVariables() Desiccant Counter : %f \n", (int)i, subscribedDesiccantCounter);
 					#endif
 
                                         UA_Variant_setScalar(&variant_float, &subscribedDesiccantCounter, &UA_TYPES[UA_TYPES_FLOAT]);

@@ -1,40 +1,16 @@
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #else
    #include "open62541.h"
 #endif
-
+#include <unistd.h>
 #include "SV_Alarm.h"
 
 #define UA_ENABLE_SUBSCRIPTIONS_ALARMS_CONDITIONS
 
 // function prototypes declaration
-UA_StatusCode addConditionSourceObject(UA_Server *);
-UA_StatusCode addCondition_1(UA_Server *);
-UA_StatusCode addCondition_2(UA_Server *);
-void addVariable_1_triggerAlarmOfCondition_1(UA_Server *, UA_NodeId *);
-void addVariable_2_changeSeverityOfCondition_2(UA_Server *, UA_NodeId *);
-void addVariable_3_returnCondition_1_toNormalState(UA_Server *, UA_NodeId*);
-void afterWriteCallbackVariable_1(UA_Server *, const UA_NodeId *,
-                             void *, const UA_NodeId *,
-                             void *, const UA_NumericRange *,
-                             const UA_DataValue *);
-void afterWriteCallbackVariable_2(UA_Server *, const UA_NodeId *,
-                             void *, const UA_NodeId *,
-                             void *, const UA_NumericRange *,
-                             const UA_DataValue *);
-void afterWriteCallbackVariable_3(UA_Server *, const UA_NodeId *,
-                             void *, const UA_NodeId *,
-                             void *, const UA_NumericRange *,
-                             const UA_DataValue *);
-UA_StatusCode enteringEnabledStateCallback(UA_Server *, const UA_NodeId *);
-UA_StatusCode enteringAckedStateCallback(UA_Server *, const UA_NodeId *);
-UA_StatusCode enteringConfirmedStateCallback(UA_Server *, const UA_NodeId *);
-UA_StatusCode setUpEvironment(UA_Server *);
-void CreateServerAlarmsAndConditions(UA_Server *);
-
 UA_NodeId conditionSource;
 UA_NodeId conditionInstance_1;
 UA_NodeId conditionInstance_2;
@@ -61,7 +37,6 @@ UA_StatusCode addConditionSourceObject(UA_Server *uaServer)
 		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
 				"SV_Alarms.c : Creating Condition Source failed, statuscode %s",
 				UA_StatusCode_name(retval));
-		sleep(5);
 	}
 
 	/* ConditionSource should be EventNotifier of another Object (usually the

@@ -1,4 +1,4 @@
-#ifdef almagamation
+#ifdef no_almagamation
 //#include <xml.h>
   #include <open62541/plugin/log_stdout.h>
   #include <open62541/server.h>

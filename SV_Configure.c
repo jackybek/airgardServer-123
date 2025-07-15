@@ -1,4 +1,4 @@
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server_config_default.h>
 #include <open62541/plugin/create_certificate.h>
@@ -76,18 +76,60 @@ int configureServer(UA_Server *uaLDSServer, char* userid, char* password)
     config->shutdownDelay = 0; //5000.0; // millisecond
     config->securityPolicyNoneDiscoveryOnly = UA_FALSE;
 
+    // UA_Logger *logging /* Plugin for log output */
+    // this will overwrite the initial logging level (TRACE, DEBUG, INFO, WARNING, ERROR, FATAL)
+    // UA_LOGLEVEL_ERROR => least messages
+    // UA_LOGLEVEL_TRACE => most messages
+    const char* env_loglevel = getenv("SVR_LOGLEVEL");
+    UA_Logger logger;
+
+    if (env_loglevel == NULL)
+    	logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_INFO);	//(UA_LOGLEVEL_FATAL);
+    else
+    {
+	switch (atoi(env_loglevel))
+	{
+		case 0 : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_TRACE);
+			break;
+		case 1 : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_DEBUG);
+                        break;
+		case 2 : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_INFO);
+                        break;
+		case 3 : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_WARNING);
+                        break;
+		case 4 : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_ERROR);
+                        break;
+		case 5 : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_FATAL);
+                        break;
+		default : logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_FATAL);
+                        break;
+	}
+    }
+    logger.clear = config->logging->clear;
+    *config->logging = logger;
+
     // Server Description
     UA_BuildInfo_clear(&config->buildInfo);
-    const char* env_product_uri = getenv("SVR_PRODUCT_URI");
+    const char* env_application_name = getenv("SVR_APPLICATION_NAME");
+    char* env_application_uri_server = getenv("SVR_APPLICATION_URI_SERVER");
     const char* env_manufacturer_name = getenv("SVR_MANUFACTURER_NAME");
     const char* env_product_name = getenv("SVR_PRODUCT_NAME");
-    const char* env_application_uri_server = getenv("SVR_APPLICATION_URI_SERVER");
-    const char* env_application_name = getenv("SVR_APPLICATION_NAME");
+    const char* env_product_uri = getenv("SVR_PRODUCT_URI");
 
-    if (env_application_uri_server== NULL)
+    if (env_application_uri_server != NULL)
+   	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Configure.c : retrieved environment variable <SVR_APPLICATION_URI_SERVER> : %s", env_application_uri_server);
+    else
     {
-        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : Please set the Application URI Server via <export SVR_APPLICATION_URI_SERVER='svr.virtualskies.com.sg'>");
-        exit(0);
+	UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Configure.c : cannot retrieve environment variable <SVR_APPLICATION_URI_SERVER>");
+	UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Configure.c : default to urn:svr.virtualskies.com.sg");
+	env_application_uri_server = (char*)calloc(255, sizeof(char));
+	if (env_application_uri_server != NULL)
+		strcpy(env_application_uri_server, "urn:svr.virtualskies.com.sg");
+	else
+	{
+        	UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Configure.c : cannot retrieve environment variable <SVR_APPLICATION_URI_SERVER> : out of memory");
+        	exit(UA_FALSE);
+	}
     }
 
     config->buildInfo.productUri = UA_STRING_ALLOC(env_product_uri);  //(PRODUCT_URI);
@@ -115,12 +157,12 @@ config->applicationDescription.applicationUri.data[len]='\0';
     // LDS ++ refer to https://opcfoundation.org/UA/schemas/1.05/ServerCapabilities.csv
     // NA, DA, HD, AC, HE, GDS, LDS, DI, ADI, FDI, FDIC, PLC, S95, RCP, PUB, AUTOID, MDIS, CNC, PLK, FDT, TMC, CSPP, 61850, PACKML, MTC
     // AUTOML, SERCOS, MIMOSA, WITSML, DEXPI, IOLINK, VROBOT, PNO,PADMIN, ALIAS, SKS, FXAC, FXCM 
-    config->applicationDescription.applicationType = UA_APPLICATIONTYPE_DISCOVERYSERVER;   // acts as DISCOVERY SERVER ONLY OR UA_APPLICATIONTYPE_SERVER
+    config->applicationDescription.applicationType = UA_APPLICATIONTYPE_SERVER;   // acts as DISCOVERY SERVER ONLY OR UA_APPLICATIONTYPE_SERVER
 
 
     // Multicast DNS related settings - LDS - refer to github/open62541/open62541/examples/discovery/server_lds.c
     config->mdnsEnabled = true;
-    config->mdnsConfig.mdnsServerName = UA_String_fromChars("Local Discovery Server");
+    config->mdnsConfig.mdnsServerName = UA_String_fromChars("OPC UA Server");
     config->mdnsInterfaceIP = UA_String_fromChars("0.0.0.0");  // 42.42.42.42
     // set the capabilities
     config->mdnsConfig.serverCapabilitiesSize = 7;

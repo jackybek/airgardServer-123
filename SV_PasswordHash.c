@@ -3,13 +3,23 @@
 // Resources: https://github.com/EddieEldridge/SHA256-in-C/blob/master/README.md
 // Section Reference: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
 
-#include "open62541.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-#include <stdbool.h>
+#ifdef no_almagamation
+  #include <open62541/plugin/log_stdout.h>
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <inttypes.h>
+  #include <stdbool.h>
+#else
+  #include "open62541.h"
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <inttypes.h>
+  #include <stdbool.h>
+#endif
+#include "SV_PasswordHash.h"
 
 #define byteSwap32(x) (((x) >> 24) | (((x)&0x00FF0000) >> 8) | (((x)&0x0000FF00) << 8) | ((x) << 24))
 #define byteSwap64(x)                                                      \
@@ -18,6 +28,7 @@
 	 (((x) << 8) & 0x000000FF00000000) | (((x) << 24) & 0x0000FF0000000000) |  \
 	 (((x) << 40) & 0x00FF000000000000) | (((x) << 56) & 0xFF00000000000000))
 
+#ifdef TRANSFERRED_TO_HEADER
 // Define a union for easy reference
 // Union represents a message block
 union messageBlock
@@ -28,7 +39,7 @@ union messageBlock
 };
 
 // ENUM to control state of the program
-enum status{READ, 
+enum status{READ,
             PAD0,
             PAD1,
             FINISH
@@ -50,14 +61,7 @@ __uint32_t SIG1(__uint32_t x);
 
 __uint32_t Ch(__uint32_t x,__uint32_t y,__uint32_t z);
 __uint32_t Maj(__uint32_t x,__uint32_t y,__uint32_t z);
-
-void printFileContents();
-int calcFileSize();
-void endianCheckPrint();
-_Bool endianCheck();
-int fillMessageBlock();
-void calculateHash(FILE *file);
-int nextMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *state, __uint64_t *numBits);
+#endif
 
 extern char hashpassword[255];
 
@@ -108,7 +112,7 @@ char *passwordHash(int argc, char *plainpassword)
 	int filesize = ftell(fp_newhashfile);
 	fseek(fp_newhashfile, 0, SEEK_SET);
 	fread(hashpassword, sizeof(char), filesize, fp_newhashfile);
-printf("contents of the newhash is : %s \n", hashpassword);
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : contents of the newhash is : %s", hashpassword);
     	return 0;
 #endif
 
@@ -123,13 +127,13 @@ printf("contents of the newhash is : %s \n", hashpassword);
     // Test to make sure the user is inputting a filename
     if(argumentCount == 1)
     {
-        printf("Please supply a file to hash as command line arguments.");
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : Please supply a file to hash as command line arguments.");
         exit(0);
     }
     else if(argumentCount >= 2)
     {
 
-        printf("\n Correct arguments. Attemping to read file.. \n");
+//        printf("\n Correct arguments. Attemping to read file.. \n");
 
         fileName = plainpassword; //argv[1];
 
@@ -139,13 +143,13 @@ printf("contents of the newhash is : %s \n", hashpassword);
 
          // First check to make sure the file could be found
         if (file == NULL){
-            printf("\n Could not open file %s\n", fileName);
+                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : Could not open file %s", fileName);
         }
         else
         {
 
             // Function calls
-            printf("\n File ok, executing functions.. \n");
+//            printf("\n File ok, executing functions.. \n");
             endianCheckPrint();
             printFileContents(fileForPrinting);
 
@@ -172,7 +176,7 @@ void calculateHash(FILE *file)
     // The state of the program
     enum status state = READ;
 
-    printf("\n Starting SHA256 algorithm....\n");
+//    printf("\n Starting SHA256 algorithm....\n");
 
     // Declare the K constant
     // Defined in Section 4.2.2
@@ -225,7 +229,7 @@ void calculateHash(FILE *file)
     int j;
     //int o;
 
-    printf("\n Initalized variables... Entering loops\n");
+//    printf("\n Initalized variables... Entering loops\n");
 
     while(fillMessageBlock(file, &msgBlock, &state, &numBits))
     {
@@ -294,17 +298,17 @@ void calculateHash(FILE *file)
     }// end while
 
     // Print the results
-    printf("\n=================== HASH OUTPUT ==================================\n\n");
-    printf("%08llx", (long long unsigned int)H[0]);
-    printf("%08llx", (long long unsigned int)H[1]);
-    printf("%08llx", (long long unsigned int)H[2]);
-    printf("%08llx", (long long unsigned int)H[3]);
-    printf("%08llx", (long long unsigned int)H[4]);
-    printf("%08llx", (long long unsigned int)H[5]);
-    printf("%08llx", (long long unsigned int)H[6]);
-    printf("%08llx", (long long unsigned int)H[7]);
+//    printf("\n=================== HASH OUTPUT ==================================\n\n");
+//    printf("%08llx", (long long unsigned int)H[0]);
+//    printf("%08llx", (long long unsigned int)H[1]);
+//    printf("%08llx", (long long unsigned int)H[2]);
+//    printf("%08llx", (long long unsigned int)H[3]);
+//    printf("%08llx", (long long unsigned int)H[4]);
+//    printf("%08llx", (long long unsigned int)H[5]);
+//    printf("%08llx", (long long unsigned int)H[6]);
+//    printf("%08llx", (long long unsigned int)H[7]);
 
-    printf("\n\n==================================================================\n\n");
+//    printf("\n\n==================================================================\n\n");
     // copy to the global variable : hashpassword (declared in SV_main.c)
     sprintf(hashpassword, "%08llx%08llx%08llx%08llx%08llx%08llx%08llx%08llx", 
     (long long unsigned int)H[0],
@@ -329,7 +333,7 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
     // If we've finished padding and processing all the message blocks, exit
     if(*state == FINISH)
     {
-        printf("\n State = FINISH.\n");
+//        printf("\n State = FINISH.\n");
         return 0;
     }
 
@@ -337,7 +341,7 @@ int fillMessageBlock(FILE *file, union messageBlock *msgBlock, enum status *stat
     // Check if we need another block full of padding
     if(*state == PAD0 || *state == PAD1)
     {
-        printf("\n State = PAD0 or PAD1.\n");
+//        printf("\n State = PAD0 or PAD1.\n");
 
         // Set the first 56 bytes to all zero bits
         for(i=0; i<56; i++)
@@ -439,25 +443,25 @@ void printFileContents(FILE *fileForPrinting)
 
     // First check to make sure the file could be found
     if (fileForPrinting == NULL){
-        printf("\n Could not open file");
+            UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c :  Could not open file !");
     }
     else
     {
         // Calculate the size of the file
         fileSize = calcFileSize(fileForPrinting);
 
-        printf("\n File Size (characters): %ld \n", fileSize);
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : File Size (characters): %ld", fileSize);
 
-        printf("\n ============= File Contents ============= \n");
+//        printf("\n ============= File Contents ============= \n");
 
         // While there is still stuff to read from the file
         while(fgets(fileContents, MAXCHAR, fileForPrinting) != NULL)
         {
             // Print the contents of the file
-            printf(" %s\n", fileContents);
+//            printf(" %s\n", fileContents);
         };
 
-        printf("\n ========================================= \n");
+//        printf("\n ========================================= \n");
 
         fclose(fileForPrinting);
 
@@ -480,9 +484,9 @@ void endianCheckPrint()
 {
     int num = 1;
         if(*(char *)&num == 1) {
-                printf("\n Your system is Little-Endian!\n");
+                    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : Your system is Little-Endian");
         } else {
-                printf("Your system is Big-Endian!\n");
+                    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PasswordHash.c : Your system is Big-Endian");
         }
 }
 

@@ -1,4 +1,4 @@
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server_config_default.h>
 #include <open62541/plugin/create_certificate.h>
@@ -11,15 +11,19 @@
 
 #include <stdio.h>
 #include <dirent.h>
+#include <unistd.h>
 #include "SV_Encrypt.h"
 #include "SV_Misc.h"
 
-int stringEndsWith(
+UA_EXPORT void
+UA_CertificateVerification_AcceptAll(UA_CertificateVerification *cv);
+
+int stringEndsWithEncrypt(
         char const * const name,
         char const * const extension_to_find)
 {
 	#ifdef DEBUG
-	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : in stringEndsWith() function : name = %s, extension = %s", name, extension_to_find);
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : in stringEndsWithEncrypt() function : name = %s, extension = %s", name, extension_to_find);
 	#endif
 
     int is_found = 0;
@@ -29,7 +33,7 @@ int stringEndsWith(
     if (extension_to_find == NULL) return -1;
     length = strlen(extension_to_find);
     if (length == 0) return -1;
-    ldot = strrchr(name, extension_to_find[0]);
+    ldot = strrchr((char*)name, extension_to_find[0]);
     if (ldot != NULL)
     {
 	#ifdef DEBUG
@@ -48,87 +52,96 @@ int stringEndsWith(
        return -1;	// all other situation return -1
 }
 
-int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
+int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config, UA_Boolean generateSelfSignCert)
 {
+	UA_ByteString *trustList=NULL;
+	size_t trustListSize = 0;
+	int total_pem_files=0, total_der_files=0, counter=0;			// count the number of files with .pem and .der extension
+	UA_ByteString trustcertificate;
+        UA_ByteString *issuerList = NULL;
+        size_t issuerListSize = 0;
+        UA_ByteString *revocationList = NULL;
+        size_t revocationListSize = 0;
+
+	struct dirent *de;	// pointer for directory entry
+
         UA_StatusCode status;
 
 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Entering encryptServer() function");
 	char *env_SVRport = getenv("SVR_PORT");
-        if (env_SVRport != NULL)
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable : SVR_PORT : %s", env_SVRport);
-        else
-        {
-                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PORT : %s>", env_SVRport);
-                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to 4840");
-                env_SVRport = (char*)calloc(5,sizeof(char));
-                if (env_SVRport != NULL)
-                        strcpy(env_SVRport, "4840");
+	if (env_SVRport != NULL)
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable : SVR_PORT : %s", env_SVRport);
+	else
+	{
+		UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PORT>");
+		UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to 4840");
+		env_SVRport = (char*)calloc(5,sizeof(char));
+		if (env_SVRport != NULL)
+			strcpy(env_SVRport, "4840");
                 else
                 {
                         UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PORT> :  out of memory");
                         exit(UA_FALSE);
                 }
-        }
+	}
+
         char *env_sslcertificateloc = getenv("SVR_SSLCERTIFICATELOC");	// export SVR_SSLCERTIFICATELOC /usr/local/ssl/certs
-        if (env_sslcertificateloc != NULL)
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable <SVR_SSLCERTIFICATELOC : %s>", env_sslcertificateloc);
-        else
+	if (env_sslcertificateloc != NULL)
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable <SVR_SSLCERTIFICATELOC : %s>", env_sslcertificateloc);
+	else
         {
-                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_SSLCERTIFICATELOC : %s>", env_sslcertificateloc);
-                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/certs/Svrcert33.pem");
-                env_sslcertificateloc = (char *)calloc(255, sizeof(char));
-                if (env_sslcertificateloc != NULL)
-                        strcpy(env_sslcertificateloc, "/usr/local/ssl/certs/Svrcert33.pem");
-                else
-                {
-                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_SSLCERTIFICATELOC> :  out of memory");
-                        exit(UA_FALSE);
-                }
+                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_SSLCERTIFICATELOC>");
+                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/certs/Opccert123.pem");
+		env_sslcertificateloc = (char *)calloc(255, sizeof(char));
+		if (env_sslcertificateloc != NULL)
+	                strcpy(env_sslcertificateloc, "/usr/local/ssl/certs/Opccert123.pem");
+		else
+		{
+			UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_SSLCERTIFICATELOC> :  out of memory");
+			exit(UA_FALSE);
+		}
         }
 
-        char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");          // export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
-        if (env_privatekeyloc != NULL)
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable <SVR_PRIVATEKEYLOC : %s>", env_privatekeyloc);
-        else
-        {
-                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PRIVATEKEYLOC : %s>", env_privatekeyloc);
-                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/private/Svrprivate-key33.pem");
-                env_privatekeyloc = (char *)calloc(255, sizeof(char));
-                if (env_privatekeyloc != NULL)
-                        strcpy(env_privatekeyloc, "/usr/local/ssl/private/Svrprivate-key33.pem");
-                else
-                {
-                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PRIVATEKEYLOC> : out of memory");
-                        exit(UA_FALSE);
-                }
-        }
+	char *env_privatekeyloc = getenv("SVR_PRIVATEKEYLOC");		// export "SVR_PRIVATEKEYLOC" /usr/local/ssl/private
+	if (env_privatekeyloc != NULL)
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable <SVR_PRIVATEKEYLOC : %s>", env_privatekeyloc);
+	else
+	{
+		UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PRIVATEKEYLOC>");
+		UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/private/Opcprivate-key123.pem");
+		env_privatekeyloc = (char *)calloc(255, sizeof(char));
+		if (env_privatekeyloc != NULL)
+			strcpy(env_privatekeyloc, "/usr/local/ssl/private/Opcprivate-key123.pem");
+		else
+		{
+			UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_PRIVATEKEYLOC> : out of memory");
+			exit(UA_FALSE);
+		}
+	}
 
         UA_ByteString certificate = loadFile(env_sslcertificateloc);
         UA_ByteString privateKey = loadFile(env_privatekeyloc);
         char *env_trustlistloc = getenv("SVR_TRUSTLISTLOC");		// then iterate through the directory and save into uaSvrServer object - refer to Load trustlist
-        if (env_trustlistloc != NULL)
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable : SVR_TRUSTLISTLOC : %s", env_trustlistloc);
-        else
-        {
-                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_TRUSTLISTLOC : %s>", env_trustlistloc);
-                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/trustlist/");
-                env_trustlistloc = (char *)calloc(255, sizeof(char));
-                if (env_trustlistloc != NULL)
-                        strcpy(env_trustlistloc, "/usr/local/ssl/trustlist/");
-                else
-                {
-                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_TRUSTLISTLOC> : out of memory");
-                        exit(UA_FALSE);
-                }
-        }
+	if (env_trustlistloc != NULL)
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : retrieved environment variable : SVR_TRUSTLISTLOC : %s", env_trustlistloc);
+	else
+	{
+                UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_TRUSTLISTLOC>");
+		UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to /usr/local/ssl/trustlist/");
+		env_trustlistloc = (char *)calloc(255, sizeof(char));
+		if (env_trustlistloc != NULL)
+			strcpy(env_trustlistloc, "/usr/local/ssl/trustlist/");
+		else
+		{
+			UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : cannot retrieve environment variable <SVR_TRUSTLISTLOC> : out of memory");
+			exit(UA_FALSE);
+		}
+	}
 
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Finished retrieving all environment variables");
+        //UA_ByteString trustlistloc = loadFile(env_trustlistloc);		// export "SVR_TRUSTLISTLOC" /usr/local/ssl/trustlist
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Finished retrieving all environment variables");
 
-	UA_ByteString *trustList=NULL;
-	size_t trustListSize = 0;
-	int total_pem_files=0, total_der_files=0, counter=0;			// count the number of files with .pem and .der extension
-	UA_ByteString trustcertificate;
-
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : setMinimal configuration");
         UA_ServerConfig_setMinimal(config, atoi(env_SVRport), NULL);
 
         if (certificate.length == 0)
@@ -140,9 +153,7 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 	else
 		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Successfully loaded SSL private key %s", env_privatekeyloc);
 
-
         // --------------------------------------------------------------------------------------Load trustlist
-	struct dirent *de;	// pointer for directory entry
 	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : trustlistloc.data = %s", env_trustlistloc);
 
 	DIR *dr = opendir((char *)env_trustlistloc);
@@ -161,7 +172,7 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 			#endif
                         //char* file_name = de->d_name;
 			// process only the files with .pem extension
-			retval = stringEndsWith((char*)de->d_name, "pem");		// first count the total number .pem files
+			retval = stringEndsWithEncrypt((char*)de->d_name, "pem");		// first count the total number .pem files
 			if (retval == 0) // file name ends with .pem
 			{
 				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Found PEM filename : <%s>", de->d_name);
@@ -169,7 +180,7 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 			}
 			else
 			{
-				retval = stringEndsWith((char*)de->d_name, "der");		// also count the total number of .der files (e.g. UAExpert certificates
+				retval = stringEndsWithEncrypt((char*)de->d_name, "der");		// also count the total number of .der files (e.g. UAExpert certificates
 				UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Found DER filename : <%s>", de->d_name);
 				if (retval == 0) // file name ends with .der
 				{
@@ -212,7 +223,7 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 		{
 			// get the file (.pem)
 			//char* file_name = de->d_name;
-			retval = stringEndsWith((char*)de->d_name, ".pem");
+			retval = stringEndsWithEncrypt((char*)de->d_name, ".pem");
 			char fullpathname[100];
 			if (retval == 0) // file name ends with .pem
 			{
@@ -230,7 +241,7 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 
 			#ifdef DER_FILES_ARE_NOT_USED_IN_OPEN62541
 			// get the file (.der)
-			retval = stringEndsWith((char*)de->d_name, ".der");
+			retval = stringEndsWithEncrypt((char*)de->d_name, ".der");
 			if (retval == 0) // file name ends with .der
 			{
                                 strcpy(fullpathname, env_trustlistloc);
@@ -260,15 +271,15 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
 	// ------------------------------------------------------------------------- finish loading trustlist
 
         // Loading of a issuer list, not used in this application
-        UA_ByteString *issuerList = NULL;
-        size_t issuerListSize = 0;
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : issueList is not supported");
         // Loading of a revocation list currently unsupported
-        UA_ByteString *revocationList = NULL;
-        size_t revocationListSize = 0;
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : revocationList is not supported");
 
+	// new capability : Cert Rejected Directory
+	// #define UA_ENABLE_CERT_REJECTED_DIR
 
+   if (generateSelfSignCert == UA_FALSE) // we are not using self-signed certificate
+   {
         if ( (certificate.length != 0) && (privateKey.length != 0) )
         {
         	int SVRport = atoi(env_SVRport);
@@ -324,6 +335,41 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
                         "--------SV_Encrypt.c (1): Server initialised with SecurityPolicy#Aes128Sha256RsaOaep");
                 }
 
+		status = UA_ServerConfig_addSecurityPolicyBasic128Rsa15(config, &certificate, &privateKey);
+                if(status != UA_STATUSCODE_GOOD) {
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (1): Could not add SecurityPolicy#Basic128Rsa15 with error code %s",
+                        UA_StatusCode_name(status));
+                }
+                else{
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (1): Server initialised with SecurityPolicy#Basic128Rsa15");
+                }
+
+		status = UA_ServerConfig_addSecurityPolicyBasic256(config, &certificate, &privateKey);
+                if(status != UA_STATUSCODE_GOOD) {
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (1): Could not add SecurityPolicy#Basic256 with error code %s",
+                        UA_StatusCode_name(status));
+                }
+                else{
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (1): Server initialised with SecurityPolicy#Basic256");
+                }
+
+		status = UA_ServerConfig_addSecurityPolicyNone(config, &certificate);
+                if(status != UA_STATUSCODE_GOOD) {
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (1): Could not add SecurityPolicy#None with error code %s",
+                        UA_StatusCode_name(status));
+                }
+                else{
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (1): Server initialised with SecurityPolicy#None");
+                }
+
+
+
                 /* Accept all certificates */
                 config->secureChannelPKI.clear(&config->secureChannelPKI);
                 UA_CertificateVerification_AcceptAll(&config->secureChannelPKI);
@@ -331,15 +377,23 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
                 config->sessionPKI.clear(&config->sessionPKI);
                 UA_CertificateVerification_AcceptAll(&config->sessionPKI);
 
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c (1): Total number of SecurityPolicies added : %d", config->securityPoliciesSize);
-
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c (1): Total number of SecurityPolicies added : %d", (int)config->securityPoliciesSize);
+		return status;
         }
-        else
+	else
+	{
+		UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c (1): Invalid SSL certificate/ Key.  System will abort");
+		exit(0);
+	}
+   }
+   else // we are generating self-signed certificate
+   {
         // This section uses self-signed certificate generated using generateSSCert() function
-        {
-                UA_ByteString derPrivKey = UA_BYTESTRING_NULL;
-                UA_ByteString derCert = UA_BYTESTRING_NULL;
+		int status;
+                UA_ByteString derPrivKey;
+                UA_ByteString derCert;
 
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c (2): Calling generateSSCert() since generateSelfSignCert flag is %d", generateSelfSignCert);
                 status = generateSSCert(uaSvrServer, config,
                                 trustList, trustListSize,
                                 issuerList, issuerListSize,
@@ -385,6 +439,38 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
                         "--------SV_Encrypt.c (2): Server initialised with SecurityPolicy#Aes128Sha256RsaOaep");
                 }
 
+                status = UA_ServerConfig_addSecurityPolicyBasic128Rsa15(config, &certificate, &privateKey);
+                if(status != UA_STATUSCODE_GOOD) {
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (2): Could not add SecurityPolicy#Basic128Rsa15 with error code %s",
+                        UA_StatusCode_name(status));
+                }
+                else{
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (2): Server initialised with SecurityPolicy#Basic128Rsa15");
+                }
+
+                status = UA_ServerConfig_addSecurityPolicyBasic256(config, &certificate, &privateKey);
+                if(status != UA_STATUSCODE_GOOD) {
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (2): Could not add SecurityPolicy#Basic256 with error code %s",
+                        UA_StatusCode_name(status));
+                }
+                else{
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (2): Server initialised with SecurityPolicy#Basic256");
+                }
+
+                status = UA_ServerConfig_addSecurityPolicyNone(config, &certificate);
+                if(status != UA_STATUSCODE_GOOD) {
+                        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (2): Could not add SecurityPolicy#None with error code %s",
+                        UA_StatusCode_name(status));
+                }
+                else{
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "--------SV_Encrypt.c (2): Server initialised with SecurityPolicy#None");
+                }
                 /* Accept all certificates */
                /* Accept all certificates */
                 config->secureChannelPKI.clear(&config->secureChannelPKI);
@@ -393,17 +479,16 @@ int encryptServer(UA_Server *uaSvrServer, UA_ServerConfig *config)
                 config->sessionPKI.clear(&config->sessionPKI);
                 UA_CertificateVerification_AcceptAll(&config->sessionPKI);
 
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c (2): Total number of SecurityPolicies added : %d", config->securityPoliciesSize);
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_Encrypt.c (2): Total number of SecurityPolicies added : %d", (int)config->securityPoliciesSize);
 
                 //UA_ByteString_clear(&derCert);
                 //UA_ByteString_clear(&derPrivKey);
-        }
 
+		return status;
         //UA_ByteString_clear(trustList);
         //UA_ByteString_clear(issuerList);
         //UA_ByteString_clear(revocationList);
-
-        return status;
+   }
 }
 
 int generateSSCert(UA_Server *uaSvrServer, UA_ServerConfig *config,
@@ -416,24 +501,20 @@ int generateSSCert(UA_Server *uaSvrServer, UA_ServerConfig *config,
         //UA_ByteString derPrivKey = UA_BYTESTRING_NULL;
         //UA_ByteString derCert = UA_BYTESTRING_NULL;
 
-        UA_UInt32 lenSubject = 3;
-        UA_String subject[3] = {UA_STRING_STATIC("C=SG"),
-                                UA_STRING_STATIC("O=Virtual Skies"),
-                                UA_STRING_STATIC("CN=svr.virtualskies.com.sg") };
-
-        /*
-        UA_String subject[7] = {UA_STRING_STATIC("C=SG"),
-                                UA_STRING_STATIC("S=Singapore"),
-                                UA_STRING_STATIC("LO=Singapore"),
-                                UA_STRING_STATIC("O=Virtual Skies"),
-                                UA_STRING_STATIC("U=IT"),
-                                UA_STRING_STATIC("CN=lds.virtualskies.com.sg"),
-                                UA_STRING_STATIC("EM=jacky81100@yahoo.com") };
-        */
+        UA_UInt32 lenSubject = 6;
+        UA_String subject[6] = {UA_STRING_STATIC("C=SG"),		// country
+                                UA_STRING_STATIC("ST=SG"),		// state
+                                UA_STRING_STATIC("L=Singapore"),	// locality
+                                UA_STRING_STATIC("O=Virtual Skies"),	// organisation
+                                UA_STRING_STATIC("OU=IT"),		// organisation unit
+                                UA_STRING_STATIC("CN=opc123.virtualskies.com.sg") };	// common name
+                                //UA_STRING_STATIC("EM=jacky81100@yahoo.com") };
 
 
-        UA_UInt32 lenSubjectAltName = 1;
-        UA_String subjectAltName[1] = {UA_STRING_STATIC("svr.virtualskies.com.sg") };
+        UA_UInt32 lenSubjectAltName = 3;
+        UA_String subjectAltName[3] = {UA_STRING_STATIC("URI:urn:opc123.virtualskies.com.sg"),
+					UA_STRING_STATIC("IP:192.168.1.123"),
+					UA_STRING_STATIC("DNS:OPCSvr-123") };
 
         UA_KeyValueMap *kvm = UA_KeyValueMap_new();
         UA_UInt16 expiresIn = 3650;
@@ -445,20 +526,47 @@ int generateSSCert(UA_Server *uaSvrServer, UA_ServerConfig *config,
 
         // creates the certificate and keys
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Generating self signed certificate and key");
-        UA_StatusCode status = UA_CreateCertificate(
-                                                UA_Log_Stdout, subject, lenSubject, subjectAltName, lenSubjectAltName,
+        UA_StatusCode status = UA_CreateCertificate(UA_Log_Stdout, subject, lenSubject, subjectAltName, lenSubjectAltName,
                                                 UA_CERTIFICATEFORMAT_DER, kvm, derPrivKey, derCert);
         UA_KeyValueMap_delete(kvm);
         UA_assert(status == UA_STATUSCODE_GOOD);
         UA_assert(derPrivKey->length > 0);
         UA_assert(derCert->length > 0);
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Self signed certificate and key generated successfully");
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Saving a copy to the local directory");
+
+	FILE *fpcert = fopen("mycert.der", "wb");	// binary mode
+	FILE *fpprivkey = fopen("myprivkey.pem", "wb");
+	printf("size of cert and key is %ld %ld \n", derCert->length, derPrivKey->length);
+	fwrite(derCert->data, sizeof(char), derCert->length, fpcert);
+	fwrite(derPrivKey->data, sizeof(char), derPrivKey->length, fpprivkey);
+	fclose(fpcert);
+	fclose(fpprivkey);
+
+	// use the above for UAExpert login
 
         //UA_ServerConfig *config = UA_Server_getConfig(uaSvrServer);
         //if (!config)
         //     UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"SV_Encrypt.c : Error getting pointer to config");
 
-        const char *env_SVRport = getenv("SVR_PORT");
+        char *env_SVRport = getenv("SVR_PORT");
+	if (env_SVRport != NULL)
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c (generateSSCert): retrieved environment variable : SVR_PORT : %s", env_SVRport);
+	else
+	{
+		UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c (generateSSCert): cannot retrieve environment variable <SVR_PORT>");
+                UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : default to 4840");
+		// use default = 4840
+		env_SVRport = (char*)calloc(5,sizeof(char));
+		if (env_SVRport != NULL)
+			strcpy(env_SVRport, "4840");
+		else
+		{
+                        UA_LOG_FATAL(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c (generateSSCert): cannot retrieve environment variable <SVR_PORT> :  out of memory");
+                        exit(UA_FALSE);
+		}
+	}
+
         int SVRport = atoi(env_SVRport);
 
         UA_ServerConfig_setMinimal(config, SVRport, NULL);
@@ -469,9 +577,9 @@ int generateSSCert(UA_Server *uaSvrServer, UA_ServerConfig *config,
                                                         revocationList, revocationListSize);
 
         if ( status == UA_STATUSCODE_GOOD )
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Default security policies are set successfully");
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c (generateSSCert): Default security policies are set successfully");
         else
-                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : Error setting security policies : %s", UA_StatusCode_name(status));
+                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c (generateSSCert) : Error setting security policies : %s", UA_StatusCode_name(status));
 
         // config->tcpReuseAddr = true;
         //UA_ByteString_clear(&derCert);
@@ -479,4 +587,3 @@ int generateSSCert(UA_Server *uaSvrServer, UA_ServerConfig *config,
 
         return status;
 }
-

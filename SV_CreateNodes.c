@@ -1,4 +1,5 @@
-#ifdef almagamation
+#define DEBUG
+#ifdef no_almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
@@ -16,7 +17,6 @@
 
 #define MAX_BUFFER_SIZE 20000
 #define MAX_STRING_SIZE 64
-#define DEBUG
 
 typedef struct {
 char Tag[MAX_STRING_SIZE];
@@ -147,7 +147,7 @@ static void WriteIgramDC(UA_Server *uaServer,
 
 //void* CreateAndPopulateNodes(void* x_void_ptr)
 
-UA_NodeId *NodeId;
+UA_NodeId *myNodeId;
 
 UA_NodeId* createNodes(void* x_void_ptr)
 {
@@ -231,6 +231,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 
     //UA_UInt16 namespaceIndex=1;		// 0 is reserved for OPC
     size_t namespaceIndex;
+    char sNameSpace[] = "AirGardSensor";
 
         //if (( he=gethostbyname(g_argv[1])) == NULL) /* get the host info */
         //if (( he=gethostbyname("192.168.2.88")) == NULL)
@@ -298,10 +299,10 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	//UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "---UA_NodeId = %d\n", r1_airgardroot_Id);
 
         UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
-        retval = UA_Server_addObjectNode(uaServer, UA_NODEID_STRING(namespaceIndex, "AirGardSensor"),
+        retval = UA_Server_addObjectNode(uaServer, UA_NODEID_STRING(namespaceIndex, sNameSpace),
             UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),		// parentNodeId
             UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),		// referenceTypeId original UA_NS0ID_ORGANIZES
-            UA_QUALIFIEDNAME(namespaceIndex, "Airgard"),		// browseName UA_QUALIFIEDNAME(1, "AirGard"),
+            UA_QUALIFIEDNAME(namespaceIndex, "AirgardTcpStreams"),		// browseName UA_QUALIFIEDNAME(1, "AirGard"),
             UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE),		// typeDefinition this refers to the Object Type identifier
             oAttr, NULL, &r1_airgardroot_Id);				// attr, nodeContext, outNewNodeId assigned by the server
 	if (retval != UA_STATUSCODE_GOOD)
@@ -323,7 +324,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	vSoftwareVersionAttr.valueRank = UA_VALUERANK_SCALAR;
         vSoftwareVersionAttr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 	vSoftwareVersionAttr.historizing = UA_FALSE;
-        UA_String SoftwareVersion = UA_STRING("SoftwareVersion");
+	UA_String SoftwareVersion = UA_STRING("SoftwareVersion");
 	//if (!UA_Variant_isEmpty(&vSoftwareVersionAttr.value))
 		UA_Variant_setScalar(&vSoftwareVersionAttr.value, &SoftwareVersion, &UA_TYPES[UA_TYPES_STRING]);
         //else UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
@@ -341,7 +342,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->VersionType->SoftwareVersion 10001 : %d", r1_airgardroot_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->VersionType->SoftwareVersion 10001 : %d", outSoftwareVersion_Id.identifier.numeric);
 	#endif
 	//=======================================================
 	// add a timestamp - declaration
@@ -385,7 +386,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
        	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->VersionType->DataBlockVersion 10002 : %d", r1_airgardroot_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->VersionType->DataBlockVersion 10002 : %d", outDataBlockVersion_Id.identifier.numeric);
 	#endif
 
         //***// Subtree: Airgard->Timestamp (1,10100)
@@ -432,7 +433,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->TimestampType->Instrument Time 10101 : %d", r2_airgard_timestamp_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->TimestampType->Instrument Time 10101 : %d", outInstrumentTime_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -460,7 +461,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
        	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->TimestampType->Measurement Time 10102 : %d", r2_airgard_timestamp_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->TimestampType->Measurement Time 10102 : %d", outMeasurementTime_Id.identifier.numeric);
 	#endif
 
         //***// Subtree: Airgard->Status (1, 10200)
@@ -507,7 +508,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->StatusType->Sensor 10201 : %d", r2_airgard_status_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->StatusType->Sensor 10201 : %d", outSensor_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -535,7 +536,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->StatusType->OperatingTime 10202 : %d", r2_airgard_status_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->StatusType->OperatingTime 10202 : %d", outOperatingTime_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -562,7 +563,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->StatusType->Warning Message 10203 : %d", r2_airgard_status_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->StatusType->Warning Message 10203 : %d", outWarningMessage_Id.identifier.numeric);
 	#endif
 
         // Add objectnode to represent Airgard->Status->Info
@@ -609,7 +610,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
        	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->Boot Status 10211 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->Boot Status 10211 : %d", outBootStatus_Id.identifier.numeric);
 	#endif
 
         UA_VariableAttributes vSnapshotStatusAttr = UA_VariableAttributes_default;
@@ -636,7 +637,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->Snapshot Status 10212 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->Snapshot Status 10212 : %d", outSnapshotStatus_Id.identifier.numeric);
 	#endif
 
         UA_VariableAttributes vSCPStatusAttr = UA_VariableAttributes_default;
@@ -663,7 +664,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->SCP Status 10213 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->SCP Status 10213 : %d", outSCPStatus_Id.identifier.numeric);
 	#endif
 
 
@@ -692,7 +693,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->SFTP Status 10214 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->SFTP Status 10214 : %d", outSFTPStatus_Id.identifier.numeric);
 	#endif
 
 
@@ -721,7 +722,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->Run Script Status 10215 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->Run Script Status 10215 : %d", outRunScriptStatus_Id.identifier.numeric);
 	#endif
 
         UA_VariableAttributes vArchiveStatusAttr = UA_VariableAttributes_default;
@@ -748,7 +749,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->Archive Status 10216 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->Archive Status 10216 : %d", outArchiveStatus_Id.identifier.numeric);
 	#endif
 
         UA_VariableAttributes vAncillarySensorStatusAttr = UA_VariableAttributes_default;
@@ -775,7 +776,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Status->Info->Ancillary Sensor Status 10217 : %d", r3_airgard_status_Info_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Status->Info->Ancillary Sensor Status 10217 : %d", outAncilarySensor_Id.identifier.numeric);
 	#endif
 
         //***// Subtree: Airgard->Diagnostics (1,10300)
@@ -822,8 +823,24 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Diagnostics->IgramPP 10301 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Diagnostics->IgramPP 10301 : %d", outIgramPP_Id.identifier.numeric);
 	#endif
+
+#ifdef _DEBUG
+UA_String myString;
+UA_NodeId_print(&outIgramPP_Id,&myString);
+ 
+if (UA_NodeId_isNull(&outIgramPP_Id))
+{
+	printf("SV_CreateNodes.c : ERROR!!!!!!!!!!!!! outIgramPP_Id is NULL");
+	exit(0);
+}
+else
+{
+	printf("SV_CreateNodes.c : calling addMonitoredItemToIgramPPVariable");
+	addMonitoredItemToIgramPPVariable(uaServer);
+}
+#endif
 
 	#ifdef NOT_IN_OPERATION
 	// add a variable callback
@@ -843,7 +860,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#endif
 
         // variable
-        //UA_NodeId_init(&ds1IgramPPId); // for pub sub
+        //UA_NodeId_init(&ds1IgramDCId); // for pub sub
         UA_VariableAttributes vIgramDCAttr = UA_VariableAttributes_default;
         vIgramDCAttr.description = UA_LOCALIZEDTEXT("en-US", "IgramDCInfo");
         vIgramDCAttr.displayName = UA_LOCALIZEDTEXT("en-US", "02. Igram DC");
@@ -867,7 +884,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
        	else
     	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created : Airgard->Diagnostics->IgramDC 10302 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+               	"Attribute Variable created : Airgard->Diagnostics->IgramDC 10302 : %d", outIgramDC_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -894,7 +911,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->Diagnostics->LaserPP 10303 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->Diagnostics->LaserPP 10303 %d", outLaserPP_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -921,7 +938,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->Diagnostics->LaserDC 10304 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->Diagnostics->LaserDC 10304 %d", outLaserDC_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -948,7 +965,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
        	    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-               	"Attribute Variable created: Airgard->Diagnostics->SingleBeamAt900 10305 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+               	"Attribute Variable created: Airgard->Diagnostics->SingleBeamAt900 10305 %d", outSingleBeamAt900_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -975,7 +992,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-              	"Attribute Variable created: Airgard->Diagnostics->SingleBeamAt2500 10306 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+              	"Attribute Variable created: Airgard->Diagnostics->SingleBeamAt2500 10306 %d", outSingleBeamAt2500_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -1002,7 +1019,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->SignalToNoiseAt2500 10307 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->SignalToNoiseAt2500 10307 %d", outSignalToNoiseAt2500_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -1029,7 +1046,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->CenterBurstLocation 10308 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->CenterBurstLocation 10308 %d", outCenterBurstLocation_Id.identifier.numeric);
 	#endif
 
         // variable
@@ -1056,7 +1073,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->DetectorTemp 10309 %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->DetectorTemp 10309 %d", outDetectorTemp_Id.identifier.numeric);
 	#endif
 
         // Add the variable LaserFrequencyValue to server
@@ -1083,7 +1100,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->LaserFrequency 10310 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->LaserFrequency 10310 : %d", outLaserFrequency_Id.identifier.numeric);
 	#endif
 
         // Add the variable HardDriveSpaceValue to server
@@ -1110,7 +1127,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->HardDriveSpace 10311 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->HardDriveSpace 10311 : %d", outHardDriveSpace_Id.identifier.numeric);
 	#endif
 
         // Add the variable FlowValue to server
@@ -1137,7 +1154,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->Flow 10312 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->Flow 10312 : %d", outFlow_Id.identifier.numeric);
 	#endif
 
         // Add the variable TemperatureValue to server
@@ -1164,7 +1181,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->Temperature 10313 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->Temperature 10313 : %d", outTemperature_Id.identifier.numeric);
 	#endif
 
         // Add the variable PressureValue to server
@@ -1191,7 +1208,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->Pressure 10314 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->Pressure 10314 : %d", outPressure_Id.identifier.numeric);
 	#endif
 
         // Add the variable TempOpticsValue to server
@@ -1218,7 +1235,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->TempOptics 10315 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->TempOptics 10315 : %d", outTempOptics_Id.identifier.numeric);
 	#endif
 
         // Add the variable BadScanCounterValue to server
@@ -1245,7 +1262,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->BadScanCounter 10316 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->BadScanCounter 10316 : %d", outBadScanCounter_Id.identifier.numeric);
 	#endif
 
         // Add the variable FreeMemorySpaceValue to server
@@ -1272,7 +1289,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->FreeMemorySpace 10317 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->FreeMemorySpace 10317 : %d", outFreeMemorySpace_Id.identifier.numeric);
 	#endif
 
         // Add the variable LABFilenameValue to server
@@ -1299,7 +1316,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->LABFilename 10318 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->LABFilename 10318 : %d", outLABFilename_Id.identifier.numeric);
 	#endif
 
         // Add the variable LOGFilenameValue to server
@@ -1326,7 +1343,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->LOGFilename 10319 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->LOGFilename 10319 : %d", outLOGFilename_Id.identifier.numeric);
 	#endif
 
         // Add the variable LgFilenameValue to server
@@ -1353,7 +1370,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->LgFilename 10320 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->LgFilename 10320 : %d", outLgFilename_Id.identifier.numeric);
 	#endif
 
         // Add the variable SecondLgFilenameValue to server
@@ -1380,7 +1397,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->SecondLgFilename 10321 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->SecondLgFilename 10321 : %d", outSecondLgFilename_Id.identifier.numeric);
 	#endif
 
         // Add the variable SystemCounterValue to server
@@ -1407,7 +1424,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->SystemCounter 10322 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->SystemCounter 10322 : %d", outSystemCounter_Id.identifier.numeric);
 	#endif
 
         // Add the variable DetectorCounterValue to server
@@ -1434,7 +1451,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->DetectorCounter 10323 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->DetectorCounter 10323 : %d", outDetectorCounter_Id.identifier.numeric);
 	#endif
 
         // Add the variable LaserCounterValue to server
@@ -1461,7 +1478,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->LaserCounter 10324 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->LaserCounter 10324 : %d", outLaserCounter_Id.identifier.numeric);
 	#endif
 
         // Add the variable FlowPumpCounterValue to server
@@ -1488,7 +1505,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->FlowPumpCounter 10325 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->FlowPumpCounter 10325 : %d", outFlowPumpCounter_Id.identifier.numeric);
 	#endif
 
         // Add the variable DesiccantCounterValue to server
@@ -1515,7 +1532,7 @@ UA_NodeId* createNodes(void* x_void_ptr)
 	#ifdef DEBUG
 	else
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                "Attribute Variable created: Airgard->Diagnostics->DesiccantCounter 10326 : %d", r2_airgard_diagnostics_Id.identifier.numeric);
+                "Attribute Variable created: Airgard->Diagnostics->DesiccantCounter 10326 : %d", outDesiccantCounter_Id.identifier.numeric);
 	#endif
          // End Subtree: Diagnostics
 
@@ -1633,19 +1650,19 @@ UA_NodeId* createNodes(void* x_void_ptr)
                 "Object Node created : Airgard->Events Node");
 	#endif
 
-	NodeId = calloc (2, sizeof(UA_NodeId));
-	NodeId[0] = r2_airgard_method_Id;
-	NodeId[1] = r2_airgard_event_Id;
+	myNodeId = (UA_NodeId *) calloc(2, sizeof(UA_NodeId));
+	myNodeId[0] = r2_airgard_method_Id;
+	myNodeId[1] = r2_airgard_event_Id;
 
         UA_LOG_INFO(UA_Log_Stdout,UA_LOGCATEGORY_USERLAND,
         ("--------SV_CreateNodes.c : Ending the process of instantiation OPC UA Tree structure"));
 
-	return NodeId;
+	return myNodeId;
 
     	//return (r2_airgard_method_Id);
 
     } // end if
     else
-        return NodeId;
+        return myNodeId;
 
 } // End CreateOPCUANodes()

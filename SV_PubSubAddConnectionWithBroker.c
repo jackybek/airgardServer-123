@@ -4,30 +4,34 @@
 #include "json5.h"
 #endif
 
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/types_generated.h>
-#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
-#include <open62541/plugin/pubsub_udp.h>
-#include <open62541/plugin/pubsub_ethernet.h>
-#include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pubsub.h>
+//#include <plugins/ua_network_pubsub_mqtt.h>    // contain UA_PubSubTransportLayerMQTT() header; implementation in plugins/ua_network_pubsub_mqtt.c
+//#include <open62541/plugin/pubsub_udp.h>
+//#include <open62541/plugin/pubsub_ethernet.h>
+//#include <open62541/plugin/securitypolicy_default.h>
+//#include <open62541/plugin/pubsub.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include <open62541/server_pubsub.h>
-#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
+//#include <pubsub/ua_pubsub.h> // in ~/open62541/src/pubsub/ua_pubsub.h :  contain the following struct
 //#include "open62541.h"
 //#include "ua_pubsub_networkmessage.h"
 //#include "ua_pubsub.h"
 #else
    #include "open62541.h"
    #define UA_ENABLE_PUBSUB
+   #define UA_ENABLE_PUBSUB_SKS
+   #define UA_ENABLE_PUBSUB_FILE_CONFIG
    #define UA_ENABLE_PUBSUB_ENCRYPTION
    #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
-   #define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_PUBSUB_MONITORING
+   //#define UA_ENABLE_PUBSUB_MQTT
+   #define UA_ENABLE_MQTT
 #endif
 #include "SV_PubSub.h"
-
+#include <stdio.h>
 
 #ifdef UA_ENABLE_JSON_ENCODING
  static UA_Boolean useJson = UA_TRUE;
@@ -45,8 +49,9 @@ extern UA_NodeId PubSubconnectionIdentifier;
 
 
 void
-pubSubAddConnection(UA_Server *uaServer, UA_String *transportProfile,
-                        UA_NetworkAddressUrlDataType *networkAddressUrl)
+pubSubAddConnectionWithBroker(UA_Server *uaServer, UA_String *transportProfile,
+                        UA_NetworkAddressUrlDataType *networkAddressUrl,
+			char* username, char* password)
 {
     /* Details about the connection configuration and handling are located
      * in the pubsub connection tutorial */
@@ -69,12 +74,12 @@ struct UA_PubSubConnectionConfig {
 */
     #ifdef DEBUG_MODE
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "==========================================================");
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Entering addPubSubConnection()");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : Entering addPubSubConnectionWithBroker()");
     #endif
 
 //-------------------------------------------------------------------- Step 1 : Set up PubSub Connection Configuration
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Step 1 : Set up PubSub Connection Configuration");
- 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : Step 1 : Set up PubSub Connection Configuration based on transportProfile : %s", transportProfile->data);
+
     UA_PubSubConnectionConfig connectionConfig;
     memset(&connectionConfig, 0, sizeof(connectionConfig));
 
@@ -83,16 +88,18 @@ struct UA_PubSubConnectionConfig {
     /*3*/connectionConfig.publisherIdType = UA_PUBLISHERIDTYPE_UINT16;
     /*4*/connectionConfig.publisherId.uint16 = PUBLISHERID;     // Changed to static publisherId from random generation to identify the publisher on subscriber side
     /*5*/connectionConfig.transportProfileUri = *transportProfile;
-    /*6*/UA_Variant_setScalar(&connectionConfig.address, networkAddressUrl->url.data, &UA_TYPES[UA_TYPES_NETWORKADDRESSURLDATATYPE]);
+    /*6*/UA_Variant_setScalar(&connectionConfig.address, networkAddressUrl, &UA_TYPES[UA_TYPES_NETWORKADDRESSURLDATATYPE]);
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : networkAddressUrl->networkInterface is <%s>", networkAddressUrl->networkInterface.data); //<opc.tcp://192.168.1.157:1883>
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : networkAddressUrl->url.data is <%s>",  networkAddressUrl->url.data);
 
     if(useJson)
-        connectionConfig.transportProfileUri = UA_STRING(TRANSPORT_PROFILE_URI_JSON);
+        connectionConfig.transportProfileUri = UA_STRING(TRANSPORT_PROFILE_URI_MQTT_JSON);
     else
-        connectionConfig.transportProfileUri = UA_STRING(TRANSPORT_PROFILE_URI_UADP);
+        connectionConfig.transportProfileUri = UA_STRING(TRANSPORT_PROFILE_URI_MQTT_UADP);
 
     //UA_ServerConfig *config = UA_Server_getConfig(uaServer);
     /*7*/ //UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
-        //      config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]); // UA_TYPES_DATAGRAMCONNECTIONTRANSPORTDATATYPE
+          //    config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]); // UA_TYPES_DATAGRAMCONNECTIONTRANSPORTDATATYPE
     // UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE == 31
     // UA_TYPES_DATAGRAMCONNECTIONTRANSPORTDATATYPE == 85
     // UA_TYPES[31]
@@ -110,32 +117,6 @@ typedef struct {
 
     if (MQTT_Enable == UA_TRUE && AMQP_Enable == UA_FALSE)
     {
-	// ------------------------------------------------------------------ Step 1.1 : Setup PubSub Connection "Options" for MQTT
-        #ifdef DEBUG_MODE
-    	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Step 1.1 : Setup PubSub Connection 'Options' for MQTT");
-        #endif
-
-        /*
-        UA_ServerConfig *config = UA_Server_getConfig(uaServer);
-        //7
-        //UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
-        //      config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]);
-        */
-	int connectionOptionsCount=0;
-        size_t connectionOptionsIndex;
-        size_t namespaceIndex;
-	UA_KeyValueMap connectionOptions;	//[connectionOptionsCount];	// allocate all slots, but use only necessary slots depending on MQTT_TLS_Enable flag
-
-        if (MQTT_TLS_Enable == UA_TRUE)
-	{
-                connectionOptionsCount = 10;	// MQTT-TLS needs to setup 10 connection options
-	}
-        else // MQTT_TLS_Enable == UA_FALSE
-	{
-                connectionOptionsCount = 5;		// MQTT-Non_TLS needs to setup 5 connection options
-	}
-
-        UA_Server_getNamespaceByName(uaServer, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
 
 #ifdef COMMENT
  fixed array position to handle different parameters
@@ -164,69 +145,70 @@ typedef struct {
         connectionOptions[9].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttClientKeyPath");
 #endif
 
+	// ------------------------------------------------------------------ Step 1.1 : Setup PubSub Connection "Options" for MQTT
+        #ifdef DEBUG_MODE
+    	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : Step 1.1 : Setup PubSub Connection 'Options' for MQTT");
+        #endif
 
-// the following are modified due to change from keyvalue to struct keyvaluemap
-	connectionOptions.mapSize = connectionOptionsCount;
+        /*
+        UA_ServerConfig *config = UA_Server_getConfig(uaServer);
+        //7
+        //UA_Variant_setScalar(&connectionConfig.connectionTransportSettings,
+        //      config->pubsubTransportLayers, &UA_TYPES[UA_TYPES_BROKERCONNECTIONTRANSPORTDATATYPE]);
+        */
+        size_t connectionOptionsIndex = 0;
+	int connectionOptionsCount;		// set based on TLS is enabled or not, 5 or 10
+	//UA_KeyValueMap connectionOptions;	//[connectionOptionsCount];	// allocate all slots, but use only necessary slots depending on MQTT_TLS_Enable flag
 
-	// need to allocate memory as map component in UA_KeyValueMap struct is a pointer
-	connectionOptions.map = (UA_KeyValuePair *)malloc(connectionOptionsCount);
-	if (connectionOptions.map == NULL)
-	{
-		UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Fail to allocate heap memory for connectionOptions.map");
-		exit(EXIT_FAILURE);
-	}
+        if (MQTT_TLS_Enable == UA_TRUE)
+                connectionOptionsCount = 10;	// MQTT-TLS needs to setup 10 connection options
+        else 					// MQTT_TLS_Enable == UA_FALSE
+                connectionOptionsCount = 5;	// MQTT-Non_TLS needs to setup 5 connection options
+	UA_KeyValuePair connectionProperties[connectionOptionsCount];
 
-	connectionOptionsIndex = 0;
-	connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, CONNECTIONOPTION_NAME_MQTT);   // mqttClientId;
+        size_t namespaceIndex;
+        UA_Server_getNamespaceByName(uaServer, UA_STRING("virtualskies.com.sg/MKS/"), &namespaceIndex);
+
+  	#ifdef sample
+        connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "ttl"); //CONNECTION_NAME_UADP); //"ttl");
+        UA_UInt16 ttl = 10;
+        UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &ttl, &UA_TYPES[UA_TYPES_UINT16]);
+	#endif // sample
+
+	connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, CONNECTIONOPTION_NAME_MQTT);   // "mqttClientId"
 	UA_String mqttClientId = UA_STRING(CLIENT_ID_MQTT);
-	UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttClientId, &UA_TYPES[UA_TYPES_STRING]); ;
-
-        //if ( (MQTT_Port == 1884) || (MQTT_Port == 8884) )
-        //{
-        // login credentials to mqtt broker on 192.168.1.11
-
+	UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttClientId, &UA_TYPES[UA_TYPES_STRING]);
  	connectionOptionsIndex++;	// 1
-        connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, USERNAME_OPTION_NAME_MQTT);    // mqttUsername
-        UA_String mqttUsername = UA_STRING(USERNAME_MQTT);
-        UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttUsername, &UA_TYPES[UA_TYPES_STRING]);
 
+        connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, USERNAME_OPTION_NAME_MQTT);    // "mqttUsername"
+        UA_String mqttUsername = UA_STRING(username); //UA_STRING(USERNAME_MQTT);
+        UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttUsername, &UA_TYPES[UA_TYPES_STRING]);
         connectionOptionsIndex++;       // 2
-        connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, PASSWORD_OPTION_NAME_MQTT);    // mqttPassword
-        UA_String mqttPassword = UA_STRING(PASSWORD_MQTT);
-        UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttPassword, &UA_TYPES[UA_TYPES_STRING]);
+
+        connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, PASSWORD_OPTION_NAME_MQTT);    // "mqttPassword"
+        UA_String mqttPassword = UA_STRING(password); // UA_STRING(PASSWORD_MQTT);
+        UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttPassword, &UA_TYPES[UA_TYPES_STRING]);
+        connectionOptionsIndex++;       // 3
 
         // preallocate sendBufferSize
-        connectionOptionsIndex++;       // 3
-        connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "sendBufferSize");
+        // -- original : connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "sendBufferSize");
+	connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "sendBufferSize");
         UA_UInt32 sendBufferSize = 32767;
-        UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &sendBufferSize, &UA_TYPES[UA_TYPES_UINT32]);
+        //-- original : UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &sendBufferSize, &UA_TYPES[UA_TYPES_UINT32]);
+	UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &sendBufferSize, &UA_TYPES[UA_TYPES_UINT32]);
+        connectionOptionsIndex++;       // 4
 
         // preallocate recvBufferSize
-        connectionOptionsIndex++;       // 4
-        connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "recvBufferSize");
+        connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "recvBufferSize");
         UA_Int32 recvBufferSize = 32767;
-        UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &recvBufferSize, &UA_TYPES[UA_TYPES_UINT32]);
-
-        //}
-        //else
-        /*{
-           connectionOptionsIndex=3;    // 3
-           //connectionOptions[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, USERNAME_OPTION_NAME_MQTT);       // mqttUsername
-           UA_String mqttUsername = UA_STRING("");
-           UA_Variant_setScalar(&connectionOptions[connectionOptionsIndex].value, &mqttUsername, &UA_TYPES[UA_TYPES_STRING]);
-
-           connectionOptionsIndex=4;    // 4
-           //connectionOptions[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, PASSWORD_OPTION_NAME_MQTT);       // mqttPassword
-           UA_String mqttPassword = UA_STRING("");
-           UA_Variant_setScalar(&connectionOptions[connectionOptionsIndex].value, &mqttPassword, &UA_TYPES[UA_TYPES_STRING]);
-
-        }*/
+        UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &recvBufferSize, &UA_TYPES[UA_TYPES_UINT32]);
+	connectionOptionsIndex++;	// 5
 
         if (MQTT_TLS_Enable == UA_TRUE)
         {
         // ------------------------------------------------------------------ Step 1.2 : Setup PubSub Connection TLS options for MQTT
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Step 1.2 : Setup PubSub Connection TLS options for MQTT");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : Step 1.2 : Setup PubSub Connection TLS options for MQTT");
         #endif
 
 // https://github.com/open62541/open62541/blob/master/examples/pubsub/tutorial_pubsub_mqtt_publish.c
@@ -255,86 +237,91 @@ typedef struct {
                 // sudo mosquitto_pub -d -h Mqtt-11 -p 8883 -t AirgardTopic --capath /etc/ssl/certs/ --cafile mosq-ca.crt -m "Secure Message"
                 // ./myNewServer 192.168.1.33 192.168.1.119 192.168.1.11 8883 pub ==> can run
 
-		connectionOptionsIndex++; // 5
-                connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttUseTLS");
+                connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttUseTLS");
                 UA_Boolean mqttUseTLS = UA_TRUE;
-                UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttUseTLS, &UA_TYPES[UA_TYPES_BOOLEAN]);
+                UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttUseTLS, &UA_TYPES[UA_TYPES_BOOLEAN]);
+                connectionOptionsIndex++; // 6
 
            //if (MQTT_Port == 8884) // only port 8884 requires client certificate
            //{
-                connectionOptionsIndex++; // 6
-                connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttCaPath");
+                connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttCaPath");
                 UA_String mqttCaPath = UA_STRING(CA_PATH_MQTT);
-                UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttCaPath, &UA_TYPES[UA_TYPES_STRING]);
-
+                UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttCaPath, &UA_TYPES[UA_TYPES_STRING]);
                 connectionOptionsIndex++; // 7
-                connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttCaFilePath");
+
+                connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttCaFilePath");
                 UA_String mqttCaFile = UA_STRING(CA_FILE_PATH_MQTT);
-                UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttCaFile, &UA_TYPES[UA_TYPES_STRING]);
-
+                UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttCaFile, &UA_TYPES[UA_TYPES_STRING]);
                 connectionOptionsIndex++; // 8
-                connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttClientCertPath");
-                UA_String mqttClientCertPath = UA_STRING(CLIENT_CERT_PATH_MQTT);
-                UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttClientCertPath, &UA_TYPES[UA_TYPES_STRING]);
 
+                connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttClientCertPath");
+                UA_String mqttClientCertPath = UA_STRING(CLIENT_CERT_PATH_MQTT);
+                UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttClientCertPath, &UA_TYPES[UA_TYPES_STRING]);
                 connectionOptionsIndex++; // 9
-                connectionOptions.map[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttClientKeyPath");
+
+                connectionProperties[connectionOptionsIndex].key = UA_QUALIFIEDNAME(namespaceIndex, "mqttClientKeyPath");
                 UA_String mqttClientKeyPath = UA_STRING(CLIENT_KEY_PATH_MQTT);
-                UA_Variant_setScalar(&connectionOptions.map[connectionOptionsIndex].value, &mqttClientKeyPath, &UA_TYPES[UA_TYPES_STRING]);
+                UA_Variant_setScalar(&connectionProperties[connectionOptionsIndex].value, &mqttClientKeyPath, &UA_TYPES[UA_TYPES_STRING]);
             //}// MQTT_Port = 8884
         }
-        connectionConfig.connectionProperties.map = connectionOptions.map;
-        connectionConfig.connectionProperties.mapSize = connectionOptionsIndex+1;       // add 1 because the index start at 0;
+
+	UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : connectionOptionsCount is %d", connectionOptionsCount); 
+        connectionConfig.connectionProperties.map = connectionProperties;
+        connectionConfig.connectionProperties.mapSize = connectionOptionsCount;
 
         #ifdef DEBUG_MODE
-		int status = print_debug_MQTT(&connectionConfig, networkAddressUrl);
-		sleep(status);
+	//	print_debug_MQTT(&connectionConfig, networkAddressUrl);
         #endif
 
 
         // initiatise the value of PubSubconnectionIdentifier (UA_NodeId) so that we can check later in addSubscription()
         #ifdef DEBUG_MODE
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-		"--------SV_PubSubAddConnection.c : Before calling UA_Server_addPubSubConnection() : MQTT_Enable == UA_TRUE && AMQP_Enable == UA_FALSE, connectionOptionIndex = %d", (int)connectionOptionsIndex);
+		"--------SV_PubSubAddConnectionWithBroker.c : Before calling UA_Server_addPubSubConnection() : MQTT_Enable == UA_TRUE && AMQP_Enable == UA_FALSE, connectionOptionIndex = %d", (int)connectionOptionsIndex);
         #endif
 
         UA_StatusCode retval = UA_Server_addPubSubConnection(uaServer, &connectionConfig, &PubSubconnectionIdentifier);
         if (retval == UA_STATUSCODE_GOOD)
         {
+		UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : The PubSub Connection is created successfully");
                 UA_String output;
                 UA_String_init(&output);
 
                 #ifdef DEBUG_MODE
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : The output of UA_Server_addPubSubConnection is a NodeId : PubSubconnectionIdentifier .. check isNull= %d", UA_NodeId_isNull(&PubSubconnectionIdentifier));
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+		"--------SV_PubSubAddConnectionWithBroker.c : The output of UA_Server_addPubSubConnection is a NodeId : PubSubconnectionIdentifier .. check isNull= %d", UA_NodeId_isNull(&PubSubconnectionIdentifier));
                 #endif
+
+		retval = UA_NodeId_print(&PubSubconnectionIdentifier, &output);
 
                 #ifdef DEBUG_MODE
                 retval = UA_NodeId_print(&PubSubconnectionIdentifier, &output);
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : NodeId : <%s>", output.data);
-                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_PubSubAddConnection.c : PubSubconnectionIdentifier success : %s", UA_StatusCode_name(retval));
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : NodeId : <%s>", output.data);
+                UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_PubSubAddConnectionWithBroker.c : PubSubconnectionIdentifier success : %s", UA_StatusCode_name(retval));
                 #endif
         }
         else
         {
-                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_PubSubAddConnection.c : PubSubconnectionIdentifier failure : %s", UA_StatusCode_name(retval));
+                UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,"--------SV_PubSubAddConnectionWithBroker.c : PubSubconnectionIdentifier failure : %s", UA_StatusCode_name(retval));
                 exit(EXIT_FAILURE);
         }
-        //sleep(5);
     } // if (MQTT_Enable == UA_TRUE && AMQP_Enable == UA_FALSE)
     else if (MQTT_Enable == UA_FALSE && AMQP_Enable == UA_TRUE)
     {
         // ------------------------------------------------------------------ Step 2.1 : Setup PubSub Connection "Options" for AMQP
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Step 2.1 : Setup PubSub Connection 'Options' for AMQP segment");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : Step 2.1 : Setup PubSub Connection 'Options' for AMQP segment");
         #endif
 
         //sleep(1000);
     } // if (MQTT_Enable == UA_FALSE && AMQP_Enable == UA_TRUE)
+
+#ifdef TO_BE_REMOVED
     else // MQTT_Enable = UA_FALSE, AMQP_Enable = UA_FALSE
     {
 	// ------------------------------------------------------------------ Step 3.1 : Setup PubSub Connection "Options" for UADP
         #ifdef DEBUG_MODE
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnection.c : Step 3.1 : Setup PubSub Connection 'Options' for UADP segment");
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "--------SV_PubSubAddConnectionWithBroker.c : Step 3.1 : Setup PubSub Connection 'Options' for UADP segment");
         #endif
         // the command line options does not cater for this; so we need to hardcode networkAddressUrl = "opc.udp://224.0.0.22:4840/")
 
@@ -443,7 +430,7 @@ typedef struct {
         }
 
     } // MQTT_Enable = UA_FALSE, AMQP_Enable = UA_FALSE
-
+#endif
     //printf("networkAddressUrl.url                                             : %s \n", networkAddressUrl->url.data);
 
 // this statement appears in tutorial_pubsub_subscribe.c but not in tutorial_pubsub_mqtt_publish.c or server_pubsub_subscribe_custom_monitoring.c
@@ -456,7 +443,7 @@ typedef struct {
     }
 */
 }
-
+#ifdef NOT_REQUIRED_FOR_BROKER
 int print_debug_UDP(UA_PubSubConnectionConfig *connectionConfig, UA_NetworkAddressUrlDataType *networkAddressUrl)
 {
         // to extract value from a VARIANT
@@ -490,11 +477,16 @@ int print_debug_UDP(UA_PubSubConnectionConfig *connectionConfig, UA_NetworkAddre
 	return 0;
 
 }
+#endif
 
-int print_debug_MQTT(UA_PubSubConnectionConfig *connectionConfig, UA_NetworkAddressUrlDataType *networkAddressUrl)
+void print_debug_MQTT(UA_PubSubConnectionConfig *connectionConfig, UA_NetworkAddressUrlDataType *networkAddressUrl)
 {
         // to extract value from a VARIANT
         //UA_Int16 raw_data = *(UA_Int16 *)varStrNonAlarms->data;
+
+	UA_String raw_data;
+	UA_UInt32 raw_intdata;
+	//UA_Boolean raw_booldata;
 
         #ifdef DEBUG_MODE
         printf("=====================================================================\n");
@@ -508,28 +500,47 @@ int print_debug_MQTT(UA_PubSubConnectionConfig *connectionConfig, UA_NetworkAddr
         //printf("connectionConfig.connectionTransportSettings                  : %d \n", *(UA_Int16 *)connectionConfig.connectionTransportSettings.data); // variant
         //printf("connectionConfig.connectionPropertiesSize                       : %d \n", connectionConfig.connectionPropertiesSize);
         printf("---------------------------------------------------------------------\n");
-        printf("connectionConfig.connectionProperties.map[0].key : mqttClientId(string)   : %s \n", connectionConfig->connectionProperties.map[0].key.name.data); // [0].key.name is of t$
-        //printf("connectionConfig.connectionProperties[0].value (int16)                : %d \n", *(UA_Int16 *)connectionConfig.connectionProperties[0].value.data);  // [$
+        printf("connectionConfig.connectionProperties.map[0].key : mqttClientId (string)  : %s \n", connectionConfig->connectionProperties.map[0].key.name.data);
+	raw_data = *(UA_String *) connectionConfig->connectionProperties.map[0].value.data;
+        printf("connectionConfig.connectionProperties[0].value (UA_String)                : %s \n", raw_data.data);
+
         printf("connectionConfig.connectionProperties.map[1].key : mqttUsername(string)   : %s \n", connectionConfig->connectionProperties.map[1].key.name.data);
-        //printf("connectionConfig.connectionProperties[1].value (boolean)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[1].value.data);
-        printf("connectionConfig.connectionProperties.map[2].key : mqttPassword(string)   : %s \n", connectionConfig->connectionProperties.map[2].key.name.data);
-        //printf("connectionConfig.connectionProperties[2].value (boolean)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[2].value.data);
+	raw_data = *(UA_String *) connectionConfig->connectionProperties.map[1].value.data;
+        printf("connectionConfig.connectionProperties[1].value (UA_String)                : %s \n", raw_data.data);
+
+        printf("connectionConfig.connectionProperties.map[2].key : mqttPassword(string)   : %s \n",connectionConfig->connectionProperties.map[2].key.name.data);
+	raw_data = *(UA_String *)connectionConfig->connectionProperties.map[2].value.data;
+        printf("connectionConfig.connectionProperties[2].value (UA_String)                : %s \n", raw_data.data);
+
         printf("connectionConfig.connectionProperties.map[3].key : sendBufferSize(string) : %s \n", connectionConfig->connectionProperties.map[3].key.name.data);
-        //printf("connectionConfig.connectionProperties[3].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[3].value.data);
+	raw_intdata = *(UA_UInt32 *)connectionConfig->connectionProperties.map[3].value.data;
+        printf("connectionConfig.connectionProperties[3].value (UInt32)                   : %d \n", raw_intdata);
+
         printf("connectionConfig.connectionProperties.map[4].key : recvBufferSize(string) : %s \n", connectionConfig->connectionProperties.map[4].key.name.data);
-        //printf("connectionConfig.connectionProperties[4].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[4].value.data);
+	raw_intdata = *(UA_UInt32 *)connectionConfig->connectionProperties.map[4].value.data;
+        printf("connectionConfig.connectionProperties[4].value (UInt32)                   : %d \n", raw_intdata);
+
         if (MQTT_TLS_Enable == UA_TRUE)
 	{
-                printf("connectionConfig.connectionProperties.map[5].key : mqttUseTLS(string)         : %s \n", connectionConfig->connectionProperties.map[5].key.name.data);
-                //printf("connectionConfig.connectionProperties[5].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[5].value.data);
+                printf("connectionConfig.connectionProperties.map[5].key : mqttUseTLS (boolean)       : %s \n", connectionConfig->connectionProperties.map[5].key.name.data);
+		//raw_booldata = connectionConfig->connectionProperties.map[5].value.data;
+                //printf("connectionConfig.connectionProperties[5].value (boolean)                    : %d \n", raw_booldata);
+
                 printf("connectionConfig.connectionProperties.map[6].key : mqttCaPath(string)         : %s \n", connectionConfig->connectionProperties.map[6].key.name.data);
-                //printf("connectionConfig.connectionProperties[6].value (boolean)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[6].value.data);
+		raw_data = *(UA_String *)connectionConfig->connectionProperties.map[6].value.data;
+                printf("connectionConfig.connectionProperties[6].value (UA_String)                    : %s \n", raw_data.data);
+
                 printf("connectionConfig.connectionProperties.map[7].key : mqttCaFilePath(string)     : %s \n", connectionConfig->connectionProperties.map[7].key.name.data);
-                //printf("connectionConfig.connectionProperties[7].value (string)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[7].value.data);
+		raw_data = *(UA_String *)connectionConfig->connectionProperties.map[7].value.data;
+                printf("connectionConfig.connectionProperties[7].value (UA_String)                    : %s \n", raw_data.data);
+
                 printf("connectionConfig.connectionProperties.map[8].key : mqttClientCertPath(string) : %s \n", connectionConfig->connectionProperties.map[8].key.name.data);
-                //printf("connectionConfig.connectionProperties[8].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[8].value.data);
+		raw_data = *(UA_String *)connectionConfig->connectionProperties.map[8].value.data;
+                printf("connectionConfig.connectionProperties[8].value (UA_String)                    : %s \n", raw_data.data);
+
                 printf("connectionConfig.connectionProperties.map[9].key : mqttClientKeyPath(string)  : %s \n", connectionConfig->connectionProperties.map[9].key.name.data);
-                //printf("connectionConfig.connectionProperties[9].value (UInt32)      : %d \n", *(UA_Boolean *)connectionConfig.connectionProperties[9].value.data);
+		raw_data = *(UA_String *)connectionConfig->connectionProperties.map[9].value.data;
+                printf("connectionConfig.connectionProperties[9].value (UA_String)                    : %s \n", raw_data.data);
         }
         printf("---------------------------------------------------------------------\n");
         printf("networkAddressUrl.networkInterface                              : %s \n", networkAddressUrl->networkInterface.data);
@@ -537,6 +548,5 @@ int print_debug_MQTT(UA_PubSubConnectionConfig *connectionConfig, UA_NetworkAddr
         printf("=====================================================================\n");
         #endif
 
-	return 0;
 
 }

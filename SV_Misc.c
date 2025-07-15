@@ -1,4 +1,4 @@
-#ifdef almagamation
+#ifdef no_almagamation
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
@@ -7,9 +7,17 @@
 #endif
 
 #include <stdio.h>
-#include <string.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include <math.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
 #include <libxml2/libxml/parser.h>
 #include <libxml2/libxml/tree.h>
 #include <libxml2/libxml/xmlreader.h>
@@ -46,6 +54,40 @@ UA_ByteString loadFile(const char *const path)
     fclose(fp);
 
     return fileContents;
+}
+
+int stringEndsWith(
+        char const * const name,
+        char const * const extension_to_find)
+{
+        #ifdef DEBUG
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : in stringEndsWith() function : name = %s, extension = %s", name, extension_to_find);
+        #endif
+
+    int is_found = 0;
+    size_t length = 0;
+    char* ldot = NULL;
+    if (name == NULL) return -1;
+    if (extension_to_find == NULL) return -1;
+    length = strlen(extension_to_find);
+    if (length == 0) return -1;
+    ldot = strrchr((char*)name, extension_to_find[0]);
+    if (ldot != NULL)
+    {
+        #ifdef DEBUG
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : ldot = %s, extension = %s, length = %d", ldot, extension_to_find, length);
+        #endif
+        is_found = strncmp(ldot, extension_to_find, length);
+        if (is_found == 0) // found
+        {
+                //UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,"--------SV_Encrypt.c : found file <%s>", name);
+                return 0;       // success return 0
+        }
+        else
+                return -1;      // fail to find : return -1
+    }
+    else
+       return -1;       // all other situation return -1
 }
 
 
@@ -144,3 +186,97 @@ char* itoa(int num, char* buffer, int base) {
     return buffer;
 }
 //#endif
+
+// Reverses a string 'str' of length 'len'
+void reverse(char* str, int len)
+{
+    int i = 0, j = len - 1, temp;
+    while (i < j) {
+        temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
+    }
+}
+
+int intToStr(int x, char str[], int d)
+{
+    int i = 0;
+    while (x) {
+        str[i++] = (x % 10) + '0';
+        x = x / 10;
+    }
+
+    // If number of digits required is more, then
+    // add 0s at the beginning
+    while (i < d)
+        str[i++] = '0';
+
+    reverse(str, i);
+    str[i] = '\0';
+    return i;
+}
+
+void ftoa(float num, char* buf, int decimalpoint)
+{
+	// extaact integer part
+	int ipart = (int) num;
+
+	// extract decimal part
+	float fpart = num - (float)ipart;
+
+	// convert integer part to string
+	int i = intToStr(ipart, buf, 0);
+
+	// check for display option after decimal point
+	if (decimalpoint != 0)
+	{
+		buf[i] = '.'; // add decimal point
+
+		// Get the value of fraction part upto given no.
+        	// of points after dot. The third parameter
+        	// is needed to handle cases like 233.007
+        	fpart = fpart * pow(10, decimalpoint);
+ 
+        	intToStr((int)fpart, buf + i + 1, decimalpoint);
+	}
+}
+
+int check_port_active(char* hostname, int portno)
+{
+
+        int sockfd;
+        struct sockaddr_in serv_addr;
+        struct hostent *server;
+
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd < 0) {
+            printf("ERROR opening socket");
+	    exit(0);
+        }
+
+        server = gethostbyname(hostname);
+
+        if (server == NULL) {
+            printf("ERROR, no such host\n");
+            exit(0);
+        }
+
+        bzero((char *) &serv_addr, sizeof(serv_addr));
+        serv_addr.sin_family = AF_INET;
+        bcopy((char *)server->h_addr,
+             (char *)&serv_addr.sin_addr.s_addr,
+             server->h_length);
+
+        serv_addr.sin_port = htons(portno);
+        if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
+            printf("Port is closed \n");
+                close(sockfd);
+                return -1;
+        } else {
+            printf("Port is active \n");
+                close(sockfd);
+                return 0;
+        }
+}
