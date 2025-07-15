@@ -250,6 +250,11 @@ VOLUME /usr/local/ssl/private
 
 
 ##########################################
+# add the hostname of the LDS server (OPCLds-44) to /etc/hosts
+##########################################
+192.168.1.44    OPCLds-44
+
+##########################################
 # -- build the user-defined application
 # -- saved to /etc/profile.d/open62541-export.sh
 # list in order : env -0 | sort -z | tr '\0' '\n'
