@@ -1,0 +1,908 @@
+HOME=/home/pi/
+OBJDIR=/home/pi/OPCProject/obj/
+LIBDIR=/home/pi/OPCProject/lib/
+# this is where the .so and .a files will be generated to : USRLOCALLIB
+USRLOCALLIB=/usr/local/lib/lib/
+# this is where the .o files will be generated to : USRLOCALOBJ
+USRLOCALOBJ=/usr/local/lib/obj/
+CPP=/usr/local/gcc14.2.0/bin/g++
+#CPP=/usr/bin/c++
+CC=/usr/local/gcc14.2.0/bin/gcc -I/usr/local/gcc14.2.0/include/c++/14.2.0/ -I/usr/local/gcc14.2.0/include/
+CFLAGS1=-std=gnu99 -Wall -Wno-implicit -Wfatal-errors -trigraphs
+#CC=g++
+#CFLAGS1=-x c++ -std=c++98 -v -fpermissive -Wno-literal-suffix -Wno-write-strings -Wno-long-long -Wno-return-type
+#CFLAGS2=-I$(HOME) -I$(HOME)include/ -I$(HOME)plugins/ -I$(HOME)src/ -I$(HOME)open62541/build/src_generated/ \
+#-I$(HOME)arch/ -I$(HOME)deps/ -I$(HOME)plugins/include/ -I/usr/local/include/ -I$(HOME)open62541/plugins/ -I$(HOME)open62541/include/ \
+#-I$(HOME)open62541/plugins/include/
+#CFLAGS2=-I$(HOME)/open62541 -I$(HOME)open62541/include/ -I$(HOME)open62541/plugins/ -I$(HOME)src/ -I$(HOME)open62541/build/src_generated/ \
+#-I$(HOME)open62541/arch/ -I$(HOME)open62541/deps/ -I$(HOME)open62541/plugins/include/ -I/usr/local/include/ -I$(HOME)open62541/plugins/ -I$(HOME)open62541/include/
+CFLAGS2=-I$(HOME)open62541 -I/usr/include/libxml2/ -I/usr/local/src/ADS/AdsLib/ -I/usr/include/ -I/usr/local/include/ -I/usr/include/python3.11 \
+-I/usr/local/src/ptpd/src/ -I/usr/local/src/ptpd/src/dep/ -I/usr/local/src/include/ -I/usr/local/src/libwebsockets/build/
+CFLAGS3=-pass-exit-codes -g -O
+CFLAGS4=-I/usr/local/src/openldap/include
+CFLAGS5=-I/usr/local/src/p-net-1.0.2-Linux-aarch64/include/
+CFLAGS6=-I/usr/local/src/freeradius-client/include
+DEPS=
+LIBS=-lc -lm -lrt -lpthread  -lcrypto -lssl -lmbedcrypto -lmbedtls -lmbedx509 -lwebsockets -luv \
+-lmariadbclient -lxml2 -ljson-c -lmodbus -lAdsLib -lpython3.11
+#-ltensorflow
+OBJ= cj5star.o SV_Misc.o SV_TwinCATAds.o \
+SV_CanopenEdsDcf.o SV_CreateCanopen.o SV_CreateCanopenMaster.o SV_CreateCanopenSlave.o \
+SV_WebSocketsHttps.o SV_WebSocketsWss.o \
+SV_ModbusTcp.o SV_CreateModbus.o SV_CreateModbusMaster.o SV_CreateModbusSlave.o \
+SV_ReverseConnect.o SV_PasswordHash.o \
+SV_PublishDataSetWriterBrokerless.o SV_PublishDataSetWriterWithBroker.o \
+SV_PublishWriterGroupBrokerless.o SV_PublishWriterGroupWithBroker.o \
+SV_PubSubInitialiseBrokerless.o SV_PubSubInitialiseWithBroker.o \
+SV_PubSubAddConnectionBrokerless.o SV_PubSubAddConnectionWithBroker.o  \
+SV_PublishInitialiseField.o SV_PublishSendDataSet.o \
+SV_SubscribeDataSetReader.o SV_SubscribeInitialiseField.o SV_SubscribeReceiveDataSet.o SV_SubscribeReaderGroup.o \
+SV_Callbacks.o SV_Historizing.o SV_Event.o SV_Monitor.o SV_Method.o SV_CreateNodes.o \
+SV_JsonChecker.o SV_Register.o SV_Configure.o SV_Encrypt.o SV_Ldap.o SV_Radius.o  \
+SV_main.o
+
+DOT_A= libcj5star.a libSvMisc.a libSvTwinCATAds.a \
+libSvCanopenEdsDcf.a libSvCreateCanopen.a libSvCreateCanopenMaster.a libSvCreateCanopenSlave.a \
+libSvWebSocketsHttps.a libSvWebSocketsWss.a \
+libSvModbusTcp.a libSvCreateModbus.a libSvCreateModbusMaster.a libSvCreateModbusSlave.a \
+libSvReverseConnect.a libSvPasswordHash.a  \
+libSvPublishDataSetWriterBrokerless.a libSvPublishDataSetWriterWithBroker.a \
+libSvPublishWriterGroupBrokerless.a libSvPublishWriterGroupWithBroker.a \
+libSvPubSubInitialiseBrokerless.a libSvPubSubInitialiseWithBroker.a \
+libSvPubSubAddConnectionBrokerless.a libSvPubSubAddConnectionWithBroker.a  \
+libSvPublishInitialiseField.a libSvPublishSendDataSet.a \
+libSvSubscribeDataSetReader.a libSvSubscribeInitialiseField.a libSvSubscribeReceiveDataSet.a libSvSubscribeReaderGroup.a \
+libSvCallbacks.a libSvHistorizing.a libSvEvent.a libSvMonitor.a libSvMethod.a libSvCreateNodes.a \
+libSvJsonChecker.a libSvRegister.a libSvConfigure.a libSvEncrypt.a libSvLdap.a libSvRadius.a \
+libSvmain.a
+
+SO= libcj5star.so libSvMisc.so libSvTwinCATAds.so \
+libSvCanopenEdsDcf.so libSvCreateCanopen.so libSvCreateCanopenMaster.so \
+libSvWebSocketsHttps.so libSvWebSocketsWss.so \
+libSvModbusTcp.so libSvCreateModbus.so libSvCreateModbusMaster.so libSvCreateModbusSlave.so \
+libSvReverseConnect.so libSvPasswordHash.so \
+libSvPublishDataSetWriterBrokerless.so libSvPublishDataSetWriterWithBroker.so \
+libSvPublishWriterGroupBrokerless.so libSvPublishWriterGroupWithBroker.so \
+libSvPubSubInitialiseBrokerless.so libSvPubSubInitialiseWithBroker.so \
+libSvPubSubAddConnectionBrokerless.so libSvPubSubAddConnectionWithBroker.so  \
+libSvPublishInitialiseField.so libSvPublishSendDataSet.so \
+libSvSubscribeDataSetReader.so libSvSubscribeInitialiseField.so libSvSubscribeReceiveDataSet.so libSvSubscribeReaderGroup.so \
+libSvCallbacks.so libSvHistorizing.so libSvEvent.so libSvMonitor.so libSvMethod.so  libSvCreateNodes.so \
+libSvJsonChecker.so libSvRegister.so libSvConfigure.so libSvEncrypt.so libSvLdap.so libSvRadius.so \
+libSvmain.so
+
+
+#KIV
+#SV_TensorFlow.o \
+# SV_ModbusRtu.o SV_ModbusAscii.o SV_ModbusRtuOverTcp.o
+# SV_Alarm.o
+# SV_RegisterOPCServerToLDS.o \
+# SV_PubSub.o
+# SV_StartOPCUAServer.o => replaced by SV_main, SV_Encrypt, SV_Configure, SV_Register
+# SV_ExtractXMLElementNames.o => implemented in Client
+# SV_PopulateOPCUANodes.o => implemented in Client
+
+ODIR=obj
+LDIR1=-L/usr/local/lib
+LDIR2=-L/usr/lib
+LDIR3=-L/usr/local/gcc14.2.0/lib/lib64
+LDIR4=-L/usr/local/src/ADS/build
+LDIR5=-L/usr/lib/python3.11/config-3.11-aarch64-linux-gnu
+LDIR6=-L/usr/local/src/p-net-1.0.2-Linux-aarch64/lib
+LDIR7=-L/usr/local/src/openldap/libraries/libldap/.libs	# this is where libldap.a is located
+LDIR8=-L/usr/local/src/openldap/libraries/liblber/.libs # this is where liblber.a is located
+LDIR9=-L/usr/local/src/freeradius-client/lib/./libs 	# this is where libfreeradius-client.a is located
+LDFLAGS=-L$(HOME)open62541/build/bin/ -l:libopen62541.a -l:liblibmdnsd.a
+
+all: myNewServer $(OBJ) $(DOT_A) $(SO)
+
+# ----------------------------generate .o files
+cj5star.o : cj5star.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) -c cj5star.c -o $(OBJDIR)cj5star.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_TwinCATAds.o : SV_TwinCATAds.cpp
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CPP) -c SV_TwinCATAds.cpp -o $(OBJDIR)SV_TwinCATAds.o -I/usr/local/src/ADS/AdsLib -I/home/pi/open62541 -L/home/pi/open62541/build/bin -l:libopen62541.a -l:liblibmdnsd.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_Profibus.o : SV_Profibus.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS2) -c SV_Profibus.c  -o $(OBJDIR)SV_Profibus.o $(CFLAGS5) $(LDIR6) -l:libosal.a -l:libpnet.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_Ldap.o : SV_Ldap.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) -c SV_Ldap.c -o $(OBJDIR)SV_Ldap.o $(CFLAGS4) $(LDIR7) -l:libldap.la -L$(LDIR8) -l:libliber.la
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_Radius.o : SV_Radius.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) -c SV_Radius.c -o $(OBJDIR)SV_Radius.o $(CFLAGS6) $(LDIR9) -l:libfreeradius-client.la
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+# the order of the liblely libraries are important - DO NOT modify
+SV_CanopenEdsDcf.o : SV_CanopenEdsDcf.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) -c SV_CanopenEdsDcf.c -o $(OBJDIR)SV_CanopenEdsDcf.o $(CFLAGS2) $(LDIR1) \
+		-l:liblely-coapp.a -l:libley-io2.a -l:libley-ev.a -l:liblely-co.a -l:liblely-can.a \
+		-l:liblely-util.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a -lrt
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_CreateCanopen.o : SV_CreateCanopen.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) -c SV_CreateCanopen.c -o $(OBJDIR)SV_CreateCanopen.o $(CFLAGS2) $(LDIR1) \
+		-l:liblely-coapp.a -l:libley-io2.a -l:libley-ev.a -l:liblely-co.a -l:liblely-can.a \
+		-l:liblely-util.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a -lrt
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_CreateCanopenMaster.o : SV_CreateCanopenMaster.cpp
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CPP) -c SV_CreateCanopenMaster.cpp -o $(OBJDIR)SV_CreateCanopenMaster.o $(CFLAGS2) $(LDIR1) \
+		-l:liblely-can.a -l:libley-co.a -l:libley-coapp.a -l:liblely-ev.a -l:liblely-io2.a \
+		-l:liblely-io.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+SV_CreateCanopenSlave.o : SV_CreateCanopenSlave.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) -c SV_CreateCanopenSlave.c -o $(OBJDIR)SV_CreateCanopenSlave.o $(CFLAGS2) $(LDIR1) \
+		-l:liblely-coapp.a -l:libley-io2.a -l:libley-ev.a -l:liblely-co.a -l:liblely-can.a \
+		-l:liblely-util.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a -lrt
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_ModbusTcp.o : SV_ModbusTcp.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_ModbusTcp.c -o $(OBJDIR)SV_ModbusTcp.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_CreateModbus.o : SV_CreateModbus.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_CreateModbus.c -o $(OBJDIR)SV_CreateModbus.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_CreateModbusMaster.o : SV_CreateModbusMaster.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_CreateModbusMaster.c -o $(OBJDIR)SV_CreateModbusMaster.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_CreateModbusSlave.o : SV_CreateModbusSlave.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_CreateModbusSlave.c -o $(OBJDIR)SV_CreateModbusSlave.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_ReverseConnect.o : SV_ReverseConnect.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_ReverseConnect.c -o $(OBJDIR)SV_ReverseConnect.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PasswordHash.o : SV_PasswordHash.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PasswordHash.c -o $(OBJDIR)SV_PasswordHash.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Misc.o : SV_Misc.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Misc.c -o $(OBJDIR)SV_Misc.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Warmcat.o : SV_Warmcat.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Warmcat.c -o $(OBJDIR)SV_Warmcat.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_WebSockets.o : SV_WebSockets.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_WebSockets.c -o $(OBJDIR)SV_WebSockets.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_WebSocketsHttps.o : SV_WebSocketsHttps.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_WebSocketsHttps.c -o $(OBJDIR)SV_WebSocketsHttps.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_WebSocketsWss.o : SV_WebSocketsWss.c SV_WebSocketsWss.h
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_WebSocketsWss.c -o $(OBJDIR)SV_WebSocketsWss.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PublishDataSetWriterBrokerless.o : SV_PublishDataSetWriterBrokerless.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PublishDataSetWriterBrokerless.c -o $(OBJDIR)SV_PublishDataSetWriterBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PublishDataSetWriterWithBroker.o : SV_PublishDataSetWriterWithBroker.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PublishDataSetWriterWithBroker.c -o $(OBJDIR)SV_PublishDataSetWriterWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PublishWriterGroupBrokerless.o : SV_PublishWriterGroupBrokerless.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PublishWriterGroupBrokerless.c -o $(OBJDIR)SV_PublishWriterGroupBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PublishWriterGroupWithBroker.o : SV_PublishWriterGroupWithBroker.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PublishWriterGroupWithBroker.c -o SV_PublishWriterGroupWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PubSubInitialiseBrokerless.o : SV_PubSubInitialiseBrokerless.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PubSubInitialiseBrokerless.c -o SV_PubSubInitialiseBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PubSubInitialiseWithBroker.o : SV_PubSubInitialiseWithBroker.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PubSubInitialiseWithBroker.c -o SV_PubSubInitialiseWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PubSubAddConnectionBrokerless.o : SV_PubSubAddConnectionBrokerless.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PubSubAddConnectionBrokerless.c -o SV_PubSubAddConnectionBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PubSubAddConnectionWithBroker.o : SV_PubSubAddConnectionWithBroker.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PubSubAddConnectionWithBroker.c -o SV_PubSubAddConnectionWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PublishInitialiseField.o : SV_PublishInitialiseField.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PublishInitialiseField.c -o SV_PublishInitialiseField.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_PublishSendDataSet.o : SV_PublishSendDataSet.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_PublishSendDataSet.c -o SV_PublishSendDataSet.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_SubscribeDataSetReader.o : SV_SubscribeDataSetReader.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_SubscribeDataSetReader.c  -o SV_SubscribeDataSetReader.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_SubscribeInitialiseField.o : SV_SubscribeInitialiseField.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_SubscribeInitialiseField.c -o SV_SubscribeInitialiseField.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_SubscribeReceiveDataSet.o : SV_SubscribeReceiveDataSet.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_SubscribeReceiveDataSet.c -o SV_SubscribeReceiveDataSet.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_SubscribeReaderGroup.o : SV_SubscribeReaderGroup.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_SubscribeReaderGroup.c -o SV_SubscribeReaderGroup.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Encrypt.o : SV_Encrypt.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Encrypt.c -o SV_Encrypt.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Callbacks.o : SV_Callbacks.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Callbacks.c -o SV_Callbacks.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Historizing.o : SV_Historizing.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Historizing.c -o SV_Historizing.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Event.o : SV_Event.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Event.c -o SV_Event.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Monitor.o : SV_Monitor.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Monitor.c -o SV_Monitor.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Method.o : SV_Method.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Method.c -o SV_Method.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_CreateNodes.o : SV_CreateNodes.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_CreateNodes.c -o SV_CreateNodes.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_JsonChecker.o : SV_JsonChecker.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_JsonChecker.c -o SV_JsonChecker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Register.o : SV_Register.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Register.c -o SV_Register.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_Configure.o : SV_Configure.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_Configure.c -o SV_Configure.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+SV_main.o : SV_main.c
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_main.c -o SV_main.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+
+%.o: %.c $(DEPS)
+	@echo "\033[0;33m Compiling:\033[0m" $<
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c  $< -o $(USRLOCALOBJ)$@
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+# --------------------------------generate static libraries from object files
+libcj5star.a : cj5star.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libcj5star.a cj5star.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvMisc.a : SV_Misc.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvMisc.a SV_Misc.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvTwinCATAds.a : SV_TwinCATAds.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvTwinCATAds.a SV_TwinCATAds.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCanopenEdsDcf.a : SV_CanopenEdsDcf.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCanopenEdsDcf.a SV_CanopenEdsDcf.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateCanopen.a : SV_CreateCanopen.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateCanopen.a SV_CreateCanopen.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateCanopenMaster.a : SV_CreateCanopenMaster.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateCanopenMaster.a SV_CreateCanopenMaster.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateCanopenSlave.a : SV_CreateCanopenSlave.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateCanopenSlave.a SV_CreateCanopenSlave.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo -e "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvModbusTcp.a : SV_ModbusTcp.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvModbusTcp.a SV_ModbusTcp.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateModbus.a : SV_CreateModbus.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateModbus.a SV_CreateModbus.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateModbusMaster.a : SV_CreateModbusMaster.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateModbusMaster.a SV_CreateModbusMaster.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateModbusSlave.a : SV_CreateModbusSlave.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateModbusSlave.a SV_CreateModbusSlave.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvReverseConnect.a : SV_ReverseConnect.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvReverseConnect.a SV_ReverseConnect.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPasswordHash.a : SV_PasswordHash.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPasswordHash.a SV_PasswordHash.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWarmcat.a : SV_Warmcat.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvWarmcat.a SV_Warmcat.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWebSockets.a : SV_WebSockets.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvWebsockets.a SV_WebSockets.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWebSocketsHttps.a : SV_WebSocketsHttps.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvWebsocketsHttps.a SV_WebSocketsHttps.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWebSocketsWss.a : SV_WebSocketsWss.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvWebsocketsWss.a SV_WebSocketsWss.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishDataSetWriterBrokerless.a : SV_PublishDataSetWriterBrokerless.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPublishDataSetWriterBrokerless.a SV_PublishDataSetWriterBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishDataSetWriterWithBroker.a : SV_PublishDataSetWriterWithBroker.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPublishDataSetWriterWithBroker.a SV_PublishDataSetWriterWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishWriterGroupBrokerless.a : SV_PublishWriterGroupBrokerless.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPublishWriterGroupBrokerless.a SV_PublishWriterGroupBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishWriterGroupWithBroker.a : SV_PublishWriterGroupWithBroker.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPublishWriterGroupWithBroker.a SV_PublishWriterGroupWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubInitialiseBrokerless.a : SV_PubSubInitialiseBrokerless.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPubSubInitialiseBrokerless.a SV_PubSubInitialiseBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubInitialiseWithBroker.a : SV_PubSubInitialiseWithBroker.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPubSubInitialiseWithBroker.a SV_PubSubInitialiseWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubAddConnectionBrokerless.a : SV_PubSubAddConnectionBrokerless.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPubSubAddConnectionBrokerless.a SV_PubSubAddConnectionBrokerless.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubAddConnectionWithBroker.a : SV_PubSubAddConnectionWithBroker.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPubSubAddConnectionWithBroker.a SV_PubSubAddConnectionWithBroker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishInitialiseField.a : SV_PublishInitialiseField.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPublishInitialiseField.a SV_PublishInitialiseField.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishSendDataSet.a : SV_PublishSendDataSet.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvPublishSendDataSet.a SV_PublishSendDataSet.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeDataSetReader.a : SV_SubscribeDataSetReader.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvSubscribeDataSetReader.a  SV_SubscribeDataSetReader.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeInitialiseField.a : SV_SubscribeInitialiseField.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvSubscribeInitialiseField.a SV_SubscribeInitialiseField.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeReceiveDataSet.a : SV_SubscribeReceiveDataSet.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvSubscribeReceiveDataSet.a SV_SubscribeReceiveDataSet.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeReaderGroup.a : SV_SubscribeReaderGroup.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvSubscribeReaderGroup.a SV_SubscribeReaderGroup.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCallbacks.a : SV_Callbacks.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCallbacks.a SV_Callbacks.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvHistorizing.a : SV_Historizing.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvHistorizing.a SV_Historizing.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvEvent.a : SV_Event.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvEvent.a SV_Event.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvMonitor.a : SV_Monitor.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvMonitor.a SV_Monitor.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvMethod.a : SV_Method.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvMethod.a SV_Method.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateNodes.a : SV_CreateNodes.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvCreateNodes.a SV_CreateNodes.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvJsonChecker.a : SV_JsonChecker.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvJsonChecker.a SV_JsonChecker.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvRegister.a : SV_Register.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvRegister.a SV_Register.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvConfigure.a : SV_Configure.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvConfigure.a SV_Configure.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvEncrypt.a : SV_Encrypt.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvEncrypt.a SV_Encrypt.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvLdap.a : SV_Ldap.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvLdap.a SV_Ldap.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvRadius.a : SV_Radius.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvRadius.a SV_Radius.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvmain.a : SV_main.o
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	ar rcs libSvmain.a SV_main.o
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+# --------------------------------generate .so files
+libcj5star.so : cj5star.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC -c cj5star.c $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -o libcj5star.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvMisc.so : SV_Misc.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC -c SV_Misc.c $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -o libSvMisc.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvTwinCATAds.so : SV_TwinCATAds.cpp
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CPP) -shared -fPIC -c SV_TwinCATAds.cpp -o libSvTwinCATAds.so -I/usr/local/src/ADS/AdsLib -I/home/pi/open62541 -L/home/pi/open62541/build/bin -l:libopen62541.a -l:liblibmdnsd.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+# the order of the liblely libraries are important - DO NOT modify
+libSvCanopenEdsDcf.so : SV_CanopenEdsDcf.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC -c SV_CanopenEdsDcf.c -o libSvCanopenEdsDcf.so $(CFLAGS2) $(LDIR1) \
+      		-l:liblely-can.a -l:libley-co.a -l:libley-coapp.a -l:liblely-ev.a -l:liblely-io2.a \
+		-l:liblely-io.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateCanopen.so : SV_CreateCanopen.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC -c SV_CreateCanopen.c -o libSvCreateCanopen.so $(CFLAGS2) $(LDIR1) \
+	-l:liblely-can.a -l:libley-co.a -l:libley-coapp.a -l:liblely-ev.a -l:liblely-io2.a \
+		-l:liblely-io.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateCanopenMaster.so : SV_CreateCanopenMaster.cpp
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CPP) -shared -fPIC -c SV_CreateCanopenMaster.cpp -o libSvCreateCanopenMaster.so $(CFLAGS2) $(LDIR1) \
+		-l:liblely-can.a -l:libley-co.a -l:libley-coapp.a -l:liblely-ev.a -l:liblely-io2.a \
+		-l:liblely-io.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvModbusTcp.so : SV_ModbusTcp.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_ModbusTcp.c  -o libSvModbusTcp.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateModbusMaster.so : SV_CreateModbusMaster.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_CreateModbusMaster.c -o libSvCreateModbusMaster.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateModbusSlave.so : SV_CreateModbusSlave.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -trigraphs -c SV_CreateModbusSlave.c -o libSvCreateModbusSlave.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvReverseConnect.so : SV_ReverseConnect.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6)-c SV_ReverseConnect.c -o libSvReverseConnect.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPasswordHash.so : SV_PasswordHash.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PasswordHash.c -o libSvPasswordHash.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWarmcat.so : SV_Warmcat.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Warmcat.c -o libSvWarmcat.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWebSockets.so : SV_WebSockets.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_WebSockets.c -o libSvWebSockets.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWebSocketsHttps.so : SV_WebSocketsHttps.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_WebSocketsHttps.c -o libSvWebSocketsHttps.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvWebSocketsWss.so : SV_WebSocketsWss.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_WebSocketsWss.c -o libSvWebSocketsWss.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#       @echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishDataSetWriterBrokerless.so : SV_PublishDataSetWriterBrokerless.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PublishDataSetWriterBrokerless.c -o libSvPublishDataSetWriterBrokerless.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishDataSetWriterWithBroker.so : SV_PublishDataSetWriterWithBroker.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PublishDataSetWriterWithBroker.c -o libSvPublishDataSetWriterWithBroker.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishWriterGroupBrokerless.so : SV_PublishWriterGroupBrokerless.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PublishWriterGroupBrokerless.c -o libSvPublishWriterGroupBrokerless.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishWriterGroupWithBroker.so : SV_PublishWriterGroupWithBroker.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PublishWriterGroupWithBroker.c -o libSvPublishWriterGroupWithBroker.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubInitialiseBrokerless.so : SV_PubSubInitialiseBrokerless.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PubSubInitialiseBrokerless.c -o libSvPubSubInitialiseBrokerless.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubInitialiseWithBroker.so : SV_PubSubInitialiseWithBroker.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PubSubInitialiseWithBroker.c -o libSvPubSubInitialiseWithBroker.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubAddConnectionBrokerless.so : SV_PubSubAddConnectionBrokerless.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PubSubAddConnectionBrokerless.c -o libSvPubSubAddConnectionBrokerless.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPubSubAddConnectionWithBroker.so : SV_PubSubAddConnectionWithBroker.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PubSubAddConnectionWithBroker.c -o libSvPubSubAddConnectionWithBroker.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishInitialiseField.so : SV_PublishInitialiseField.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PublishInitialiseField.c -o libSvPublishInitialiseField.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvPublishSendDataSet.so : SV_PublishSendDataSet.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_PublishSendDataSet.c -o libSvPublishSendDataSet.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeDataSetReader.so : SV_SubscribeDataSetReader.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_SubscribeDataSetReader.c -o libSvSubscribeDataSetReader.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeInitialiseField.so : SV_SubscribeInitialiseField.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_SubscribeInitialiseField.c -o libSvSubscribeInitialiseField.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeReceiveDataSet.so : SV_SubscribeReceiveDataSet.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_SubscribeReceiveDataSet.c -o libSvSubscribeReceiveDataSet.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvSubscribeReaderGroup.so : SV_SubscribeReaderGroup.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_SubscribeReaderGroup.c -o libSvSubscribeReaderGroup.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvHistorizing.so : SV_Historizing.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Historizing.c -o libSvHistorizing.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvEvent.so : SV_Event.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Event.c -o libSvEvent.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvMonitor.so : SV_Monitor.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Monitor.c -o libSvMonitor.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvMethod.so : SV_Method.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Method.c -o libSvMethod.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateNodes.so : SV_CreateNodes.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_CreateNodes.c -o libSvCreateNodes.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvJsonChecker.so : SV_JsonChecker.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_JsonChecker.c -o libSvJsonChecker.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvRegister.so : SV_Register.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Register.c -o libSvRegister.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvConfigure.so : SV_Configure.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Configure.c -o libSvConfigure.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvEncrypt.so : SV_Encrypt.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Encrypt.c -o libSvEncrypt.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCallbacks.so : SV_Callbacks.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6) -c SV_Callbacks.c -o libSvCallbacks.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvCreateModbus.so : SV_CreateModbus.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6)-c SV_CreateModbus.c  -o libSvCreateModbus.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvProfibus.so : SV_Profibus.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS2) $(CFLAGS5) $(LDIR6)-c SV_Profibus.c  -o libSvProfibus.so -l:libosal.a -l:libpnet.a
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvLdap.so : SV_Ldap.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -Wl,-soname,libSvLdap.so -fPIC $(CFLAGS4) $(LDIR7) -c SV_Ldap.c -o libSvLdap.so -l:libldap.la $(LDIR8) -l:libliber.la
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvRadius.so : SV_Radius.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -Wl,-soname,libSvRadius.so -fPIC  $(CFLAGS6) $(LDIR9)-c SV_Radius.c -o libSvRadius.so -l:libfreeradius-client.la
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+libSvmain.so : SV_main.c
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CPP) -shared -fPIC $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c SV_main.c -o libSvmain.so
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+%.so: %.c $(DEPS)
+	@echo "\033[0;33m Generating $@ from:\033[0m" $<
+	$(CC) -shared -fPIC $(CFLAGS1) $(CFLAGS2) $(CFLAGS3) -c  $< -o $(USRLOCALLIB)$@
+	@echo "\033[0;32m [OK] $@ \033[0m"
+#	@echo "\033[0;32m [OK] \033[0m       \033[0;33m Compiling:\033[0m" $<
+
+# Do not change the order the libley-XXX.a libraries
+myNewServer: $(OBJ)
+	@echo "\033[0;33m Linking executable file : $@ \033[0m"
+	$(CPP) $(LDIR1) $(LDIR2) $(LDIR3) $(LDIR4) $(LDIR5) $(LDIR6) $(LDIR7) $(LDIR8) $(LDIR9) -o $@ $^ $(LIBS) $(LDFLAGS) $(LDIR1) -l:libldap.a -l:liblber.a -l:libfreeradius-client.a \
+	-l:liblely-coapp.a -l:liblely-io2.a -l:liblely-ev.a -l:liblely-co.a -l:liblely-can.a -l:liblely-util.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a
+	@echo "\033[0;32m [OK] \033[0m"
+#\033[0;33m Compiling:\033[0m" $<
+
+myNewServerSO: $(SO)
+	@echo "\033[0;33m Linking executable file : $@ \033[0m"
+	$(CPP) $(LDIR1) $(LDIR2) $(LDIR3) $(LDIR4) $(LDIR5) $(LDIR6) $(LDIR7) $(LDIR8) $(LDIR9) -o $@ $^ $(LIBS) $(LDFLAGS) $(LDIR1) -l:libldap.a -l:liblber.a -l:libfreeradius-client.a \
+	-l:liblely-coapp.a -l:liblely-io2.a -l:liblely-ev.a -l:liblely-co.a -l:liblely-can.a -l:liblely-util.a -l:liblely-libc.a -l:liblely-tap.a -l:liblely-util.a
+	@echo "\033[0;32m [OK] \033[0m"
+#       \033[0;33m Compiling:\033[0m" $<
+
+
+# $(HOME)/open62541/build/src_generated => open62541/config.h is located here
+# $(HOME)/open62541/plugins/include/ => open62541/client_config_default.h is located here

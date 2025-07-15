@@ -1,0 +1,103 @@
+"buildInfo" : {
+  "productUri" = "http://svr.virtualskies.com.sg"
+  "manufacturerName" = "Virtual Skies"
+  "productName" = "Virtual Skies OPC UA Server"
+  "softwareVersion" = "1"
+  "buildNumber" = "0.0.1"
+  "buildDate" = "2025-09-04"
+},
+applicationDescription : {
+  "applicationUri" = "urn:svr.virtualskies.com.sg"
+  "productUri" = "http://svr.virtualskies.com.sg"
+  "applicationName" = "OPC UA Server based on open62541"
+  "applicationType" = "UA_APPLICATIONTYPE_SERVER" 
+  "gatewayServerUri" = ""
+  "discoveryProfileUri" = "" 
+  "discoveryUrls" = {"192.168.1.44"}
+},
+"shutdownDelay" = 5000
+"verifyRequestTimestamp" = "UA_RULEHANDLING_ACCEPT"
+"allowEmptyVariables" = "UA_RULEHANDLING_ACCEPT"
+"serverUrls" = {"192.168.1.109:4840","192.168.1.123:4840"}
+"tcpEnabled" = "TRUE"
+"tcp" : {
+  "tcpBufSize" = 32767
+  "tcpMaxMsgSize" = 32767
+  "tcpMaxChunks" = 1000
+},
+"securityPolicyNoneDiscoveryOnly" = "TRUE"
+"modellingRulesOnInstances" = "TRUE"
+"maxSecureChannels" = 100
+"maxSecurityTokenLifetime" = 600000
+"maxSessions" = 100
+"maxSessionTimeout" = 3600000
+"maxNodesPerRead" = 500
+"maxNodesPerWrite" = 500
+"maxNodesPerMethodCall" = 500
+"maxNodesPerBrowse" = 500
+"maxNodesPerRegisterNodes" = 50
+"maxNodesPerTranslateBrowsePathsToNodeIds" = 20
+"maxNodesPerNodeManagement" = 100
+"maxMonitoredItemsPerCall" = 1000
+"maxReferencesPerNode" = 10
+"reverseReconnectInterval" = 15000
+"asyncOperationTimeout" = 120000
+"maxAsyncOperationQueueSize" = 0
+"discoveryCleanupTimeout" = 3600
+"mdnsEnabled" = "TRUE"
+"mdns" : {
+  "mdnsServerName" = "OPC UA Server"
+  "serverCapabilities" = {"DA", "HD", "AC", "HE", "GDS", "RCP", "PUB"}
+  "mdnsInterfaceIP" = "0.0.0.0"
+},
+"mdnsIpAddressList" = {}
+"subscriptionsEnabled" = "TRUE"
+"subscriptions" : {
+  "maxSubscriptions" = 10000
+  "maxSubscriptionsPerSession" = 1000
+  "publishingIntervalLimits" = {100, 360000000.0}
+  "lifeTimeCountLimits" = {3, 15000}
+  "keepAliveCountLimits" = {1,100}
+  "maxNotificationsPerPublish" = 1000
+  "enableRetransmissionQueue" = "TRUE"
+  "maxRetransmissionQueueSize" = 0
+  "maxEventsPerNode" = 0
+  "maxMonitoredItems" = 10000
+  "maxMonitoredItemsPerSubscription" = 1000
+  "samplingIntervalLimits" = {50, 310953600000}
+  "queueSizeLimits" = {1,100}
+  "maxPublishReqPerSession" = 500
+},
+"historizingEnabled" = "TRUE"
+"historizing" : {
+  "accessHistoryDataCapability" = "TRUE"
+  "maxReturnDataValues" = 0
+  "accessHistoryEventsCapability" = "TRUE"
+  "maxReturnEventValues" = 0
+  "insertDataCapability" = "FALSE"
+  "insertEventCapability" = "FALSE"
+  "insertAnnotationsCapability" = "TRUE"
+  "replaceDataCapability" = "FALSE"
+  "replaceEventCapability" = "FALSE"
+  "updateDataCapability" = "FALSE"
+  "updateEventCapability" = "FALSE"
+  "deleteRawCapability" = "FALSE"
+  "deleteEventCapability" = "FALSE"
+  "deleteAtTimeDataCapability" = "FALSE"
+},
+"pubsubEnabled" = "TRUE"
+"pubsub" : {
+  "enableDeltaFrames" = "TRUE"
+  "enableInformationModelMethods" = "TRUE"
+},
+"securityPolicies" : {
+  "certificate" = "/usr/local/ssl/certs/Svrcert109.pem"
+  "privateKey" = "/usr/local/ssl/private/Svrprivate-key109.pem"
+  "policy" = {"basic128Rsa15uri","basic256uri","basic256Sha256uri","aes128sha256rsaoaepuri","aes256sha256rsapssuri"}
+},
+"secureChannelPKI" =
+"sessionPKI" : {
+  "trustListFolder" = "/usr/local/ssl/trustlist/"
+  "issuerListFolder" = "/usr/local/ssl/isserlist/"
+  "revocationListFolder" = "/usr/local/ssl/revocationlist/"
+}
