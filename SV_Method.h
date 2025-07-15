@@ -366,5 +366,3 @@ UA_StatusCode ClearAlarmLEDMethodCallback(UA_Server *server,
                          const UA_NodeId *objectId, void *objectContext,
                          size_t inputSize, const UA_Variant *input,
                          size_t outputSize, UA_Variant *output);
-
-

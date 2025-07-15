@@ -1,10 +1,22 @@
-void pubSubInitialise(UA_Server *, char *, int, char *);
-void pubSubAddConnection(UA_Server *, UA_String *, UA_NetworkAddressUrlDataType *);
+void pubSubInitialiseWithBroker(UA_Server *, char *, int, char *);
+void pubSubInitialiseBrokerless(UA_Server *, char *);
+void pubSubAddConnection(UA_Server *, UA_String *, UA_NetworkAddressUrlDataType *, char *, char *);
 
 void pubSendDataSet(UA_Server *);
+void pubSubInitialiseWithBroker(UA_Server *, char *, int, char *);
+void pubSubInitialiseBrokerless(UA_Server *, char *);
+
 void pubInitialiseField(UA_Server *);
-void pubWriterGroup(UA_Server *);
-void pubDataSetWriter(UA_Server *);
+void pubWriterGroupBroker(UA_Server *);
+void pubWriterGroupBrokerless(UA_Server *);
+void pubDataSetWriterBroker(UA_Server *);
+void pubDataSetWriterBrokerless(UA_Server *);
+void pubWriterGroupWithBroker(UA_Server *);
+void pubWriterGroupBrokerless(UA_Server *);
+void pubDataSetWriterWithBroker(UA_Server *);
+void pubDataSetWriterBrokerless(UA_Server *);
+void pubSubAddConnectionWithBroker(UA_Server *, UA_String *, UA_NetworkAddressUrlDataType *, char *, char *);
+void pubSubAddConnectionBrokerless(UA_Server *, UA_String *, UA_NetworkAddressUrlDataType *);
 
 UA_StatusCode subReaderGroup(UA_Server *);
 UA_StatusCode subDataSetReader(UA_Server *);
@@ -12,7 +24,7 @@ UA_StatusCode subInitialiseField(UA_Server *, UA_NodeId);
 void subReceiveDataSet(UA_DataSetMetaDataType *);
 
 int print_debug_UDP(UA_PubSubConnectionConfig *, UA_NetworkAddressUrlDataType *);
-int print_debug_MQTT(UA_PubSubConnectionConfig *, UA_NetworkAddressUrlDataType *);
+void print_debug_MQTT(UA_PubSubConnectionConfig *, UA_NetworkAddressUrlDataType *);
 
 #define UA_ENABLE_PUBSUB_INFORMATIONMODEL
 
@@ -30,16 +42,17 @@ int print_debug_MQTT(UA_PubSubConnectionConfig *, UA_NetworkAddressUrlDataType *
 #define CONNECTION_NAME_UADP            "ttl"   // ""UADP Publisher Connection"
 #define TRANSPORT_PROFILE_URI_UDP       "http://opcfoundation.org/UA-Profile/Transport/pubsub-udp-uadp"
 #define TRANSPORT_PROFILE_URI_ETH       "http://opcfoundation.org/UA-Profile/Transport/pubsub-eth-uadp"
-#define TRANSPORT_PROFILE_URI_UADP      "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt-uadp"
-#define TRANSPORT_PROFILE_URI_JSON      "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt-json"
-#define PUBLISH_INTERVAL_UDP            9000
+//#define TRANSPORT_PROFILE_URI_UADP      "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt-uadp"
+//#define TRANSPORT_PROFILE_URI_JSON      "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt-json"
+#define PUBLISH_INTERVAL_UDP_ETH            9000
 
 #define PUBLISHERID                     2234    // used in addDataSetReader() and addPubSubConnection()
 #define WRITERGROUPID                   100     // used in addDataSetReader() and addWriterGroup()
 #define DATASETWRITERID                 2234    // used in addDataSetReader() and addDataSetWriter()
 
 #ifdef UA_ENABLE_PUBSUB_MQTT
- #define TRANSPORT_PROFILE_URI_MQTT     "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt"
+ #define TRANSPORT_PROFILE_URI_MQTT_UADP     "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt-uadp"
+ #define TRANSPORT_PROFILE_URI_MQTT_JSON     "http://opcfoundation.org/UA-Profile/Transport/pubsub-mqtt-json"
  #define TRANSPORT_PROFILE_URI_AMQP     "http://opcfoundation.org/UA-Profile/Transport/pubsub-amqp"
  #define PUBLISH_INTERVAL_MQTT          9000
  #define PUBLISH_INTERVAL_AMQP          9000
@@ -47,7 +60,7 @@ int print_debug_MQTT(UA_PubSubConnectionConfig *, UA_NetworkAddressUrlDataType *
  #define MESSAGE_TIMEOUT_AMQP           12000
  #define CONNECTIONOPTION_NAME_MQTT     "mqttClientId"
  #define CONNECTIONOPTION_NAME_AMQP     "amqpClientId"
- #define CLIENT_ID_MQTT                 "OPCServer-33-Mqtt" // during execution, mqtt-11 will show : New client connected from 192.168.1.33 as OPCServer-33-Mqtt (c0, k400, u'jackybek')
+ #define CLIENT_ID_MQTT                 "OPCServer-109-Mqtt" // during execution, mqtt-11 will show : New client connected from 192.168.1.33 as OPCServer-33-Mqtt (c0, k400, u'jackybek')
  #define CLIENT_ID_AMQP                 "TESTCLIENTPUBUSBAMQP"
  #define PUBLISHER_METADATAUPDATETIME_MQTT      0
  #define PUBLISHER_METADATAUPDATETIME_AMQP      0

@@ -1,0 +1,1697 @@
+[FileInfo]
+CreatedBy=Rene Blume
+ModifiedBy=Philipp Hilpert
+Description=Object dictionary for PRO COM CAN OPEN
+CreationTime=09:00AM
+CreationDate=05-12-2020
+ModificationTime=09:00AM
+ModificationDate=05-12-2020
+FileName=pro_com_can_open__pro_top.eds
+FileVersion=2
+FileRevision=0
+EDSVersion=4.0
+
+[DeviceInfo]
+VendorName=Weidmueller Interface GmbH & Co. KG
+VendorNumber=0x230
+ProductName=PRO COM CAN OPEN
+ProductNumber=246732
+RevisionNumber=0x00000101
+OrderCode=2467320000
+BaudRate_10=1
+BaudRate_20=1
+BaudRate_50=1
+BaudRate_125=1
+BaudRate_250=1
+BaudRate_500=1
+BaudRate_800=1
+BaudRate_1000=1
+SimpleBootUpMaster=0
+SimpleBootUpSlave=1
+Granularity=0
+DynamicChannelsSupported=0
+CompactPDO=0
+GroupMessaging=0
+NrOfRXPDO=2
+NrOfTXPDO=4
+LSS_Supported=0
+
+[DummyUsage]
+Dummy0001=1
+Dummy0002=1
+Dummy0003=1
+Dummy0004=1
+Dummy0005=1
+Dummy0006=1
+Dummy0007=1
+
+[Comments]
+Lines=0
+
+[MandatoryObjects]
+SupportedObjects=3
+1=0x1000
+2=0x1001
+3=0x1018
+
+[1000]
+ParameterName=Device Type
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0x324001C5
+PDOMapping=0
+
+[1001]
+ParameterName=Error Register
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1018]
+ParameterName=Identity Object
+ObjectType=0x9
+SubNumber=5
+
+[1018sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=4
+PDOMapping=0
+
+[1018sub1]
+ParameterName=Vendor ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0x230
+PDOMapping=0
+
+[1018sub2]
+ParameterName=Product Code
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=246732
+PDOMapping=0
+
+[1018sub3]
+ParameterName=Revision number
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0x00000101
+PDOMapping=0
+
+[1018sub4]
+ParameterName=Serial number
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[OptionalObjects]
+SupportedObjects=36
+1=0x1003
+2=0x1005
+3=0x1008
+4=0x1009
+5=0x100A
+6=0x1014
+7=0x1015
+8=0x1017
+9=0x1019
+10=0x1400
+11=0x1401
+12=0x1600
+13=0x1601
+14=0x1800
+15=0x1801
+16=0x1802
+17=0x1803
+18=0x1A00
+19=0x1A01
+20=0x1A02
+21=0x1A03
+22=0x6000
+23=0x6011
+24=0x6012
+25=0x6020
+26=0x6021
+27=0x6022
+28=0x6030
+29=0x6112
+30=0x6200
+31=0x6201
+32=0x6202
+33=0x6203
+34=0x6204
+35=0x6205
+36=0x6214
+
+[1003]
+ParameterName=Predefined Error Field
+ObjectType=0x8
+SubNumber=17
+
+[1003sub0]
+ParameterName=Number of Errors
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1003sub1]
+ParameterName=Standard Error Field
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub2]
+ParameterName=Standard Error Field 2
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub3]
+ParameterName=Standard Error Field 3
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub4]
+ParameterName=Standard Error Field 4
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub5]
+ParameterName=Standard Error Field 5
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub6]
+ParameterName=Standard Error Field 6
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub7]
+ParameterName=Standard Error Field 7
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub8]
+ParameterName=Standard Error Field 8
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub9]
+ParameterName=Standard Error Field 9
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003subA]
+ParameterName=Standard Error Field 10
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003subB]
+ParameterName=Standard Error Field 11
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003subC]
+ParameterName=Standard Error Field 12
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003subD]
+ParameterName=Standard Error Field 13
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003subE]
+ParameterName=Standard Error Field 14
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003subF]
+ParameterName=Standard Error Field 15
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1003sub10]
+ParameterName=Standard Error Field 16
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1005]
+ParameterName=COB ID SYNC
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=0x80000080
+PDOMapping=0
+LowLimit=0x00000001
+
+[1008]
+ParameterName=Manufacturer Device Name
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[1009]
+ParameterName=Manufacturer Hardware Version
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[100A]
+ParameterName=Manufacturer Software Version
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[1014]
+ParameterName=COB ID EMCY
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x80
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1015]
+ParameterName=Inhibit Time Emergency
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0x0
+PDOMapping=0
+
+[1017]
+ParameterName=Producer Heartbeat Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1019]
+ParameterName=Synchronous Counter Overflow Value
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1400]
+ParameterName=Receive PDO Communication Parameter 1
+ObjectType=0x9
+SubNumber=3
+
+[1400sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+LowLimit=0x02
+HighLimit=0x02
+
+[1400sub1]
+ParameterName=COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x200
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1400sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1401]
+ParameterName=Receive PDO Communication Parameter 2
+ObjectType=0x9
+SubNumber=3
+
+[1401sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+LowLimit=0x02
+HighLimit=0x02
+
+[1401sub1]
+ParameterName=COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x300
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1401sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1600]
+ParameterName=Receive PDO Mapping Parameter 1
+ObjectType=0x9
+SubNumber=2
+
+[1600sub0]
+ParameterName=Number of Mapped Application Objects in PDO
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+LowLimit=0
+HighLimit=8
+
+[1600sub1]
+ParameterName=PDO Mapping Entry
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x62000208
+PDOMapping=0
+
+[1601]
+ParameterName=Receive PDO Mapping Parameter 2
+ObjectType=0x9
+SubNumber=2
+
+[1601sub0]
+ParameterName=Number of Mapped Application Objects in PDO
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+LowLimit=0
+HighLimit=8
+
+[1601sub1]
+ParameterName=PDO Mapping Entry
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x62050120
+PDOMapping=0
+
+[1800]
+ParameterName=Transmit PDO Communication Parameter 1
+ObjectType=0x9
+SubNumber=6
+
+[1800sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+LowLimit=0x02
+HighLimit=0x06
+
+[1800sub1]
+ParameterName=COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x180
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1800sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1800sub3]
+ParameterName=Inhibit Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0x0000
+PDOMapping=0
+
+[1800sub5]
+ParameterName=Event Timer
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1800sub6]
+ParameterName=SYNC start value
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1801]
+ParameterName=Transmit PDO Communication Parameter 2
+ObjectType=0x9
+SubNumber=6
+
+[1801sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+LowLimit=0x02
+HighLimit=0x06
+
+[1801sub1]
+ParameterName=COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x280
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1801sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1801sub3]
+ParameterName=Inhibit Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0x0000
+PDOMapping=0
+
+[1801sub5]
+ParameterName=Event Timer
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1801sub6]
+ParameterName=SYNC start value
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1802]
+ParameterName=Transmit PDO Communication Parameter 3
+ObjectType=0x9
+SubNumber=6
+
+[1802sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+LowLimit=0x02
+HighLimit=0x06
+
+[1802sub1]
+ParameterName=COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x380
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1802sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1802sub3]
+ParameterName=Inhibit Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0x0000
+PDOMapping=0
+
+[1802sub5]
+ParameterName=Event Timer
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1802sub6]
+ParameterName=SYNC start value
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1803]
+ParameterName=Transmit PDO Communication Parameter 4
+ObjectType=0x9
+SubNumber=6
+
+[1803sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+LowLimit=0x02
+HighLimit=0x06
+
+[1803sub1]
+ParameterName=COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x480
+PDOMapping=0
+LowLimit=0x00000001
+HighLimit=0xFFFFFFFF
+
+[1803sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[1803sub3]
+ParameterName=Inhibit Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0x0000
+PDOMapping=0
+
+[1803sub5]
+ParameterName=Event Timer
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1803sub6]
+ParameterName=SYNC start value
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1A00]
+ParameterName=Transmit PDO Mapping Parameter 1
+ObjectType=0x9
+SubNumber=2
+
+[1A00sub0]
+ParameterName=Number of Mapped Application Objects in PDO
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+LowLimit=0
+HighLimit=8
+
+[1A00sub1]
+ParameterName=PDO Mapping Entry
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x60110120
+PDOMapping=0
+
+[1A01]
+ParameterName=Transmit PDO Mapping Parameter 2
+ObjectType=0x9
+SubNumber=2
+
+[1A01sub0]
+ParameterName=Number of Mapped Application Objects in PDO
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+LowLimit=0
+HighLimit=8
+
+[1A01sub1]
+ParameterName=PDO Mapping Entry
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x62040120
+PDOMapping=0
+
+[1A02]
+ParameterName=Transmit PDO Mapping Parameter 3
+ObjectType=0x9
+SubNumber=2
+
+[1A02sub0]
+ParameterName=Number of Mapped Application Objects in PDO
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+LowLimit=0
+HighLimit=8
+
+[1A02sub1]
+ParameterName=PDO Mapping Entry
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x62040220
+PDOMapping=0
+
+[1A03]
+ParameterName=Transmit PDO Mapping Parameter 4
+ObjectType=0x9
+SubNumber=2
+
+[1A03sub0]
+ParameterName=Number of Mapped Application Objects in PDO
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+LowLimit=0
+HighLimit=8
+
+[1A03sub1]
+ParameterName=PDO Mapping Entry
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x62040320
+PDOMapping=0
+
+[6000]
+ParameterName=SI unit and prefix
+ObjectType=0x8
+SubNumber=5
+
+[6000sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=5
+PDOMapping=0
+
+[6000sub1]
+ParameterName=Voltage
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x00fe2600
+PDOMapping=0
+
+[6000sub2]
+ParameterName=Current
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x00fe0400
+PDOMapping=0
+
+[6000sub3]
+ParameterName=Power
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x00fe2400
+PDOMapping=0
+
+[6000sub5]
+ParameterName=Temperature
+ObjectType=0x7
+DataType=0x0007
+AccessType=const
+DefaultValue=0x00fe2d00
+PDOMapping=0
+
+[6011]
+ParameterName=Device Status
+ObjectType=0x8
+SubNumber=3
+
+[6011sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[6011sub1]
+ParameterName=Condition
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=1
+
+[6011sub2]
+ParameterName=Logic
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6012]
+ParameterName=Device Failure Status
+ObjectType=0x8
+SubNumber=3
+
+[6012sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[6012sub1]
+ParameterName=Condition
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[6012sub2]
+ParameterName=Logic
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6020]
+ParameterName=Temperature Actual Value
+ObjectType=0x7
+DataType=0x0003
+AccessType=ro
+PDOMapping=0
+
+[6021]
+ParameterName=Temperature Threshold 1
+ObjectType=0x7
+DataType=0x0003
+AccessType=const
+PDOMapping=0
+
+[6022]
+ParameterName=Temperature Threshold 2
+ObjectType=0x7
+DataType=0x0003
+AccessType=const
+PDOMapping=0
+
+[6030]
+ParameterName=Operating Hours
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[6112]
+ParameterName=Input Failure Status
+ObjectType=0x8
+SubNumber=3
+
+[6112sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[6112sub1]
+ParameterName=Condition
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[6112sub2]
+ParameterName=Logic
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6200]
+ParameterName=Output 1 Commands
+ObjectType=0x8
+SubNumber=4
+
+[6200sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=5
+PDOMapping=0
+
+[6200sub1]
+ParameterName=Operation mode
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[6200sub2]
+ParameterName=On/off
+ObjectType=0x7
+DataType=0x0005
+AccessType=wo
+DefaultValue=255
+PDOMapping=1
+
+[6200sub5]
+ParameterName=Self-starting
+ObjectType=0x7
+DataType=0x0005
+AccessType=wo
+PDOMapping=0
+
+[6201]
+ParameterName=Output 1 Status
+ObjectType=0x8
+SubNumber=3
+
+[6201sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[6201sub1]
+ParameterName=Condition
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[6201sub2]
+ParameterName=Logic
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6202]
+ParameterName=Output 1 Failure Status
+ObjectType=0x8
+SubNumber=3
+
+[6202sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[6202sub1]
+ParameterName=Condition
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[6202sub2]
+ParameterName=Logic
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6203]
+ParameterName=Output 1 Ranges
+ObjectType=0x9
+SubNumber=7
+
+[6203sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+
+[6203sub1]
+ParameterName=Voltage Max
+ObjectType=0x7
+DataType=0x0004
+AccessType=const
+PDOMapping=0
+
+[6203sub2]
+ParameterName=Voltage Min
+ObjectType=0x7
+DataType=0x0004
+AccessType=const
+PDOMapping=0
+
+[6203sub3]
+ParameterName=Current Max
+ObjectType=0x7
+DataType=0x0004
+AccessType=const
+PDOMapping=0
+
+[6203sub4]
+ParameterName=Current Min
+ObjectType=0x7
+DataType=0x0004
+AccessType=const
+PDOMapping=0
+
+[6203sub5]
+ParameterName=Power Max
+ObjectType=0x7
+DataType=0x0004
+AccessType=const
+PDOMapping=0
+
+[6203sub6]
+ParameterName=Power Min
+ObjectType=0x7
+DataType=0x0004
+AccessType=const
+PDOMapping=0
+
+[6204]
+ParameterName=Output 1 Actual values
+ObjectType=0x9
+SubNumber=4
+
+[6204sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=3
+PDOMapping=0
+
+[6204sub1]
+ParameterName=Voltage
+ObjectType=0x7
+DataType=0x0004
+AccessType=ro
+PDOMapping=1
+
+[6204sub2]
+ParameterName=Current
+ObjectType=0x7
+DataType=0x0004
+AccessType=ro
+PDOMapping=1
+
+[6204sub3]
+ParameterName=Power
+ObjectType=0x7
+DataType=0x0004
+AccessType=ro
+PDOMapping=1
+
+[6205]
+ParameterName=Output 1 Set Values
+ObjectType=0x9
+SubNumber=2
+
+[6205sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+
+[6205sub1]
+ParameterName=Voltage
+ObjectType=0x7
+DataType=0x0004
+AccessType=wo
+PDOMapping=1
+
+[6214]
+ParameterName=Output 2 Actual Values
+ObjectType=0x9
+SubNumber=2
+
+[6214sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+
+[6214sub1]
+ParameterName=Voltage
+ObjectType=0x7
+DataType=0x0004
+AccessType=ro
+PDOMapping=0
+
+[ManufacturerObjects]
+SupportedObjects=31
+1=0x2001
+2=0x2002
+3=0x2003
+4=0x2010
+5=0x2011
+6=0x2022
+7=0x2023
+8=0x2024
+9=0x2025
+10=0x2030
+11=0x2031
+12=0x2032
+13=0x2033
+14=0x2034
+15=0x2035
+16=0x2038
+17=0x2039
+18=0x2040
+19=0x2041
+20=0x2042
+21=0x2044
+22=0x2045
+23=0x2046
+24=0x2047
+25=0x2048
+26=0x2049
+27=0x2050
+28=0x2051
+29=0x2052
+30=0x2054
+31=0x2057
+
+[2001]
+ParameterName=PRO COM Device Serial Nr
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2002]
+ParameterName=PRO COM Device Order Nr
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2003]
+ParameterName=PRO COM Device Version Nr
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2010]
+ParameterName=PRO COM Device Tag
+ObjectType=0x7
+DataType=0x000a
+AccessType=rw
+PDOMapping=0
+
+[2011]
+ParameterName=PROtop Device State
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[2022]
+ParameterName=PRO COM Device Temperature
+ObjectType=0x7
+DataType=0x0003
+AccessType=ro
+PDOMapping=0
+
+[2023]
+ParameterName=PRO COM Operating Hours Counter
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[2024]
+ParameterName=PRO COM Power Down Cycle Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2025]
+ParameterName=PRO COM LED Status
+ObjectType=0x9
+SubNumber=3
+
+[2025sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[2025sub1]
+ParameterName=PRO COM LED ON/Fail Status Read
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[2025sub2]
+ParameterName=PRO COM LED CANopen Status Read
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2030]
+ParameterName=PROtop Device Tag
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[2031]
+ParameterName=PROtop Device HW Version
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2032]
+ParameterName=PROtop Device SW Version
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2033]
+ParameterName=PROtop Device Type
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2034]
+ParameterName=PROtop Device Order Nr
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2035]
+ParameterName=PROtop Device Serial Nr
+ObjectType=0x7
+DataType=0x0009
+AccessType=const
+PDOMapping=0
+
+[2038]
+ParameterName=Restart and Set Factory Default Command
+ObjectType=0x8
+SubNumber=5
+
+[2038sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=4
+PDOMapping=0
+
+[2038sub1]
+ParameterName=PRO COM Restart
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
+
+[2038sub2]
+ParameterName=Combi Restart
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
+
+[2038sub3]
+ParameterName=PROtop Restart
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
+
+[2038sub4]
+ParameterName=PROtop Set Factory Default Command
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
+
+[2039]
+ParameterName=PROtop Configuration Select
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2040]
+ParameterName=PROtop Power Down Cycle Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2041]
+ParameterName=PROtop Uout > Uoutmax Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2042]
+ParameterName=PROtop Voltage Peak Counter
+ObjectType=0x8
+SubNumber=2
+
+[2042sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=1
+PDOMapping=0
+
+[2042sub1]
+ParameterName=PROtop Overvoltage Peak Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2044]
+ParameterName=PROtop Short Circuit Switch Off Time
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2045]
+ParameterName=PROtop DC Thresholds
+ObjectType=0x8
+SubNumber=3
+
+[2045sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[2045sub1]
+ParameterName=PROtop DC Lower Threshold
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=15
+PDOMapping=0
+LowLimit=0
+HighLimit=25
+
+[2045sub2]
+ParameterName=PROtop DC Upper Threshold
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=10
+PDOMapping=0
+LowLimit=0
+HighLimit=25
+
+[2046]
+ParameterName=PROtop Load Prewarning Value
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+PDOMapping=0
+
+[2047]
+ParameterName=PROtop Reverse Voltage Output Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2048]
+ParameterName=PRO COM Temperature Status
+ObjectType=0x8
+SubNumber=3
+
+[2048sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=2
+PDOMapping=0
+
+[2048sub1]
+ParameterName=Condition
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[2048sub2]
+ParameterName=Logic
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[2049]
+ParameterName=Temperature Event Counter
+ObjectType=0x8
+SubNumber=7
+
+[2049sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+
+[2049sub1]
+ParameterName=PROtop Temperature > 100°C Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2049sub2]
+ParameterName=PROtop Temperature > 110°C Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2049sub3]
+ParameterName=PRO COM Temperature > 60°C Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2049sub4]
+ParameterName=PRO COM Temperature > 70°C Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2049sub5]
+ParameterName=PRO COM Temperature < -25°C Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2049sub6]
+ParameterName=PRO COM Temperature < -40°C Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2050]
+ParameterName=PROtop Output Event Counter
+ObjectType=0x8
+SubNumber=5
+
+[2050sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=6
+PDOMapping=0
+
+[2050sub1]
+ParameterName=PROtop DCL Active Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2050sub2]
+ParameterName=PROtop Short Circuit Active Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2050sub3]
+ParameterName=PROtop DC Not OK Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2050sub6]
+ParameterName=PROtop Overload 150% Active Counter
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=0
+
+[2051]
+ParameterName=PROtop LED Status and Command
+ObjectType=0x8
+SubNumber=5
+
+[2051sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=4
+PDOMapping=0
+
+[2051sub1]
+ParameterName=PROtop LED ON/Fail Behavior Set
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2051sub2]
+ParameterName=PROtop LED ON/Fail Status Read
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[2051sub3]
+ParameterName=PROtop LED ATTN Behavior Set
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2051sub4]
+ParameterName=PROtop LED ATTN Status Read
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[2052]
+ParameterName=PROtop Relay Status and Command
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2054]
+ParameterName=PROtop DIO Status and Command
+ObjectType=0x8
+SubNumber=5
+
+[2054sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=4
+PDOMapping=0
+
+[2054sub1]
+ParameterName=PROtop DIO Select
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2054sub2]
+ParameterName=PROtop DI Pullup Select
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2054sub3]
+ParameterName=PROtop DI Status
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[2054sub4]
+ParameterName=PROtop DO Status
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=0
+
+[2057]
+ParameterName=PROtop Save Device Configuration Command
+ObjectType=0x8
+SubNumber=4
+
+[2057sub0]
+ParameterName=Highest Sub-Index Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=const
+DefaultValue=3
+PDOMapping=0
+
+[2057sub1]
+ParameterName=PROtop Save Output 1 On/Off Status
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
+
+[2057sub2]
+ParameterName=PROtop Save Output 1 Set Voltage Value
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
+
+[2057sub3]
+ParameterName=PROtop Save Output 1 Set Current Value
+ObjectType=0x7
+DataType=0x0001
+AccessType=wo
+PDOMapping=0
