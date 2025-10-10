@@ -137,8 +137,8 @@ sudo make -j4
 sudo make install_sw
 cd /etc/ld.so.conf.d/
 sudo touch openssl-open62541.conf 
-sudo echo "/usr/local/ssl/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
-sudo export LD_LIBRARY_PATH=/usr/local/ssl/lib/
+sudo echo "/usr/local/ssl/" | sudo tee -a /etc/ld.so.conf.d/openssl-open62541.conf
+export LD_LIBRARY_PATH=/usr/local/ssl/lib/
 cd /etc/profile.d
 sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib; ldconfig" | sudo tee -a ssl_export_ld_library_path.sh
 sudo ldconfig -v
@@ -147,6 +147,22 @@ cd /etc/
 #sudo source /etc/environment
 sudo echo $PATH
 sudo /usr/local/ssl/bin/openssl version -a
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$
+How to resolve this error
+$$$$$$$$$$$$$$$$$$$$$$$$$$
+openssl: /lib/aarch64-linux-gnu/libssl.so.3: version `OPENSSL_3.4.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libssl.so.3: version `OPENSSL_3.2.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.3.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.5.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.4.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.2.0' not found (required by openssl)
+
+cd /lib/aarch64-linux-gnu/
+sudo mv libssl.so.3 libssl.so.3.original
+sudo mv libcrypto.so.3 libcrypto.so.3.original
+sudo ln -s /usr/local/ssl/lib/libssl.so.3 libssl.so.3
+sudo ln -s /usr/local/ssl/lib/libcrypto.so.3 libcrypto.so.3
 
 ############################################################################
 # -- build CMAKE from source to get the latest version : https://cmake.org
