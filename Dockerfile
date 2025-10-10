@@ -29,6 +29,26 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install libmbedtls-dev -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install wget -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install lib32readline8 lib32readline-dev -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install gnome
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install libncurses5-dev libncursesw5-dev -y # to detect Ctrl+Key
+
+####################################
+# -- install ntp client
+####################################
+sudo apt-get install ntp -y
+cd /etc/
+sudo nano ntp.conf
+server 192.168.1.157 (NTP server IP address)
+sudo service ntp start
+sudo service ntp status
+<To verify with my notes in SG>
+
+####################################
+setup Windows as ntp server
+####################################
+go to regedit - Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters
+LocalNTP = 1 REG_DWORD
+
+setup linux as ntp server
 
 #########################################################
 # -- build GCC from source to get the latest version
@@ -107,10 +127,10 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
 # -- reinstall openssl libraries
 ####################################
 cd /usr/local/src/
-sudo wget https://www.openssl.org/source/openssl-3.4.1.tar.gz
-sudo tar -xf openssl-3.4.1.tar.gz
+sudo wget https://www.openssl.org/source/openssl-3.5.1.tar.gz
+sudo tar -xf openssl-3.5.1.tar.gz
 sudo pwd
-cd /usr/local/src/openssl-3.4.1/
+cd /usr/local/src/openssl-3.5.1/
 sudo ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl/ shared zlib
 sudo make -j4
 # sudo make test
