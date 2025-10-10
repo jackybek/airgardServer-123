@@ -198,22 +198,617 @@ sudo cmake --version -a
 ######################################
 # -- add websockets capability
 ######################################
-# -- library is installed  to /usr/local/include
+libuv is required to build the lwsws (used as SV_Warmcat.c):
+# https://github.com/libuv/libuv
+go to https://dist.libuv.org/dist/v1.51.0/
+download libuv-v1.51.0.tar.gz to /usr/local/src
 cd /usr/local/src/
+sudo tar -xvf libuv-v1.51.0.tar.gz
+cd libuv-v1.51.0
+sudo apt-get install autogen autoconf automake libtool
+sudo sh autogen.sh
+sudo ./configure
+sudo make
+make check && sudo make install
+
+#if the above does not work, the try the following 
+    sudo apt-get install libuv1 libuv1-dev, then rebuild libwebsockets
+
+# -- library is installed  to /usr/local/include
+WORKDIR /usr/local/src/
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
 sudo git clone https://libwebsockets.org/repo/libwebsockets
-cd /usr/local/src/libwebsockets
+WORKDIR /usr/local/src/libwebsockets
 sudo mkdir build
-cd /usr/local/src/libwebsockets/build
-sudo cmake ..
-sudo make -j4
-sudo make install
-sudo ldconfig
-sudo pkg-config --modversion libwebsockets
+WORKDIR /usr/local/src/libwebsockets/build
+sudo cmake .. -DLWS_WITH_LWSWS=1 -DLWS_WITH_LIBUV=1 -DLWS_WITH_PLUGINS=1 -DLWS_WITH_PLUGINS_API=1 -DCMAKE_BUILD_TYPE=DEBUG
+
 #sudo DEBIAN_FRONTEND="noninteractive" apt-get remove git -y
 # -- alternative - use apt-get
 #sudo echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 #sudo DEBIAN_FRONTEND="noninteractive" apt-get install libwebsockets-dev -y
+
+#in /usr/local/src/libwebsockets/lib/core/context.c line 9292 comment out :
+If you don't care about the GID you're running, just comment out this
+bit on /usr/local/src/libwebsockets/lib/core/context.c line 929.
+
+         /* if he gave us names, set the uid / gid */
+         if (lws_plat_drop_app_privileges(context, 0) ||
+             lws_fi(&context->fic, "ctx_createfail_privdrop"))
+                 goto free_context_fail2;
+
+sudo make -j4
+sudo make install
+sudo ldconfig
+sudo pkg-config --modversion libwebsockets
+
+#in github.com/warmcat/libwebsockets/blob/main/lwsws/main.c (which is adopted as SV_WebSocketsWss.c / SV_Warmcat.c[defunct] ), 
+	under #if defined(LWS_WITH_PLUGINS)
+	add #define INSTALL_DATADIR "/usr/local/src"
+
+Error during make:
+====================
+In file included from /usr/local/src/libuv-v1.51.0/include/uv.h:72,
+                 from /usr/local/include/libwebsockets.h:252,
+                 from SV_WebSocketsWss.c:54: [which is actually github.com/warmcat/libwebsockets/blob/main/lwsws/main.c]
+/usr/local/src/libuv-v1.51.0/include/uv/unix.h:135:9: error: unknown type name ‘pthread_rwlock_t’; did you mean ‘pthread_cond_t’?
+  135 | typedef pthread_rwlock_t uv_rwlock_t;
+
+===> to resolve : in Makefile change -std=c99 to -std=gnu99 in CFLAGS1
+====================
+
+#to change connectivity-check sources, go to /usr/local/src/libwebsockets/lib/core/context.c
+#look for captive_portal_detect and update 
+a. endpoint to "\"captive.apple.com\"."
+b. http_url to "\"detect.html\","
+OR 
+a. endpoint to "\"connectivitycheck\gstatic.com\","
+b. http_url to "\"generate_204\","
+
+!!!!
+Note: During open62541 startup, make sure that the file /etc/lwsws/conf.d/svr.virtualskies.com.sg is NOT open, otherwise open62541 will fail to run libwebsockets
+Refer to README.lwsws.md at github.com/warmcat/libwebsockets on the options to be configured in svr.virtualskies.com.sg
+!!!
+check the value of lwsws in /etc/passwd; 
+	update conf 
+		uid : "???"
+		gid : "???"
+/etc/lwsws => copy conf
+/etc/lwsws/conf.d => copy svr.virtualskies.com.sg
+/var/www/svr.virtualskies.com.sg/ => copy index1.html, 404.html
+
+#install websocket client for testing
+sudo apt-get install npm
+sudo npm install -g wscat
+To use: wscat -c wss://192.168.1.109:7681 --cert /usr/local/ssl/certs/Opccert109.pem --key /usr/local/ssl/private/Opcprivate-key109.pem --no-check -s lws-minimal
+
+#install wscat on windows
+1. launch powershell in administrator mode
+2. powershell -c "irm https://community.chocolatey.org/install.ps1|iex"
+3. choco install nodejs --version="20.19.3"
+4. wscat -c wss://192.168.1.109:7681 --cert "C:\Users\Jacky Bek\Temp\_temp\AirgardServer-109\certs\Opccert109.pem" --key "C:\Users\Jacky Bek\Temp\_temp\AirgardServer-109\private\Opcprivate-key109.pem" --no-check -s lws-minimal
+
+#create a new user lwsws and associated directories
+sudo useradd lwsws
+sudo passwd lwsws (mo..24)
+sudo visudo 
+	lwsws ALL=(ALL:ALL) ALL
+
+mkdir /etc/lwsws
+mkdir /etc/lwsws/config.d
+
+refer to lws mounts config.txt
+
+For websockets wss setup 
+1. Do not use soft links for files /var/www/svr2.virtualskies.com.sg that references /home/pi/OPCProject/mounts/*
+2. Just copy the required files over.
+3. websockets https can continue to use soft links
+
+** Note
+protocols are stored in /usr/local/share/virtualskies-test-server/plugins/XXX.so
+
+// create my own streaming protocol - lws-stream
+1. add protocol to /etc/lwsws/conf.d/svr2.virtualskies.com.sg
+		"lws-stream": {
+            "status": "ok"
+         },
+
+2. in update_arigard_stream.js, document.addEventListener function()
+	var ws = new_ws(get_appropriate_ws_url(""), "lws-stream-opc");
+
+ 3. Create the c program : protocol_lws_stream_opc.c, taking into these argument:
+ a. server url e.g. 192.168.1.109
+ b. server port e.g. 4840
+ 	assembled server url = opc.tcp://192.168.1.109:4840
+ c. namespaceindex e.g. 2
+ d. creates a client and connects to the server
+ e. returns a structure containing all the fields in opcua server
+
+int main(int argv, char **argv)
+e.g. compile as : lws-stream-opc --ip=192.168.1.109 --p=4840 --ns=2
+ 
+ 4. compile as libprotocol_lws_stream_opc.so
+ 	deploy to /usr/local/share/virtualskies-test-server/plugins/
+
+######################################
+# -- add modbus capability
+######################################
+To configure the RS485 vibration sensor, download : http://www.liyuanz.com/filedownload/144463
+
+cd /usr/local/src/
+sudo wget "https://github.com/stephane/libmodbus/releases/download/v3.1.11/libmodbus-3.1.11.tar.gz"
+sudo tar -xvf libmodbus-3.1.11.tar.gz
+cd /usr/local/src/libmodbus-3.1.11/
+sudo ./configure
+sudo make
+sudo make install
+<files are generated in /usr/local/lib and /usr/local/include>
+
+sudo raspi-config
+Disable login shell
+Enable serial port hardware
+Enabe SPI interface
+Interface options -> Serial Port -> Choose 'No' for
+	a. login shell to be accessible over serial
+ 	b. serial port hardware to be enabled
+	
+sudo chmod 777 /dev/ttyUSB0
+To debug:
+dmesg | grep ttyUSB0
+
+Need to get a rs332/rs485 RPI HAT from waveshare to overcome this error: Inappropriate ioctl for device
+
+Modbus TCP : Simulate multiple modbus TCP slaves on Windows using diagslave.exe D:\apps\diagslave\win
+
+diagslave -m tcp -a 43 -p 502
+diagslave -m tcp -a 44 -p 503
+diagslave -m tcp -a 45 -p 504
+diagslave -m tcp -a 46 -p 505
+
+Then in windows -> network connections -> Ethernet NIC -> IpV4 -> Properties -> Advanced -> add IP address
+192.168.1.157
+192.168.1.158
+192.168.1.159
+192.168.1.160
+
+go SV_CreateModbus.c and 
+1. update SVR_MB_IPV4 = "192.168.1.157 192.168.1.158 192.168.1.159 192.168.1.160"
+2. update SVR_MB_PORT = "502 504 504 505"
+3. update  env_MBTcpSlaveId = "43 44 45 46"
+
+######################################
+# -- add openldap : https://www.openldap.org/doc/admin26/quickstart.html
+######################################
+cd /usr/local/src/
+sudo git clone https://git.openldap.org/openldap/openldap.git/
+cd openldap
+sudo ./configure --prefix=/usr/local/src/openldap
+sudo make depend
+sudo make -j4
+sudo apt-get install slapd ldap-utils <admin passwd = m...h..24>
+sudo dpkg-reconfigure slapd
+sudo make test (ignore)
+sudo make install
+
+*files are installed to /usr/local/src/openldap/libraries/libldap/.lib
+
+*To install the service (https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-openldap-and-phpldapadmin-on-ubuntu-16-04
+sudo apt-get install slapd ldap-utils
+sudo dpkg-reconfigure slapd
+	omit : no
+	domain : bookworm.virtualskies.com
+	org : virtualskies
+	remove database ? no
+	move database ? yes
+	admin passwwd : mol..24
+
+######################################
+# -- add phpldapadmin
+######################################
+sudo apt-get install phpldapadmin
+
+To configure:
+sudo nano /etc/phpldapadmin/config.php 
+servers->setvalue('server', 'name', 'My Ldap server');
+servers->setValue('server', 'host', '192.168.1.112');
+servers->setValue('server', 'port', 389);
+servers->setvalue('server', 'base', array('dc=virtualskies,dc=com'));
+uncomment bind_id : servers->setValue('login','bind_id','cn=admin,dc=bookworm,dc=virtualskies,dc=com');
+
+To login via browser: http://192.168.1.112/phpldapadmin/		# ------------- change this URL if there is a change in IP address
+login phpldapadmin : cn=admin,dc=bookworm,dc=virtualskies,dc=com
+password : mol..24
+
+create a child entry->posix group
+	Group = users
+	GID number = 500
+create a child entry->generic:user account
+	userid : jbek
+	passwd : m..24
+
+Set A: phpldapmin on virtualbox : 192.168.1.102 or 192.168.0.174
+login phpldapadmin : cn=admin,dc=bookworm,dc=virtualskies,dc=com
+password : mol..24
+adjust the settings in /etc/phpldapmin/config.php to match the url and CN
+
+Set B: phpldapmin on RPI : 192.168.1.112 or 192.168.1.115
+login phpldapadmin : cn=admin, dc=virtualskies,dc=com
+password : mol..24
+adjust the settings in /etc/phpldapmin/config.php to match the url and CN
+
+Set C: phpldapadmin on RPI :
+login phpldapadmin : cn=jackybek, dc=virtualskies,dc=com
+password (1st entry) : mol..24 
+password (2nd entry) : 8ebe744e41fa3494536e9648093ab4f4ae156071eb54274c1dbf4c320c2023e0 (same as uid/password for UA_Server)
+
+############################################
+# add freeradius-client
+############################################
+cd /usr/local/src/
+sudo git clone https://github.com/freeradius/freeradius-client
+cd /usr/local/src/freeradius-client
+sudo ./configure
+sudo make
+sudo make install
+cd /usr/local/src/freeradius-client/include
+sudo ln -s ../config.h config.h
+
+# libfreeradius-client.a is installed to /usr/local/src/freeradius-client/lib/.libs/
+# freeradius-client.h is installed to /usr/local/src/freeradius-client/include/
+# source codes are installed to /usr/local/src/freeradius-client/lib/
+# program return -1 in buildreq.c
+
+# FreeRadius server is installed at 192.168.1.33 / .109 / .155
+# update the configuration 
+1. /usr/local/src/freeradius-client/etc/radiusclient.conf
+	authserver 	192.168.1.33
+	acctserver 	192.168.1.33
+2. /usr/local/etc/radiusclient/servers
+	192.168.1.33	mysecret
+
+=============
+Architecture:
+=============
+cisco -> FreeRadiusSvr (.33) -> openLdap <- phpldapadmin
+               |
+	    freeradius-client
+=========================================
+Setup segment : FreeRadiusSvr -> openLdap
+=========================================
+#A. define a list of users in /etc/freeradius/3.0/users
+myuser Cleartext-Password := "ThisIsALongPassword_24"
+        Service-Type = Administrative-User,
+        Reply-Message = "cisco-avpair = shell:priv-lvl=15"
+
+#if ldap is configured for freeRadius, then comment out the following
+jackybek Cleartext-Password := "ThisIsAnotherLongPassword_88"
+        Service-Type = Administrative-User,
+        Reply-Message = "cisco-avpair = shell:priv-lvl=15"
+
+sybek1708 Cleartext-Password := "ThisIsAnotherLongPassword_88"
+       Service-Type = Administrative-User,
+       Reply-Message = "cisco-avpair = shell:priv-lvl=15"
+
+admin Cleartext-Password := "ILoveSnoopyOscar#24"
+        Service-Type = Administrative-User,
+        Reply-Message = "cisco-avpair = shell:priv-lvl=15"
+
+testuser ClearText-Password := "SimplePassword#24"
+        Service-Type = Administrative-User,
+        Reply-Message = "cisco-avpair = shell:priv-lvl=15"
+
+
+#B. in 192.168.1.33 /etc/freeradius/3.0/clients.conf define a list of client machines connecting to freeRadius e.g
+client sg200-26 {
+        ipaddr = 192.168.1.254
+        nastype = cisco
+        shortname = smartswitch
+        secret = mysecret			// this is used when configuring sg200-26 to use Radius as the authentication server
+        require_message_authenticator = no
+        proto = udp
+}
+client APP-subnet1 {
+        ipaddr = 192.168.0.0/24
+        #netmask = 24
+        secret = strongsecret
+        #shortname = APP-subnet1
+}
+client APP-subnet2 {
+        ipaddr = 192.168.1.0/24
+        #netmask = 24
+        secret = strongsecret
+        #shortname = APP-subnet2
+}
+client bookworm-102 {				// this will allow bookworm-102 as a radius-client to connect to RadiusServer-33
+        ipaddr = 192.168.1.102
+        nastype = other
+        shortname = bookworm-102
+        secret = strongsecret
+        require_message_authenticator = no
+        proto = *
+}
+client myldap-server-88 {
+        ipaddr = 192.168.1.88
+        nastype = other
+        shortname = myldap-88
+        secret = strongsecret
+        require_message_authenticator = no
+        proto = *
+}
+client myldap-server-112 {
+        ipaddr = 192.168.1.112
+        nastype = other
+        shortname = myldap-112
+        secret = strongsecret
+        require_message_authenticator = no
+        proto = *
+}
+client myldap-server-115 {
+        ipaddr = 192.168.1.115
+        nastype = other
+        shortname = myldap-115
+        secret = strongsecret
+        require_message_authenticator = no
+        proto = *
+
+#C. in /etc/freeradius/3.0/sites-enabled, <my_server> file
+server my_server {
+listen {
+        type = auth
+        ipaddr = *
+        port = 1812
+}
+authorize {
+        ldap
+        if (ok || updated) {
+                update control {
+                        Auth-Type := ldap
+                }
+        }
+        # fall back in case something is wrong
+        #if (notfound || fail) {
+        #       update control {
+        #               Auth-Type := ACCEPT
+        #       }
+        #}
+}
+authenticate {
+        Auth-Type LDAP {
+                ldap
+        }
+}
+post-auth {
+        update reply {
+                Service-Type := Administrative-User,
+                Reply-Message := "cisco-avpair = shell:priv-lvl=15"
+                }
+        }
+}
+
+#D. in /etc/freeradius/3.0/mods-enabled, <ldap> file
+ldap {
+        # URI of the target ldap server
+        server = "ldap://192.168.1.33"
+        server = "ldap://192.168.1.112"
+        server = "ldap://192.168.1.115"
+
+        # the dn from which all searches will start from
+        base_dn = 'dc=virtualskies,dc=com'
+        #base_dn = 'cn=users,dc=virtualskies,dc=com'
+
+        # Port to connect on, defaults to 389, will be ignored for LDAP URIs
+        port = 389
+
+        # Administrator account for searching
+        identity = 'cn=admin,dc=virtualskies,dc=com'
+        password = 'molekhaven24'
+
+        user {
+                # Where to start searching in the tree for users
+                base_dn = 'cn=users,dc=virtualskies,dc=com'
+
+                # for Active Directory only
+                #filter = "(sAMAccountName=%{%{Stripped-User-Name}:-%{User-Name}})"
+
+                # for openlap :
+                filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+
+        }
+
+        update reply {
+                Service-Type := "Administrative-User"
+                Reply-Message := "cisco-avpair = shell:priv-lvl=15"
+        }
+}
+
+=============
+Setup segment : cisco 192.168.1.254
+=============
+1. Administration -> User Accounts : add an account 'admin/ molekhaven24' => http login
+2. Security -> RADIUS -> Add
+Server IP Address/ Name : 192.168.1.33
+Priority : 1
+Key String-> User Defined (PlainText) : mysecret
+Authentication port : 1812
+Usage Type : Login
+
+Repeat for 192.168.1.109 and 192.168.1.155
+
+3. Security->Management Access Authentication
+HTTP : RADIUS
+HTTPS : local (meaning use admin/ molekhaven24 as login)
+
+############################################
+# add PTPD IEEE 1588 capability - defunct, refer to the next section
+############################################
+refer to : https://raw.githubusercontent.com/ptpd/ptpd/master/INSTALL
+sudo apt-get install libpcap-dev -y
+sudo apt-get install snmpd libsnmp-dev -y
+sudo apt-get install autoconf automake libtool -y
+cd /usr/local/src/
+sudo git clone https://github.com/ptpd/ptpd.git
+cd ptpd
+sudo autoreconf -vi
+sudo ./configure --disable-statistics --with-max-unicast-destinations=2048 --disable-so-timestamping
+sudo make
+
+> update test/client-e2e-socket.conf so that is "ptpengine:interface = " settings points to a network interface that is connected to a GMC
+> to test: sudo ../src/ptpd2 -c test/client-e2e-socket.conf
+> check the log output in /var/run/ptpd2.event.log
+> check the statistics output in /var/run/ptpd2.stats.log (without the --disable-statistics flag)
+> once verified okay
+
+cd /usr/local/src/ptpd/
+sudo make install
+
+############################################
+# add LinuxPTP - only for SBC with PTP-ready NIC (e.g. beaglebone black)
+############################################
+cd /usr/local/src/
+sudo git clone git://git.code.sf.net/p/linuxptp/code linuxptp
+cd linuxptp
+sudo make
+sudo make install
+# the following executables are installed to /usr/local/sbin
+hwstamp_ctl
+nsm
+phc2sys
+phc_ctl
+pmc
+ptp4l
+timemaster
+ts2phc
+tz2alt
+
+sudo ethtool -T eth0
+
+To integrate PTP capabilities directly into open62541:
+------------------
+Step 1 : Map out the steps required to perform time sync using command line tools
+------------------
+Concept:
+1. ptp4l daemon synchronises the PTP hardware clock (PHC) on the network card
+2. phc2sys utility then synchronises the Linux system time to PHC
+
+1.1 Sychronise the system clock : 
+1.1.1 configure UTC-TAI offset : 
+sudo pmc -u -b -0 -t 1 "SET GRANDMASTER_SETTINGS_NP clockClass 248 clockAccuracy 0xfe offsetScaledLogVariance 0xffff currentUtcOffset 37 leap61 0 leap59 0 currentUtcOffsetValid 1 ptpTimescale 1 timeTraceable 1 frequencyTraceable 0 timeSource 0xa0"
+
+1.1.2 Synchronise the Master System Clock with PHC : 
+======
+MASTER 192.168.1.71
+======
+1. sudo phc2sys -s eth0 -c CLOCK_REALTIME --step_threshold=1 --transportSpecific=0 -w -m -l 7 -r
+	Note: --transportSpecific=0 must match the same parameter in /configs/default.cfg settings
+2. sudo ptp4l -4 -i eth0 -H --step_threshold=1 -m -f ./configs/default.cfg 
+
+	To manually check if the clocks are synchronise, 
+ 		a. open a new terminal and run : sudo ptp4l -i eth0
+ 			Verify if rms is < 100
+		b. open a new terminal and run : phc2sys
+  			verify if phc offset  < 100
+
+1.1.3 Sychronise the Slave system clock to Master Clock
+======
+Slave 192.168.1.127
+======
+1. sudo phc2sys -s eth0 -c CLOCK_REALTIME --step_threshold=1 --transportSpecific=0 -w -m -l 7 -r
+2. sudo ptp4l -A -f /home/debian/linuxptp-4.2/configs/default.cfg --step_threshold=1 -4 -H -i eth0 -m -s -f /home/debian/linuxptp-4.2/configs/default.cfg --step_threshold=1 -4
+
+The log message : 
+1. new foreign master f045da.fffe.77a12a-1 : GMC master clock on 192.168.1.71 is selected
+2. LISTENING to UNCALIBRATED on RS_SLAVE : initial handshake
+3. UNCALIBRATED to SLAVE on MASTER_CLOCK_SELECTED : final handshake : indicating successful synchronization with a PTP master clock
+
+-------------
+Step 2 : Download all the source codes : git clone http://git.code.sf.net/p/linuxptp/code linuxptp
+			cd linuxptp
+   			sudo make
+	  		sudo make install
+
+  			* files are installed to /usr/local/sbin/.
+-------------
+Step 3 : Update the main() function of the following files to a new name.  This is to facilitate the main open62541 program to call these functions via function calls (instead of command line)
+ 	a.  pmc.c => main() to pmc()
+ 	b.  ptp4l.c => main() to ptp4l()
+ 	c.  phc2sys.c => main() to phc2sys()
+    -----not used
+    c.  hwstamp_ctl.c => main() to hwstampCtl()
+	d.  nsm.c => main() to nsm()
+	e.  phc_ctl.c => main() to phcCtl()
+  	g.  timemaster.c => main() to timemaster()
+    h.  ts2phc.c => main() to ts2phc()
+	i.  tz2alt.c => main() to tz2alt()
+-------------
+Step 4 : Update the Makefile to include the above files
+
+
+To test the synchronisation effects:
+1. install linuxptp to beaglebone black x 2
+	192.168.1.71 - GMC
+ 		output of step 1.1
+
+
+   
+ 	192.168.1.127 - Slave
+2. Run the above commands
+
+References:
+1. https://tsn.readthedocs.io/timesync.html#checking-clocks-synchronization
+
+#############################################
+# add a RPI5 compatible PTP 1588 HAT - TimeHat
+############################################
+https://www.tindie.com/products/timeappliances/timehat-i226-nic-with-pps-inout-for-rpi5/
+1. Pre-setup steps
+# Install linuxptp
+cd /usr/local/src/
+sudo apt-get install linuxptp
+# download testptp
+sudo mkdir testptp
+cd testptp
+sudo wget https://raw.githubusercontent.com/torvalds/linux/refs/heads/master/tools/testing/selftests/ptp/testptp.c
+sudo wget https://raw.githubusercontent.com/torvalds/linux/refs/heads/master/include/uapi/linux/ptp_clock.h
+sudo ln-s /usr/include/linux/ptp_clock.h ptp_clock.h
+# compile testptp
+sudo gcc -Wall -lrt testptp.c -o testptp
+# install testptp
+sudo cp testptp /usr/bin/
+# verify testptp works
+sudo testptp -d /dev/ptp0 -l
+> name SDP0 index 0 func 0 chan 0
+> name SDP1 index 1 func 0 chan 0
+> name SDP2 index 2 func 0 chan 0
+>name SDP3 index 3 func 0 chan 0
+
+2. configure 1PPS output
+# Setup SDP0 (SMA1, closest to HAT header) as periodic output
+sudo testptp -d /dev/ptp0 -L0,2
+sudo testptp -d /dev/ptp0 -p 1000000000
+
+3. Read 1 PPS SMA Input
+# Setup SDP1 (SMA2 , furthest from HAT header) as timestamp input
+sudo testptp -d /dev/ptp0 -L1,1
+# Read timestamps, use -1 to read forever and ctrl+C to stop, using 5 here as demo. 
+# Note: I226 driver passes both edges to Linux, so both rising and falling edges will be listed. 
+# A fix for this is listed below, requires patching and building kernel
+
+4. Discipline to 1PPS SMA input
+# Fix 1PPS input to only use rising edge, New Method, much easier
+Note : Procedure documented on Github: https://github.com/Time-Appliances-Project/Products/tree/main/TimeHAT
+
+############################################
+# add TwinCAT ADS capability
+############################################
+cd /usr/local/src
+sudo git clone https://github.com/Beckhoff/ADS.git
+cd ADS
+sudo meson setup build
+sudo ninja -C build
+<libAdsLib.a is saved to /usr/local/src/ADS/build/>
+<header files are saved to /usr/local/src/ADS/AdsLib>
+
+To link cpp with c, need to add extern "C" to cpp file.  
 
 #######################################################################################
 # -- install other libraries needed for user-defined application e.g. open62541lds
@@ -232,10 +827,23 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install libavahi-client-dev libava
 
 ################################################
 # -- get the open62541 source from github
+compile open62541 - steps to follow
+
+option 1
+1. version : 1.4.13
+2. source : git clone https://github.com/open62541/open62541.git --branch v1.4.13 -c advice.detachedHead=FALSE
+2.1 cd open62541
+2.2 sudo git submodule update --init --recursive
+3. During make, errors related to MQTT (almagamation=ON), but open62541.h is produced (along with open62541.c)
+4. Next, set: almagamation=OFF, make = passed
+5. libopen62541.a is produced
+6. use libopen62541.a and open62541.h in application Makefile and application source codes (but don't use open62541.c in Makefile)
+7. Successfully build application!!
+
 ################################################
 cd /root 
 #sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
-sudo git clone https://github.com/open62541/open62541.git --branch v1.4.10 -c advice.detachedHead=FALSE
+sudo git clone https://github.com/open62541/open62541.git --branch v1.4.13 -c advice.detachedHead=FALSE
 cd /root/open62541
 sudo git submodule update --init --recursive
 
@@ -280,7 +888,7 @@ sudo make -j4
 sudo make doc
 sudo make doc_pdf
 sudo make latexpdf
-sudo export open62541_NODESET_DIR='/root/open62541/deps/ua-nodeset/Schema/'
+export open62541_NODESET_DIR='/root/open62541/deps/ua-nodeset/Schema/'
 
 ##########################################
 # -- creates the volume in container
