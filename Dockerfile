@@ -32,14 +32,15 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install gnome
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install libncurses5-dev libncursesw5-dev -y # to detect Ctrl+Key
 
 ####################################
-# -- install ntp client
+# -- install ntp client - upgrade from ntp to openntpd
 ####################################
-sudo apt-get install ntp -y
-cd /etc/
-sudo nano ntp.conf
-server 192.168.1.157 (NTP server IP address)
-sudo service ntp start
-sudo service ntp status
+sudo apt-get install openntpd -y
+cd /etc/openntpd
+sudo nano ntpd.conf
+	server 192.168.1.157 (NTP server IP address)
+	
+sudo service openntpd start
+sudo service openntpd status
 <To verify with my notes in SG>
 
 ####################################
@@ -77,8 +78,8 @@ sudo mkdir objdir
 cd /root/objdir
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install g++
 sudo ../gcc/configure --prefix=/usr/local/gcc14.2.0 --disable-multilib --with-system-zlib --enable-languages=c,c++ --program-suffix=14.2.0
-sudo ulimit -m unlimited
-sudo ulimit -v unlimited
+ulimit -m unlimited
+ulimit -v unlimited
 sudo make -j4                     
 sudo make install
 cd /etc
