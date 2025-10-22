@@ -34,13 +34,17 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install libncurses5-dev libncurses
 ####################################
 # -- install ntp client - upgrade from ntp to openntpd
 ####################################
-sudo apt-get install openntpd -y
-cd /etc/openntpd
+sudo apt-get install ntpsec -y
+cd /etc/ntpsec
 sudo nano ntpd.conf
-	server 192.168.1.157 (NTP server IP address)
+	...
+	pool 0.debian.pool.ntp.org iburst
+	...
+	server 192.168.1.157 prefer iburst (NTP server IP address)
 	
-sudo service openntpd start
-sudo service openntpd status
+sudo systemctl restart ntp
+sudo systemctl enable ntp
+sudo ntpq -p
 <To verify with my notes in SG>
 
 ####################################
