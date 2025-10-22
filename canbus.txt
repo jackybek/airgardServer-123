@@ -2,33 +2,14 @@ https://opensource.lely.com/canopen/docs/installation/
 
 sudo apt-get update
 sudo apt-get upgrade -y
+sudo apt-get install can-utils
+sudo apt-get install git build-essential automake libtool python3-setuptools python3-wheel
+sudo apt-get install python3-empy python3-yaml libbluetooth-dev valgrind doxygen graphviz
 sudo apt-get install liblely-coapp-dev liblely-co-tools python3-dcf-tools (only for bookworm)
 
 Note: debian trixie has error - package not found
   Alternate: build from source
-
-sudo apt-get install \
-    git build-essential automake libtool \
-    python3-setuptools python3-wheel \
-    python3-empy python3-yaml \
-    libbluetooth-dev \
-    valgrind \
-    doxygen graphviz
-cd /usr/local/src
-git clone https://gitlab.com/lely_industries/lely-core.git
-cd lely-core
-sudo autoreconf -i
-sudo mkdir -p build
-cd build
-sudo ../configure --disable-cython
-sudo make
-sudo make check
-sudo make install
-
-
-sudo apt-get install can-utils
-sudo apt-get install git build-essential automake libtool python3-setuptools python3-wheel
-sudo apt-get install python3-empy python3-yaml libbluetooth-dev valgrind doxygen graphviz
+------
 cd /usr/local/src/
 sudo git clone https://gitlab.com/lely-industries/lely-core.git
 cd lely-core
@@ -41,7 +22,7 @@ sudo make html
 sudo make check
 sudo make check-valgrind-memcheck
 sudo make install
-
+-----
 library files are installed to: /usr/local/lib/
 => liblely-can.a libley-co.a liblely-coapp.a liblely-ev.a liblely-io2.a liblely-io.a liblely-libc.a liblely-tap.a liblely-util.a 
 
