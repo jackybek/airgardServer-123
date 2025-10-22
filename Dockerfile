@@ -463,7 +463,6 @@ sudo ln -s ../config.h config.h
 # source codes are installed to /usr/local/src/freeradius-client/lib/
 # program return -1 in buildreq.c
 
-# FreeRadius server is installed at 192.168.1.33 / .109 / .155
 # update the configuration 
 1. /usr/local/src/freeradius-client/etc/radiusclient.conf
 	authserver 	192.168.1.33
@@ -844,6 +843,16 @@ option 1
 5. libopen62541.a is produced
 6. use libopen62541.a and open62541.h in application Makefile and application source codes (but don't use open62541.c in Makefile)
 7. Successfully build application!!
+
+for : v1.4.14 (use Ninja)
+source : git clone https://github.com/open62541/open62541.git --branch v1.4.14 -c advice.detachedHead=FALSE
+cd open62541
+sudo git submodule update --init --recursive
+sudo mkdir build
+cd build
+sudo cmake -G Ninja .. -DCMAKE_C_COMPILER=/usr/local/gcc14.2.0/bin/gcc14.2.0 -DCMAKE_C_COMPILER_AR=/usr/local/gcc14.2.0/bin/gcc-ar14.2.0 -DCMAKE_C_COMPILER_RANLIB=/usr/local/gcc14.2.0/bin/gcc-ranlib14.2.0 -DOPENSSL_CRYPTO_LIBRARY=/usr/local/ssl/lib64/libcrypto.so -DOPENSSL_INCLUDE_DIR=/usr/local/ssl/include -DOPENSSL_SSL_LIBRARY=/usr/local/ssl/lib64/libssl.so -DUA_ARCHITECTURE=posix -DUA_DEBUG_FILE_LINE_INFO=ON -DUA_ENABLE_AMALGAMATION=OFF -DBUILD_SHARED_LIBS=OFF -DUA_ENABLE_DA=ON -DUA_ENABLE_DATATYPES_ALL=ON -DUA_ENABLE_DEBUG_SANITIZER=ON -DUA_ENABLE_DIAGNOSTICS=ON -DUA_ENABLE_DISCOVERY=ON -DUA_ENABLE_DISCOVERY_MULTICAST=ON -DUA_ENABLE_DISCOVERY_SEMAPHORE=ON -DUA_ENABLE_ENCRYPTION=OPENSSL -DUA_ENABLE_ENCRYPTION_OPENSSL=ON -DUA_ENABLE_HISTORIZING=ON -DUA_ENABLE_JSON_ENCODING=ON -DUA_ENABLE_METHODCALLS=ON -DUA_ENABLE_MQTT=ON -DUA_ENABLE_NODEMANAGEMENT=ON -DUA_ENABLE_NODESETLOADER=OFF -DUA_ENABLE_NODESET_COMPILER_DESCRIPTIONS=ON -DUA_ENABLE_PARSING=ON -DUA_ENABLE_PUBSUB=ON -DUA_ENABLE_PUBSUB_ENCRYPTION=ON -DUA_ENABLE_PUBSUB_FILE_CONFIG=ON -DUA_ENABLE_PUBSUB_INFORMATIONMODEL=ON -UA_ENABLE_PUBSUB_MONITORING=ON -UA_ENABLE_PUBSUB_SKS=ON -DUA_ENABLE_STATUSCODE_DESCRIPTIONS=ON -DUA_ENABLE_SUBSCRIPTIONS=ON -DUA_ENABLE_SUBSCRIPTIONS_ALARMS=OFF -DUA_ENABLE_SUBSCRIPTIONS_EVENTS=ON -DUA_ENABLE_TYPEDESCRIPTION=ON -DUA_ENABLE_XML_ENCODING=ON -DUA_FORCE_WERROR=ON -DUA_LOGLEVEL=100 -DUA_MULTITHREADING=100 -DUA_NAMESPACE_ZERO=FULL -DUA_NODESET_DIR=/home/pi/open62541/deps/ua-nodeset
+sudo ninja
+sudo ninja install
 
 ################################################
 cd /root 
