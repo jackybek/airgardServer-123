@@ -35,7 +35,7 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install libncurses5-dev libncurses
 # -- install ntp client
 ####################################
 sudo apt-get install ntp -y
-cd /etc/
+cd /etc/ntpsec/ntp.conf
 sudo nano ntp.conf
 server 192.168.1.157 (NTP server IP address)
 sudo service ntp start
