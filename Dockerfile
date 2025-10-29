@@ -30,6 +30,7 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install wget -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install libreadline-dev -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install gnome -y
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install libncurses5-dev libncursesw5-dev -y # to detect Ctrl+Key
+sudo DEBIAN_FRONTEND="noninteractive" apt-get install ninja-build -y
 
 ####################################
 # -- install ntp client
