@@ -909,7 +909,7 @@ sudo ninja
 sudo ninja install
 
 for : v1.4.14 (use Ninja)
-source : git clone https://github.com/open62541/open62541.git --branch v1.4.14 -c advice.detachedHead=FALSE
+git clone https://github.com/open62541/open62541.git --branch v1.4.14 -c advice.detachedHead=FALSE
 cd open62541
 sudo git submodule update --init --recursive
 sudo mkdir build
