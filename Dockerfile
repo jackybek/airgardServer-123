@@ -146,10 +146,11 @@ sudo chmod 744 ssl_export_ld_library_path.sh
 
 sudo ldconfig -v
 WORKDIR /etc/
-#sudo echo ":/usr/local/ssl/bin" | tee -a environment 
+sudo echo ":/usr/local/ssl/bin" | tee -a environment 
 source /etc/environment
 sudo echo $PATH
 sudo /usr/local/ssl/bin/openssl version -a
+sudo openssl version
 
 ############################################################################
 # -- build CMAKE from source to get the latest version : https://cmake.org
