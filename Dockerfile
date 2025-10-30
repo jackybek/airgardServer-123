@@ -127,6 +127,7 @@ sudo DEBIAN_FRONTEND="noninteractive" apt-get install zlib1g-dev -y
 ####################################
 # -- reinstall openssl libraries
 ####################################
+sudo apt-get remove openssl
 WORKDIR /usr/local/src/
 sudo wget https://www.openssl.org/source/openssl-3.5.1.tar.gz
 sudo tar -xf openssl-3.5.1.tar.gz
