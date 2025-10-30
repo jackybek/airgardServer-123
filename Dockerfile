@@ -866,7 +866,7 @@ option 1
 ################################################
 WORKDIR /root 
 #sudo DEBIAN_FRONTEND="noninteractive" apt-get install git -y
-sudo git clone https://github.com/open62541/open62541.git --branch v1.4.12 -c advice.detachedHead=FALSE
+sudo git clone https://github.com/open62541/open62541.git --branch v1.4.13 -c advice.detachedHead=FALSE
 WORKDIR /root/open62541
 sudo git submodule update --init --recursive
 
