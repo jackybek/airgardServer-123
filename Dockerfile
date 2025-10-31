@@ -153,6 +153,10 @@ sudo echo $PATH
 sudo /usr/local/ssl/bin/openssl version -a
 sudo openssl version
 
+OR
+
+sudo apt-get install libssl-dev
+
 ############################################################################
 # -- build CMAKE from source to get the latest version : https://cmake.org
 # -- https://markusthill.github.io/blog/2024/installing-cmake/
