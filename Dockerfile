@@ -293,7 +293,7 @@ In file included from /usr/local/src/libuv-v1.51.0/include/uv.h:72,
 a. endpoint to "\"captive.apple.com\"."
 b. http_url to "\"detect.html\","
 OR 
-a. endpoint to "\"connectivitycheck\gstatic.com\","
+a. endpoint to "\"connectivitycheck\"gstatic.com\","
 b. http_url to "\"generate_204\","
 
 !!!!
