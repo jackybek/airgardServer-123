@@ -139,7 +139,7 @@ sudo make -j4
 sudo make install
 WORKDIR /etc/ld.so.conf.d/
 sudo touch openssl-open62541.conf 
-sudo echo "/usr/local/ssl/" | tee -a /etc/ld.so.conf.d/openssl-open62541.conf
+sudo echo "/usr/local/ssl/" | sudo tee -a /etc/ld.so.conf.d/openssl-open62541.conf
 export LD_LIBRARY_PATH=/usr/local/ssl/lib/
 WORKDIR /etc/profile.d
 sudo echo "export LD_LIBRARY_PATH=/usr/local/ssl/lib; ldconfig" | sudo tee -a ssl_export_ld_library_path.sh
@@ -147,7 +147,7 @@ sudo chmod 744 ssl_export_ld_library_path.sh
 
 sudo ldconfig -v
 WORKDIR /etc/
-sudo echo ":/usr/local/ssl/bin" | tee -a environment 
+sudo echo ":/usr/local/ssl/bin" | sudo tee -a environment 
 source /etc/environment
 sudo echo $PATH
 sudo /usr/local/ssl/bin/openssl version -a
