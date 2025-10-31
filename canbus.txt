@@ -11,7 +11,7 @@ Note: debian trixie has error - package not found
   Alternate: build from source
 ------
 cd /usr/local/src/
-sudo git clone https://gitlab.com/lely-industries/lely-core.git
+sudo git clone https://gitlab.com/lely_industries/lely-core.git
 cd lely-core
 sudo autoreconf -i
 sudo mkdir -p build
