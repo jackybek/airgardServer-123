@@ -97,6 +97,10 @@ sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-gcc14.2.0 gcc
 sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-c++14.2.0 cpp
 sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-g++14.2.0 g++
 sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-c++14.2.0 c++
+which gcc
+which cpp
+which g++
+which c++
 
 WORKDIR /etc/profile.d
 #binaries are installed in:/usr/local/gcc14.2.0/bin
@@ -189,6 +193,10 @@ WORKDIR /usr/local/src/
 sudo wget https://cmake.org/files/v3.31/cmake-3.31.6.tar.gz
 sudo tar -xvf cmake-3.31.6.tar.gz
 cd cmake-3.31.6/
+
+export CXX=/usr/local/gcc14.2.0/bin/aarch64-linux-gnu-c++14.2.0
+export CXXFLAGS="-std=c++11"
+
 sudo ./configure
 # if the above step fail do the following
   # export OPENSSL_INCLUDE=/usr/local/ssl/include/
@@ -207,8 +215,12 @@ sudo echo "PATH=/usr/local/src/cmake-3.31.6/bin:"$PATH > environment
 source /etc/environment
 sudo echo $PATH
 sudo cmake --version -a
+
+OR
 # -- alternative - use apt-get
 # DEBIAN_FRONTEND="noninteractive" apt-get install cmake
+
+
 
 ######################################
 # -- add emscripten capability
