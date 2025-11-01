@@ -153,6 +153,22 @@ sudo echo $PATH
 sudo /usr/local/ssl/bin/openssl version -a
 sudo openssl version
 
+$$$$$$$$$$$$$$$$$$$$$$$$$$
+How to resolve this error
+$$$$$$$$$$$$$$$$$$$$$$$$$$
+openssl: /lib/aarch64-linux-gnu/libssl.so.3: version `OPENSSL_3.4.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libssl.so.3: version `OPENSSL_3.2.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.3.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.5.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.4.0' not found (required by openssl)
+openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.2.0' not found (required by openssl)
+
+cd /lib/aarch64-linux-gnu/
+sudo mv libssl.so.3 libssl.so.3.original
+sudo mv libcrypto.so.3 libcrypto.so.3.original
+sudo ln -s /usr/local/ssl/lib/libssl.so.3 libssl.so.3
+sudo ln -s /usr/local/ssl/lib/libcrypto.so.3 libcrypto.so.3
+
 OR
 
 sudo apt-get install libssl-dev
@@ -1523,18 +1539,3 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$
 2. sudo mv libstdc++.so.6 libstdc++.so.6.original
 3. sudo ln -s /usr/local/gcc14.2.0/lib64/libstdc++.so.6 libstdc++.so.6
 
-$$$$$$$$$$$$$$$$$$$$$$$$$$
-How to resolve this error
-$$$$$$$$$$$$$$$$$$$$$$$$$$
-openssl: /lib/aarch64-linux-gnu/libssl.so.3: version `OPENSSL_3.4.0' not found (required by openssl)
-openssl: /lib/aarch64-linux-gnu/libssl.so.3: version `OPENSSL_3.2.0' not found (required by openssl)
-openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.3.0' not found (required by openssl)
-openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.5.0' not found (required by openssl)
-openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.4.0' not found (required by openssl)
-openssl: /lib/aarch64-linux-gnu/libcrypto.so.3: version `OPENSSL_3.2.0' not found (required by openssl)
-
-cd /lib/aarch64-linux-gnu/
-sudo mv libssl.so.3 libssl.so.3.original
-sudo mv libcrypto.so.3 libcrypto.so.3.original
-sudo ln -s /usr/local/ssl/lib/libssl.so.3 libssl.so.3
-sudo ln -s /usr/local/ssl/lib/libcrypto.so.3 libcrypto.so.3
