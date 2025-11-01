@@ -868,10 +868,6 @@ Note : Procedure documented on Github: https://github.com/Time-Appliances-Projec
 ############################################
 # add TwinCAT ADS capability - v113.0.30-1
 ############################################
-cd /bin
-sudo mv c++ c++.original
-sudo ln -s /usr/local/gcc14.2.0/bin/c++14.2.0 c++
-
 cd /usr/local/src
 sudo git clone https://github.com/Beckhoff/ADS.git
 cd ADS
