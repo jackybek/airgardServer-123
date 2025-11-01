@@ -97,7 +97,10 @@ sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-gcc14.2.0 gcc
 sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-c++14.2.0 cpp
 sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-g++14.2.0 g++
 sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-c++14.2.0 c++
+sudo ln -s /usr/local/gcc14.2.0/bin/aarch64-linux-gnu-gcc14.2.0 cc
+
 which gcc
+which cc
 which cpp
 which g++
 which c++
