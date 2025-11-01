@@ -283,7 +283,8 @@ bit on /usr/local/src/libwebsockets/lib/core/context.c line 929.
          if (lws_plat_drop_app_privileges(context, 0) ||
              lws_fi(&context->fic, "ctx_createfail_privdrop"))
                  goto free_context_fail2;
-
+				 
+cd /usr/local/src/libwebsockets/build/
 sudo make -j4
 sudo make install
 sudo ldconfig
