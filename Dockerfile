@@ -77,7 +77,7 @@ WORKDIR /root
 sudo mkdir objdir
 WORKDIR /root/objdir
 sudo DEBIAN_FRONTEND="noninteractive" apt-get install g++
-sudo ../gcc/configure --prefix=/usr/local/gcc14.2.0 --disable-multilib --with-system-zlib --enable-languages=c,c++ --program-suffix=14.2.0
+sudo ../gcc/configure --target=aarch64-linux-gnu --prefix=/usr/local/gcc14.2.0 --disable-multilib --with-system-zlib --enable-languages=c,c++ --program-suffix=14.2.0
 ulimit -m unlimited
 ulimit -v unlimited
 sudo make -j4                     
